@@ -234,6 +234,29 @@ describe('otros esquemas', () => {
     expect(AnalyzePhotoFieldsSchema.safeParse({ localHour: 'abc' }).success).toBe(false)
     expect(AnalyzePhotoFieldsSchema.safeParse({ localHour: '9.5' }).success).toBe(false)
   })
+  it('AnalyzePhotoFields rechaza localHour no decimal o fuera de 0–23', () => {
+    for (const bad of [
+      '0x10',
+      '1e1',
+      '0b101',
+      '0o7',
+      '+5',
+      '-1',
+      '1_0',
+      '24',
+      '99',
+      '123',
+      '9 h',
+      'Infinity',
+    ]) {
+      const r = AnalyzePhotoFieldsSchema.safeParse({ localHour: bad })
+      expect(r.success, bad).toBe(false)
+      if (!r.success) expect(r.error.issues[0]?.message).toBe('Hora local inválida')
+    }
+    expect(AnalyzePhotoFieldsSchema.parse({ localHour: ' 07 ' }).localHour).toBe(7)
+    expect(AnalyzePhotoFieldsSchema.parse({ localHour: '0' }).localHour).toBe(0)
+    expect(AnalyzePhotoFieldsSchema.parse({ localHour: '23' }).localHour).toBe(23)
+  })
   it('FavoriteInput y WeightInput', () => {
     expect(
       FavoriteInputSchema.safeParse({ id: UUID, name: 'Mi desayuno', items: [item] }).success,
