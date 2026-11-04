@@ -101,6 +101,10 @@ Cada vez que `main` cambia, Cloudflare construye y publica solo.
 
 4. Guarda y espera el primer build (unos minutos). Si el build falla por la versión de Node, agrega la variable de build `NODE_VERSION = 22`.
 
+> **Importante: la rama de producción de Cloudflare es independiente de la de GitHub.** Workers Builds la copia de la rama principal del repositorio **al crear el proyecto** y no la vuelve a leer. Si en ese momento la principal no era `main`, cámbiala a mano: Worker `kalapp` → **Settings → Build → Branch control → Production branch = `main`**. Después hace falta un **commit nuevo en `main`** para que se construya: "Retry build" repite el mismo commit de la rama anterior.
+
+> **Variables de build ≠ secretos.** La sección "Variable name / Variable value" del asistente de creación es solo para el momento del build (por ejemplo `NODE_VERSION`). `GEMINI_API_KEY` y `APP_TOKEN` van en **Settings → Variables and Secrets** del Worker, con tipo **Secret** (o con `wrangler secret put`, sección 4).
+
 ### Opción B — Manual desde tu computadora
 ```bash
 pnpm deploy:manual
@@ -186,6 +190,7 @@ Cuando el primer despliegue termine, haz esto en orden (la lista completa del iP
 | **429** "Llegaste al límite diario" | Se usaron los `DAILY_ANALYZE_LIMIT` análisis del día (60 por defecto) | Se reinicia a la **medianoche de la Ciudad de México**, aunque estés en otra zona. Los rechazos (foto inválida, muy pesada, etc.) no consumen cupo |
 | **413** | Foto > 1 MB o JSON > 256 KB | La app comprime sola; si pasa, toma la foto de nuevo |
 | **415** | Formato no soportado | Solo JPEG, PNG o WebP (se revisa el contenido real del archivo) |
+| Build falla con `ERR_PNPM_NO_PKG_MANIFEST No package.json found` | Workers Builds está construyendo otra rama (por ejemplo la rama de arranque `claude/eager-cori-r3qu9s`, que solo tiene documentación) | Production branch = `main` (ver la nota de la sección 5A) y haz un commit nuevo en `main` |
 | El build de Workers Builds falla | Node distinto de 22, `pnpm-lock.yaml` desactualizado, o la D1 de `wrangler.jsonc` no es de tu cuenta | Revisa el log del build en el dashboard |
 
 ### Cambiar el límite diario o los modelos
