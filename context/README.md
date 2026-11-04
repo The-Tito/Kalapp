@@ -8,6 +8,10 @@ Esta carpeta guarda **todo el conocimiento del proyecto**: requisitos, investiga
 |---|---|
 | `knowledge-graph.json` | Grafo de conocimiento (KG) con toda la información del proyecto |
 | `README.md` | Este archivo: cómo está organizada la carpeta y cómo usar el grafo |
+| `PLAN.md` | Plan completo del proyecto: stack, estructura, datos, API, pantallas, roadmap con milestones, pruebas, despliegue y flujo de trabajo |
+| `DEPLOY.md` *(M6)* | Guía de despliegue paso a paso |
+| `PROMPTS.md` *(M4)* | Versiones del prompt de Gemini |
+| `ACCURACY.md` *(M6)* | Resultados de precisión de la IA |
 | *(futuros `.md`)* | Documentos de apoyo: guías, decisiones detalladas, notas, etc. |
 
 ## Estructura del grafo (`knowledge-graph.json`)
@@ -33,6 +37,8 @@ Esta carpeta guarda **todo el conocimiento del proyecto**: requisitos, investiga
 | `opt:` | Opción evaluada | `opt:pwa-gemini` (elegida) |
 | `app:` | App existente de referencia | `app:snapcalorie`, `app:cal-ai` |
 | `dec:` | Decisión | `dec:monorepo`, `dec:single-worker` |
+| `doc:` | Documento de /context | `doc:plan` |
+| `ms:` | Milestone de una fase | `ms:m0` … `ms:m6` |
 | `risk:` | Riesgo y su mitigación | `risk:hidden-fats`, `risk:api-key-leak` |
 | `feat:` | Funcionalidad | `feat:photo-logging`, `feat:goal-recommendation` |
 | `ux:` | Regla de experiencia | `ux:three-taps` |
