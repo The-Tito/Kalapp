@@ -13,6 +13,8 @@ export const ApiErrorCodeSchema = z.enum([
   'PROFILE_REQUIRED',
   'CONFLICT',
   'INTERNAL',
+  'NOT_FOOD',
+  'UPSTREAM_UNAVAILABLE',
 ])
 export type ApiErrorCode = z.infer<typeof ApiErrorCodeSchema>
 
@@ -29,6 +31,8 @@ export const API_ERROR_STATUS = {
   PROFILE_REQUIRED: 409,
   CONFLICT: 409,
   INTERNAL: 500,
+  NOT_FOOD: 422,
+  UPSTREAM_UNAVAILABLE: 503,
 } as const satisfies Record<ApiErrorCode, number>
 
 /** Mensaje por defecto (es-MX) por código. */
@@ -36,7 +40,7 @@ export const API_ERROR_MESSAGES = {
   UNAUTHORIZED: 'Token inválido o ausente',
   VALIDATION: 'Los datos enviados no son válidos',
   NOT_FOUND: 'No se encontró el recurso',
-  PAYLOAD_TOO_LARGE: 'La imagen pesa más de 1 MB',
+  PAYLOAD_TOO_LARGE: 'La imagen o los datos son demasiado grandes',
   UNSUPPORTED_MEDIA: 'Formato de archivo no soportado',
   DAILY_LIMIT: 'Llegaste al límite diario de análisis',
   AI_UNAVAILABLE: 'El servicio de IA no está disponible; intenta más tarde',
@@ -44,6 +48,8 @@ export const API_ERROR_MESSAGES = {
   PROFILE_REQUIRED: 'Primero crea tu perfil',
   CONFLICT: 'El recurso ya existe con otros datos',
   INTERNAL: 'Error interno del servidor',
+  NOT_FOOD: 'No se detectó comida; intenta con otra foto o descríbela',
+  UPSTREAM_UNAVAILABLE: 'El servicio externo no responde; intenta más tarde',
 } as const satisfies Record<ApiErrorCode, string>
 
 export const ApiErrorSchema = z.object({
