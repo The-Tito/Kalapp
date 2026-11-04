@@ -204,7 +204,12 @@ export const ENERGY_MISMATCH_MIN_KCAL = 20
 export const WEIGHT_DRIFT_RECALC_KG = 2
 
 /** Gasto adaptativo (calc:adaptive-tdee). */
+/** Ventana por defecto (días) para estimar el gasto adaptativo; API y web la comparten. */
+export const ADAPTIVE_WINDOW_DAYS = 28
+
 export const ADAPTIVE_TDEE = {
+  /** Igual a `ADAPTIVE_WINDOW_DAYS`. */
+  windowDays: ADAPTIVE_WINDOW_DAYS,
   minRangeDays: 14,
   minLoggedRatio: 0.8,
   minWeights: 2,

@@ -58,11 +58,20 @@ export const IsoDateTimeSchema = z.iso.datetime({
 
 export const UuidSchema = z.uuid({ error: 'Identificador inválido (UUID)' })
 
-/** Nombre recortado, no vacío, ≤ 120. */
+/**
+ * `true` si queda algo visible tras quitar caracteres de formato (`\p{Cf}`: U+200B–U+200D,
+ * U+2060, U+FEFF…) y espacios; `trim()` no quita los primeros.
+ */
+export function hasVisibleText(value: string): boolean {
+  return value.replace(/[\p{Cf}\s]/gu, '').length > 0
+}
+
+/** Nombre recortado, no vacío (ni solo caracteres invisibles), ≤ 120. Conserva el texto original. */
 export const NameSchema = z
   .string()
   .trim()
-  .min(1, { error: 'El nombre no puede estar vacío' })
+  .min(1, { error: 'El nombre no puede estar vacío', abort: true })
+  .refine(hasVisibleText, { error: 'El nombre no puede estar vacío' })
   .max(LIMITS.nameMaxLength, { error: `Máximo ${LIMITS.nameMaxLength} caracteres` })
 
 /** Nota recortada ≤ 500 (puede quedar vacía). */
@@ -75,7 +84,8 @@ export const NoteSchema = z
 export const ShortTextSchema = z
   .string()
   .trim()
-  .min(1, { error: 'El texto no puede estar vacío' })
+  .min(1, { error: 'El texto no puede estar vacío', abort: true })
+  .refine(hasVisibleText, { error: 'El texto no puede estar vacío' })
   .max(LIMITS.noteMaxLength, { error: `Máximo ${LIMITS.noteMaxLength} caracteres` })
 
 const rangeNumber = (min: number, max: number, label: string) =>

@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
 html,
 body,
 #root {
@@ -7,7 +12,47 @@ body,
 }
 
 body {
-  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
-    env(safe-area-inset-left);
+  /* La barra inferior fija agrega su propio safe-area-inset-bottom. */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);
   -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+/* iOS hace zoom en campos con letra < 16 px. */
+input,
+select,
+textarea {
+  font-size: max(16px, 1em);
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.bottom-safe {
+  bottom: env(safe-area-inset-bottom);
+}
+
+.top-safe {
+  top: env(safe-area-inset-top);
+}
+
+/* Contenido con la barra inferior fija (alto 3.5rem + botón 📷 que sobresale) + safe area. */
+.pb-nav {
+  padding-bottom: calc(7rem + env(safe-area-inset-bottom));
+}
+
+/* Contenido con una barra de acciones fija abajo (Guardar) + safe area. */
+.pb-actionbar {
+  padding-bottom: calc(7rem + env(safe-area-inset-bottom));
+}
+
+.skeleton {
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes skeleton-pulse {
+  50% {
+    opacity: 0.45;
+  }
 }

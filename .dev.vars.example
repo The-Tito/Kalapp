@@ -1,3 +1,13 @@
 # Copia este archivo como .dev.vars (ignorado por git) y pon valores reales SOLO en tu máquina.
+# En producción se configuran con `wrangler secret put GEMINI_API_KEY` y `wrangler secret put APP_TOKEN`.
+
+# Clave de Google AI Studio (https://aistudio.google.com/apikey).
 GEMINI_API_KEY=pon-aqui-tu-clave-de-google-ai-studio
-APP_TOKEN=un-token-largo-y-aleatorio
+
+# Token personal de la app: mínimo 16 caracteres (si no, la API responde 500 "Servidor sin configurar").
+# Genera uno con: openssl rand -base64 32
+APP_TOKEN=un-token-largo-y-aleatorio-de-al-menos-16-caracteres
+
+# Opcional en local: sobrescribe los modelos de wrangler.jsonc (también los usa test:gemini-live).
+# GEMINI_MODEL=gemini-flash-latest
+# GEMINI_FALLBACK_MODEL=gemini-flash-lite-latest

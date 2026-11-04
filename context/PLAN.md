@@ -1,6 +1,6 @@
 # Kalapp — Plan del proyecto
 
-> Versión 1.1 · 2026-11-04 · Estado: M0 terminado; siguiente M1.  
+> Versión 1.3 · 2026-11-04 · Estado: **v1.0.0 lista en código; pendiente despliegue del usuario.** M0–M1 en `develop`; M2–M5 terminados en `feature/v0.1-api-pwa` (QA adversarial de API y web aprobado tras correcciones, 736 pruebas en verde, e2e con Playwright contra `wrangler dev`); v0.2, v0.3 y v1.0 terminadas en código (web y API); M6 en progreso: D1 de producción creada, falta el despliegue (secretos + Workers Builds), el checklist del iPhone ([`TESTING.md`](./TESTING.md)) y la medición real de precisión.  
 > Fuente de verdad estructurada: [`knowledge-graph.json`](./knowledge-graph.json). Si este plan cambia, actualizar ambos.
 
 ## 1. Visión y alcance
@@ -45,7 +45,7 @@ Kalapp/
 │     └─ src/{index.ts, routes/, middleware/, gemini/, db/}
 ├─ packages/shared/        schemas/ (Zod) · nutrition/ (cálculo) · constants.ts
 ├─ migrations/             0001_init.sql, 0002_…
-├─ context/                knowledge-graph.json · README.md · PLAN.md · DEPLOY.md (M6) · PROMPTS.md · ACCURACY.md
+├─ context/                knowledge-graph.json · README.md · PLAN.md · AGENTS.md · DEPLOY.md · PROMPTS.md · ACCURACY.md · TESTING.md
 ├─ .github/workflows/ci.yml
 ├─ wrangler.jsonc          Worker + assets (SPA, run_worker_first: /api/*) + D1 binding DB + vars
 ├─ biome.json · tsconfig.base.json · package.json · pnpm-workspace.yaml
@@ -61,6 +61,12 @@ Kalapp/
 - `favorites` (v0.2), `weights` (v0.3) — se crean en sus migraciones `0002`, `0003`.
 - `ai_usage`: date, model, calls (PK date+model).
 
+**Columnas reales (v1.2, de `migrations/`):**
+- `0001_init.sql` — `profile` (id = 1) agrega `manual_target_kcal`, `bmr_formula` (mifflin|katch), `adjust_pct`, `expected_kg_per_week`, `safety_floor_applied`, `warnings_json`, `explanation_json`. `entries` agrega `title` y `source` admite `manual`. `entry_items` agrega `position` y `confidence`. `ai_usage` igual (fecha = día de Ciudad de México).
+- `0002_favorites.sql` — `favorites`: id, name, meal_type, items_json, total_kcal/protein/carbs/fat, uses_count, created_at, last_used_at.
+- `0003_weights.sql` — `weights`: id, local_date (UNIQUE: un peso por día), weight_kg, created_at.
+- Se borró la migración placeholder `0000`.
+
 ## 6. Contrato de la API
 Todas bajo `/api`, requieren `Authorization: Bearer <APP_TOKEN>` (comparación en tiempo constante); errores con forma `{ error: { code, message } }`.
 | Endpoint | Fase | Notas |
@@ -74,11 +80,26 @@ Todas bajo `/api`, requieren `Authorization: Bearer <APP_TOKEN>` (comparación e
 | `GET/POST /api/weights` | v0.3 | |
 | `GET /api/export?format=csv|json` | v0.3 | |
 
-**Pipeline de `/analyze`:** validar tamaño/tipo → contar uso del día → prompt (contexto mexicano, gramos por ingrediente, supuestos, preguntas, confianza) + `responseSchema` + `temperature: 0` → Gemini principal; si 429/5xx/timeout (25 s) → respaldo → validar con Zod → recalcular kcal con 4/4/9 y marcar `energy_mismatch` si difiere > 15 % → sumar totales → responder. La versión del prompt se documenta en `context/PROMPTS.md`.
+**Cambios de contrato (v1.2, ya implementados):**
+| Endpoint / regla | Detalle |
+|---|---|
+| `GET /api/usage` | `{ date, calls, limit }` del día (Ciudad de México) |
+| `GET /api/shortcut/today` | Totales de hoy para el Atajo de iOS → Salud (`kcal`, `proteinG`, `carbsG`, `fatG`, `targetKcal`, `remainingKcal`) |
+| `GET /api/barcode/:code` | Open Food Facts (6–14 dígitos, timeout 8 s); 404 si no hay datos; 503 `UPSTREAM_UNAVAILABLE` |
+| `POST /api/favorites/:id/use` · `DELETE /api/weights/:localDate` | Repetir favorito; borrar peso del día |
+| `GET /api/adaptive` | Gasto adaptativo (ventana 28 días); 409 `PROFILE_REQUIRED` |
+| Token | Rutas inexistentes sin token → 401 (no se enumeran); comparación SHA-256 + `timingSafeEqual`; `APP_TOKEN` < 16 caracteres → 500 "Servidor sin configurar" (fail-closed) |
+| Encabezados | `Cache-Control: no-store` y `X-Content-Type-Options: nosniff` en toda `/api` |
+| Cuerpos | JSON ≤ 256 KB; multipart solo en `/api/analyze` (≤ `MAX_IMAGE_BYTES` + 16 KB); firma real JPEG/PNG/WebP o 415 |
+| Códigos nuevos | `NOT_FOOD` 422 (sin comida en foto/texto) · `UPSTREAM_UNAVAILABLE` 503 · `AI_INVALID_RESPONSE` 502 · `AI_UNAVAILABLE` 503 |
+| Endurecimiento (v1.3) | JSON con profundidad > 32 → 400; `DAILY_ANALYZE_LIMIT`/`MAX_IMAGE_BYTES` inválidas → valores por defecto; nombres invisibles rechazados en `NameSchema` de shared; `ADAPTIVE_WINDOW_DAYS` (28) compartido; signo menos tipográfico (−) en explicaciones |
+| Datos | UUID normalizados a minúsculas; `name`/`title` solo con espacios o invisibles → 400; export ≤ 366 días, CSV con BOM + CRLF y neutralización de fórmulas |
+
+**Pipeline de `/analyze` (v1.2):** validar tipo, firma y tamaño (los rechazos no consumen cupo) → **reservar el intento de forma atómica** (límite `DAILY_ANALYZE_LIMIT`, día de Ciudad de México; principal + respaldo = 1) → prompt v1 (contexto mexicano, gramos por ingrediente, supuestos, preguntas, confianza, `not_food`) + `responseSchema` + `temperature: 0` → Gemini principal; si **429/5xx/404/timeout (25 s)/error de red/respuesta inválida** → respaldo una vez; **400/401/403 → 503 directo** → validar con Zod → recalcular kcal con 4/4/9 y marcar `energy_mismatch` si difiere > 15 % → sumar totales → responder (`not_food` → 422). Detalle y versiones en `context/PROMPTS.md`.
 
 ## 7. Paquete compartido (`packages/shared`)
 - `schemas/`: `ProfileInput`, `Profile`, `Recommendation`, `AnalysisProposal`, `EntryInput`, `Entry`, `EntryItem`, `Favorite`, `Weight`.
-- `nutrition/`: `bmr()` (Mifflin; Katch si hay % grasa) · `tdee()` · `recommend(input)` → `{ bmr, tdee, targetKcal, proteinG, fatG, carbsG, expectedKgPerWeek, warnings[], explanation }` aplicando: ajuste por objetivo/intensidad, redondeo a 50, piso de seguridad (1,500 H / 1,200 M y ≥ BMR), proteína con peso ajustado si IMC > 30 (peso a IMC 25), grasa 25 % con mínimo 0.6 g/kg, carbohidratos = resto, avisos (recomp sin pesas, ganancia con grasa alta).
+- `nutrition/`: `bmr()` (Mifflin; Katch si hay % grasa) · `tdee()` · `recommend(input)` → `{ bmr, tdee, targetKcal, proteinG, fatG, carbsG, expectedKgPerWeek, warnings[], explanation }` aplicando: ajuste por objetivo/intensidad, redondeo a 50, piso de seguridad (1,500 H / 1,200 M y ≥ BMR), proteína con peso ajustado si IMC > 30 (peso a IMC 25), grasa 25 % con mínimo 0.6 g/kg **sobre el peso real**, carbohidratos = resto **redondeado hacia abajo** (0 g con aviso `CARBS_CLAMPED` si es negativo), avisos (recomp sin pesas, ganancia con grasa alta, `DEFICIT_NOT_POSSIBLE` si el piso impide el déficit). El gasto adaptativo marca `IMPLAUSIBLE_RESULT` fuera de 800–6,000 kcal.
 - `constants.ts`: factores de actividad, objetivos e intensidades (los del KG).
 
 ## 8. Pantallas
@@ -94,6 +115,18 @@ Todas bajo `/api`, requieren `Authorization: Bearer <APP_TOKEN>` (comparación e
 | Favoritos / Texto | v0.2 | Repetir en un toque; registrar escribiendo |
 | Peso | v0.3 | Registro y gráfica; sugerencia de gasto adaptativo |
 
+**Decisiones de la web (v1.3, implementadas):**
+| Tema | Decisión |
+|---|---|
+| Navegación | Barra de 5: Hoy · Historial · 📷 · Peso · Ajustes; se oculta en Revisar y en editar perfil |
+| Revisar | Densidad por gramo guardada del ítem base: poner 0 g no destruye los datos |
+| Cola offline | Dexie `kalapp-offline` para fotos, textos y comidas; máx. 20; backoff 30 s → 30 min; 5 intentos que solo cuentan fallas con respuesta del servidor; 401 pausa la cola; 429 reintenta |
+| Robustez | Favoritos validados por elemento; token con trim y validación de header; `zonedIso` seguro ante cambios de horario |
+| Rendimiento | Carga perezosa de Historial, Peso y Código de barras |
+| Export | `navigator.share({ files })` (Archivos/Numbers) o descarga |
+| Atajo de iOS | Token enmascarado (se ve ≤ 1/4 y ≤ 4 caracteres) |
+| Cabeceras (`apps/web/public/_headers`) | CSP sin `unsafe-eval`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, `Permissions-Policy: camera=(self)`, `no-cache` en HTML y SW, assets `immutable` |
+
 ## 9. Roadmap y milestones
 ### v0.1 — MVP (meta: ~1 semana; ya se usa a diario)
 | # | Milestone | Entregables | Criterio de aceptación |
@@ -106,20 +139,23 @@ Todas bajo `/api`, requieren `Authorization: Bearer <APP_TOKEN>` (comparación e
 | M5 | Registro y Hoy | `/entries`, Guardar desde Revisar, panel Hoy, editar/borrar | Flujo foto→guardar en ≤ 3 toques; totales del día correctos |
 | M6 | Despliegue + QA | `context/DEPLOY.md`, primer deploy, checklist iPhone, línea base de precisión en `context/ACCURACY.md` | App en producción usada un día completo; error medio medido con ~20 fotos |
 
-### v0.2 — Rapidez y tendencias
+**Estado (2026-11-04, v1.3):** M0 y M1 terminados (en `develop`) · M2, M3, M4, M5: **terminados** en `feature/v0.1-api-pwa` (QA final aprobado; verificación en iPhone real pendiente, ver `TESTING.md`) · M6: en progreso — D1 `kalapp-db` creada (WNAM, id en `wrangler.jsonc`); faltan secretos, Workers Builds, la prueba real de Gemini y la línea base de precisión.
+
+### v0.2 — Rapidez y tendencias (terminada en código)
 Registro por texto · favoritos/repetir (migración `0002`) · historial con promedio semanal (`/summary`). **Aceptación:** repetir una comida en 1 toque; semana visible con promedio.
 
-### v0.3 — Corrección de errores
+### v0.3 — Corrección de errores (terminada en código)
 Peso (migración `0003`) · gasto adaptativo (tras ≥ 14 días con ≥ 80 % de días registrados: gasto real ≈ ingesta media − (Δpeso_tendencia × 7,700 / días); propone nueva meta, nunca la cambia sola) · cola sin internet (Dexie, reintento al volver la red, idempotente por id) · exportar CSV/JSON · aviso de nueva versión. **Aceptación:** foto sin red se analiza sola al reconectar; export abre en Numbers.
 
-### v1.0 — Completa
+### v1.0 — Completa (terminada en código)
 Código de barras (zxing + Open Food Facts) · Atajo de iOS (registro con Siri y totales a Apple Salud vía endpoint) · recordatorios (push web iOS 16.4+ o automatización de Atajos). **Aceptación:** producto empacado registrado por código; totales del día aparecen en Salud.
 
 ## 10. Estrategia de pruebas
 - **Unitarias (shared):** todo el cálculo nutricional, esquemas.
 - **API:** rutas con D1 local y `fetch` de Gemini simulado; nunca se llama a Gemini real en CI.
 - **Web:** utilidades (compresión, cálculo de totales, multiplicador); el resto con checklist manual.
-- **Checklist iPhone (cada release):** instalar, cámara, foto HEIC, sin red, token inválido, nueva versión, modo oscuro.
+- **Adversariales y e2e:** suites `*.adversarial.test.ts(x)` en API y web; e2e con Playwright (iPhone 13 emulado) contra `wrangler dev`. Total actual: 736 pruebas (shared 177, api 261, web 298).
+- **Checklist iPhone (cada release):** lista completa en [`TESTING.md`](./TESTING.md).
 - **Precisión de IA:** set de ~20 fotos con calorías conocidas; meta error medio < ±25 %; resultados y versión de prompt en `context/ACCURACY.md`.
 
 ## 11. Despliegue y entornos
@@ -127,8 +163,8 @@ Código de barras (zxing + Open Food Facts) · Atajo de iOS (registro con Siri y
 |---|---|---|
 | Local | `pnpm dev` | D1 local (`--local`) |
 | Vista previa | Cada rama → URL de Workers Builds | D1 de producción (solo uso personal; se acepta) |
-| Producción | Merge a `main` → Workers Builds: `pnpm install && pnpm build` → `wrangler d1 migrations apply kalapp-db --remote && wrangler deploy` | D1 `kalapp-db` |
-Pasos únicos que hace el usuario (detallados en `DEPLOY.md`): `wrangler login`, `wrangler d1 create kalapp-db` (pegar el id en `wrangler.jsonc`), `wrangler secret put GEMINI_API_KEY`, `wrangler secret put APP_TOKEN`, conectar el repo en Workers Builds, instalar en el iPhone.
+| Producción | Merge a `main` → Workers Builds: build `pnpm install --frozen-lockfile && pnpm build` → deploy `pnpm db:migrate:remote && npx wrangler deploy` | D1 `kalapp-db` |
+Pasos únicos que hace el usuario (detallados en [`DEPLOY.md`](./DEPLOY.md); despliegue manual: `pnpm deploy:manual`, no `pnpm deploy`, que es un comando interno de pnpm): `wrangler login`, ~~`wrangler d1 create kalapp-db`~~ (hecho el 2026-11-04; las migraciones se aplican en el deploy), `wrangler secret put GEMINI_API_KEY`, `wrangler secret put APP_TOKEN`, conectar el repo en Workers Builds, instalar en el iPhone.
 
 ## 12. Flujo de trabajo
 - **Gitflow** (detalle en `CLAUDE.md`): `feature/<milestone>-<slug>` desde `develop` → merge `--no-ff` a `develop` tras QA; cada fase cierra con `release/X.Y.Z` → `main` (solo con aprobación del usuario = despliegue) y tag `vX.Y.Z`; `hotfix/*` desde `main`.
@@ -146,6 +182,20 @@ Pasos únicos que hace el usuario (detallados en `DEPLOY.md`): `wrangler login`,
 | Gastar tiempo en despliegue | `DEPLOY.md` paso a paso y `/api/health` para verificar |
 
 ## 14. Pendientes del usuario
-1. Generar la clave de Gemini en AI Studio (no pegarla en el chat).
+1. Generar la clave de Gemini en AI Studio (no pegarla en el chat). *Estado:* el usuario la agregó como variable de entorno de la sesión en la nube, pero no estuvo disponible en la sesión del 2026-11-04; falta subirla con `wrangler secret put` y correr `pnpm test:gemini-live`.
 2. Tener `wrangler` disponible (`npx wrangler login`) para los pasos únicos de M6.
 3. Confirmar el nombre final (por defecto "Kalapp").
+4. ~~Crear la D1 y poner el `database_id` real en `wrangler.jsonc`~~ — hecho el 2026-11-04 (`kalapp-db`, WNAM).
+5. Armar el set de ~20 fotos y registrar la línea base en [`ACCURACY.md`](./ACCURACY.md).
+6. Subir secretos y conectar Workers Builds ([`DEPLOY.md`](./DEPLOY.md) §4–5); luego la "Primera prueba real" (§9b) y el checklist de [`TESTING.md`](./TESTING.md).
+
+## 15. Riesgos residuales (v1.3)
+| Riesgo | Estado |
+|---|---|
+| Precisión real de Gemini sin medir (sin clave en la sesión) | Abierto: `pnpm test:gemini-live` + set de `ACCURACY.md` |
+| Instrucciones del Atajo sin verificar en iPhone real | Abierto: checklist de `TESTING.md` |
+| Escaneo en vivo con zxing sin verificar en iOS | Abierto: checklist; queda la captura manual |
+| Cambio de horario de Chile sin verificar en dispositivo | Abierto (baja) |
+| `parseNumber` marca inválido "60." mientras se escribe | Cosmético |
+
+Nota de historial: el commit `c933e18` ("test(web): add adversarial test suite") incluye también las correcciones de la web de esa ronda; no se dividió para no reescribir historia publicada.

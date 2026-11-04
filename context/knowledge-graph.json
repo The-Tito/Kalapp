@@ -6,8 +6,8 @@
     "language": "es-MX",
     "created_at": "2026-11-04",
     "updated_at": "2026-11-04",
-    "status": "M0 terminado e integrado en develop; siguiente: M1",
-    "git_branch": "claude/eager-cori-r3qu9s",
+    "status": "v1.0.0 lista en código; pendiente despliegue del usuario",
+    "git_branch": "feature/v0.1-api-pwa",
     "conventions": {
       "node_id_format": "<prefijo>:<slug>  (ej. feat:photo-logging)",
       "prefixes": {
@@ -45,7 +45,8 @@
       },
       "edge_format": "{ source, type, target, note? }",
       "how_to_update": "Agregar nodos nuevos sin borrar los anteriores; si algo se reemplaza, marcar el nodo viejo con status='superseded' y crear una arista SUPERSEDED_BY hacia el nuevo. Actualizar metadata.updated_at y añadir una entrada en changelog."
-    }
+    },
+    "previous_status": "M0–M1 en develop; M2–M5 terminados en código en feature/v0.1-api-pwa (QA API aprobado, QA web pendiente); M6 en progreso"
   },
   "nodes": [
     {
@@ -752,7 +753,8 @@
         ],
         "editable_later": "Desde Ajustes; recálculo instantáneo",
         "recalc_prompt": "Si un peso registrado difiere más de 2 kg del perfil, sugiere recalcular",
-        "manual_override": true
+        "manual_override": true,
+        "status": "implementado en código"
       }
     },
     {
@@ -775,7 +777,8 @@
           "cambio de peso esperado",
           "avisos"
         ],
-        "transparency": "Muestra cómo llegó a cada número; no es caja negra."
+        "transparency": "Muestra cómo llegó a cada número; no es caja negra.",
+        "status": "implementado en código"
       }
     },
     {
@@ -792,7 +795,8 @@
           "carbohidratos",
           "grasa",
           "confianza (alta/media/baja)"
-        ]
+        ],
+        "status": "implementado en código"
       }
     },
     {
@@ -805,7 +809,8 @@
           "quitar/añadir ingredientes",
           "multiplicar porción (½×, 1×, 1.5×, 2×)"
         ],
-        "auto_recalc": true
+        "auto_recalc": true,
+        "status": "implementado en código"
       }
     },
     {
@@ -819,7 +824,8 @@
           "cena",
           "snack"
         ],
-        "auto_suggest": "Según la hora"
+        "auto_suggest": "Según la hora",
+        "status": "implementado en código"
       }
     },
     {
@@ -831,7 +837,8 @@
           "anillo de calorías consumidas vs meta",
           "barras de proteína/carbohidratos/grasa",
           "lista de comidas"
-        ]
+        ],
+        "status": "implementado en código"
       }
     },
     {
@@ -839,7 +846,8 @@
       "type": "Feature",
       "label": "Token personal",
       "properties": {
-        "detail": "Se captura una vez en la app y se envía como Authorization: Bearer."
+        "detail": "Se captura una vez en la app y se envía como Authorization: Bearer.",
+        "status": "implementado en código"
       }
     },
     {
@@ -847,7 +855,8 @@
       "type": "Feature",
       "label": "Registro por texto",
       "properties": {
-        "example": "\"2 tacos al pastor y una coca de 355\" se analiza sin foto."
+        "example": "\"2 tacos al pastor y una coca de 355\" se analiza sin foto.",
+        "status": "implementado en código"
       }
     },
     {
@@ -855,7 +864,8 @@
       "type": "Feature",
       "label": "Favoritos y repetir comida",
       "properties": {
-        "benefit": "Registro en un toque y consistencia."
+        "benefit": "Registro en un toque y consistencia.",
+        "status": "implementado en código"
       }
     },
     {
@@ -863,7 +873,8 @@
       "type": "Feature",
       "label": "Historial con promedio semanal",
       "properties": {
-        "detail": "Calendario; en un déficit importa más el promedio semanal que un día malo."
+        "detail": "Calendario; en un déficit importa más el promedio semanal que un día malo.",
+        "status": "implementado en código"
       }
     },
     {
@@ -872,7 +883,8 @@
       "label": "Registro de peso y gasto adaptativo",
       "properties": {
         "detail": "Tras 2–3 semanas compara ingesta vs cambio de peso para estimar el gasto real y proponer ajuste.",
-        "uses": "calc:adaptive-tdee"
+        "uses": "calc:adaptive-tdee",
+        "status": "implementado en código"
       }
     },
     {
@@ -880,7 +892,8 @@
       "type": "Feature",
       "label": "Cola sin internet",
       "properties": {
-        "storage": "IndexedDB (Dexie)"
+        "storage": "IndexedDB (Dexie)",
+        "status": "implementado en código"
       }
     },
     {
@@ -891,7 +904,8 @@
         "formats": [
           "CSV",
           "JSON"
-        ]
+        ],
+        "status": "implementado en código"
       }
     },
     {
@@ -901,7 +915,8 @@
       "properties": {
         "data_source": "Open Food Facts (gratis)",
         "library": "zxing",
-        "benefit": "Productos empacados: más exactos que una foto."
+        "benefit": "Productos empacados: más exactos que una foto.",
+        "status": "implementado en código"
       }
     },
     {
@@ -909,7 +924,8 @@
       "type": "Feature",
       "label": "Atajo de iOS → Apple Salud y Siri",
       "properties": {
-        "detail": "Envía totales del día a Salud y permite registrar con Siri."
+        "detail": "Envía totales del día a Salud y permite registrar con Siri.",
+        "status": "implementado en código"
       }
     },
     {
@@ -917,7 +933,8 @@
       "type": "Feature",
       "label": "Recordatorios",
       "properties": {
-        "constraint": "Push web solo iOS 16.4+ instalada; alternativa Atajos."
+        "constraint": "Push web solo iOS 16.4+ instalada; alternativa Atajos.",
+        "status": "implementado como automatización de Atajos (instrucciones en Ajustes → Atajo de iOS); sin push web"
       }
     },
     {
@@ -925,7 +942,8 @@
       "type": "Feature",
       "label": "Aviso de nueva versión",
       "properties": {
-        "detail": "Mitiga service worker desactualizado."
+        "detail": "Mitiga service worker desactualizado.",
+        "status": "implementado en código"
       }
     },
     {
@@ -937,7 +955,8 @@
           "frito",
           "con aceite",
           "con crema"
-        ]
+        ],
+        "status": "implementado en código"
       }
     },
     {
@@ -977,7 +996,9 @@
           "Panel del día",
           "Servidor con Gemini y token",
           "Guía de despliegue"
-        ]
+        ],
+        "status": "terminado en código (web y API); falta despliegue (ms:m6)",
+        "previous_status": "en progreso: M0–M1 integrados en develop; M2–M5 terminados en código; M6 en progreso"
       }
     },
     {
@@ -986,7 +1007,11 @@
       "label": "v0.2",
       "properties": {
         "order": 2,
-        "outcome": "Registrar más rápido y ver tendencias"
+        "outcome": "Registrar más rápido y ver tendencias",
+        "status": "terminado en código (web y API)",
+        "completed_at": "2026-11-04",
+        "branch": "feature/v0.1-api-pwa",
+        "previous_api_status": "API implementada en feature/v0.1-api-pwa (adelantada); la UI sigue el roadmap"
       }
     },
     {
@@ -995,7 +1020,11 @@
       "label": "v0.3",
       "properties": {
         "order": 3,
-        "outcome": "Corrige los errores de la IA"
+        "outcome": "Corrige los errores de la IA",
+        "status": "terminado en código (web y API)",
+        "completed_at": "2026-11-04",
+        "branch": "feature/v0.1-api-pwa",
+        "previous_api_status": "API implementada en feature/v0.1-api-pwa (adelantada); la UI sigue el roadmap"
       }
     },
     {
@@ -1004,7 +1033,11 @@
       "label": "v1.0",
       "properties": {
         "order": 4,
-        "outcome": "App completa"
+        "outcome": "App completa",
+        "status": "terminado en código (web y API)",
+        "completed_at": "2026-11-04",
+        "branch": "feature/v0.1-api-pwa",
+        "previous_api_status": "API implementada en feature/v0.1-api-pwa (adelantada); la UI sigue el roadmap"
       }
     },
     {
@@ -1263,7 +1296,11 @@
       "properties": {
         "order": 2,
         "command": "wrangler d1 create kalapp-db",
-        "then": "Aplicar migraciones (migrations/)"
+        "then": "Aplicar migraciones (migrations/)",
+        "status": "completado",
+        "completed_at": "2026-11-04",
+        "result": "kalapp-db creada en WNAM; database_id bb8a8875-29b3-4197-ad2b-0c74ffaf9806 en wrangler.jsonc (commit 160feb4)",
+        "remaining": "Aplicar migraciones remotas: lo hace el deploy command de Workers Builds (pnpm db:migrate:remote)"
       }
     },
     {
@@ -1434,11 +1471,25 @@
         "persists": false,
         "errors": [
           "401 sin token",
+          "400 VALIDATION",
+          "413 imagen > MAX_IMAGE_BYTES",
+          "415 formato/firma no soportados",
+          "422 NOT_FOOD",
+          "429 DAILY_LIMIT",
+          "500 servidor sin configurar",
+          "502 AI_INVALID_RESPONSE",
+          "503 AI_UNAVAILABLE"
+        ],
+        "auth": true,
+        "errors_v1": [
+          "401 sin token",
           "413 imagen > 1 MB",
           "429 DAILY_LIMIT",
           "502 respuesta de IA inválida"
         ],
-        "auth": true
+        "input_v2": "multipart (image, note, localHour 0–23) o JSON (text, note, localHour)",
+        "prompt_version": "1",
+        "implemented": true
       }
     },
     {
@@ -1446,7 +1497,14 @@
       "type": "Endpoint",
       "label": "GET/POST/PATCH/DELETE /api/entries?date=",
       "properties": {
-        "purpose": "Comidas del día"
+        "purpose": "Comidas del día",
+        "methods": [
+          "GET ?date=",
+          "POST (idempotente por id: 201/200)",
+          "PATCH /:id",
+          "DELETE /:id"
+        ],
+        "implemented": true
       }
     },
     {
@@ -1454,7 +1512,11 @@
       "type": "Endpoint",
       "label": "GET /api/summary?from=&to=",
       "properties": {
-        "purpose": "Totales por día y promedios"
+        "purpose": "Totales por día y promedios",
+        "methods": [
+          "GET ?from=&to= (máx. 366 días)"
+        ],
+        "implemented": true
       }
     },
     {
@@ -1462,7 +1524,13 @@
       "type": "Endpoint",
       "label": "GET/POST /api/weights",
       "properties": {
-        "purpose": "Registro de peso"
+        "purpose": "Registro de peso",
+        "methods": [
+          "GET",
+          "POST (upsert por local_date)",
+          "DELETE /:localDate"
+        ],
+        "implemented": true
       }
     },
     {
@@ -1470,7 +1538,13 @@
       "type": "Endpoint",
       "label": "GET/POST/DELETE /api/favorites",
       "properties": {
-        "purpose": "Comidas favoritas"
+        "purpose": "Comidas favoritas",
+        "methods": [
+          "GET",
+          "POST (idempotente por id)",
+          "DELETE /:id"
+        ],
+        "implemented": true
       }
     },
     {
@@ -1478,7 +1552,12 @@
       "type": "Endpoint",
       "label": "GET/PUT /api/profile",
       "properties": {
-        "purpose": "Perfil y metas; el servidor revalida el cálculo"
+        "purpose": "Perfil y metas; el servidor revalida el cálculo",
+        "methods": [
+          "GET",
+          "PUT"
+        ],
+        "implemented": true
       }
     },
     {
@@ -1486,7 +1565,12 @@
       "type": "Endpoint",
       "label": "GET /api/export",
       "properties": {
-        "purpose": "Respaldo CSV/JSON"
+        "purpose": "Respaldo CSV/JSON",
+        "methods": [
+          "GET ?format=csv|json&from=&to="
+        ],
+        "implemented": true,
+        "rules": "dec:export-format"
       }
     },
     {
@@ -1495,6 +1579,37 @@
       "label": "profile",
       "properties": {
         "columns": {
+          "id": "INTEGER PK CHECK (id = 1)",
+          "sex": "TEXT male|female",
+          "birth_date": "TEXT",
+          "height_cm": "REAL",
+          "weight_kg": "REAL",
+          "body_fat_pct": "REAL NULL",
+          "activity_level": "TEXT sedentary|light|moderate|active|very_active",
+          "training_days": "INTEGER 0–7",
+          "goal": "TEXT deficit|recomp|gain",
+          "intensity": "TEXT mild|moderate|aggressive",
+          "timezone": "TEXT DEFAULT America/Mexico_City",
+          "manual_target_kcal": "INTEGER NULL",
+          "bmr": "INTEGER",
+          "tdee": "INTEGER",
+          "bmr_formula": "TEXT mifflin|katch",
+          "adjust_pct": "REAL",
+          "target_kcal": "INTEGER",
+          "protein_g": "INTEGER",
+          "fat_g": "INTEGER",
+          "carbs_g": "INTEGER",
+          "expected_kg_per_week": "REAL",
+          "safety_floor_applied": "INTEGER 0|1",
+          "is_manual_override": "INTEGER 0|1",
+          "warnings_json": "TEXT DEFAULT '[]'",
+          "explanation_json": "TEXT DEFAULT '[]'",
+          "updated_at": "TEXT"
+        },
+        "superseded_version": "Versión inicial: (id, sex, birth_year, height_cm, activity, goal_kcal, goal_protein_g, goal_carbs_g, goal_fat_g, deficit_kcal)",
+        "change_note": "2026-11-04: se agrega timezone.",
+        "migration": "0001_init.sql (v0.1)",
+        "planned_columns_v1_1": {
           "id": "PK",
           "sex": "male|female (necesario para la fórmula)",
           "birth_date": "fecha",
@@ -1515,9 +1630,7 @@
           "updated_at": "timestamp",
           "timezone": "IANA, por defecto America/Mexico_City"
         },
-        "superseded_version": "Versión inicial: (id, sex, birth_year, height_cm, activity, goal_kcal, goal_protein_g, goal_carbs_g, goal_fat_g, deficit_kcal)",
-        "change_note": "2026-11-04: se agrega timezone.",
-        "migration": "0001_init.sql (v0.1)"
+        "columns_from": "migraciones reales 2026-11-04"
       }
     },
     {
@@ -1526,6 +1639,27 @@
       "label": "entries",
       "properties": {
         "columns": {
+          "id": "TEXT PK (UUID del cliente, minúsculas)",
+          "local_date": "TEXT YYYY-MM-DD (índice idx_entries_local_date)",
+          "eaten_at": "TEXT ISO",
+          "meal_type": "TEXT breakfast|lunch|dinner|snack",
+          "source": "TEXT photo|text|favorite|barcode|manual",
+          "title": "TEXT NULL",
+          "note": "TEXT NULL",
+          "total_kcal": "REAL DEFAULT 0",
+          "total_protein_g": "REAL DEFAULT 0",
+          "total_carbs_g": "REAL DEFAULT 0",
+          "total_fat_g": "REAL DEFAULT 0",
+          "ai_model": "TEXT NULL",
+          "ai_confidence": "TEXT high|medium|low NULL",
+          "created_at": "TEXT"
+        },
+        "indexes": [
+          "local_date"
+        ],
+        "change_note": "2026-11-04: se agrega local_date y el id pasa a generarse en el cliente (dec:local-date, dec:client-uuid).",
+        "migration": "0001_init.sql (v0.1)",
+        "planned_columns_v1_1": {
           "id": "UUID generado en el cliente (PK)",
           "local_date": "YYYY-MM-DD en la zona del usuario (indexada)",
           "eaten_at": "timestamp",
@@ -1540,11 +1674,7 @@
           "ai_confidence": "high|medium|low",
           "created_at": "timestamp"
         },
-        "indexes": [
-          "local_date"
-        ],
-        "change_note": "2026-11-04: se agrega local_date y el id pasa a generarse en el cliente (dec:local-date, dec:client-uuid).",
-        "migration": "0001_init.sql (v0.1)"
+        "columns_from": "migraciones reales 2026-11-04"
       }
     },
     {
@@ -1553,6 +1683,19 @@
       "label": "entry_items",
       "properties": {
         "columns": {
+          "id": "INTEGER PK",
+          "entry_id": "TEXT FK → entries.id ON DELETE CASCADE",
+          "position": "INTEGER (orden)",
+          "name": "TEXT",
+          "grams": "REAL",
+          "kcal": "REAL",
+          "protein_g": "REAL",
+          "carbs_g": "REAL",
+          "fat_g": "REAL",
+          "confidence": "TEXT high|medium|low NULL"
+        },
+        "migration": "0001_init.sql (v0.1)",
+        "planned_columns_v1_1": {
           "id": "PK",
           "entry_id": "FK → entries.id (ON DELETE CASCADE)",
           "name": "texto",
@@ -1562,7 +1705,10 @@
           "carbs_g": "número",
           "fat_g": "número"
         },
-        "migration": "0001_init.sql (v0.1)"
+        "indexes": [
+          "idx_entry_items_entry (entry_id, position)"
+        ],
+        "columns_from": "migraciones reales 2026-11-04"
       }
     },
     {
@@ -1571,13 +1717,27 @@
       "label": "favorites",
       "properties": {
         "columns": {
+          "id": "TEXT PK (UUID)",
+          "name": "TEXT",
+          "meal_type": "TEXT breakfast|lunch|dinner|snack NULL",
+          "items_json": "TEXT (EntryItemInput[])",
+          "total_kcal": "REAL",
+          "total_protein_g": "REAL",
+          "total_carbs_g": "REAL",
+          "total_fat_g": "REAL",
+          "uses_count": "INTEGER DEFAULT 0",
+          "created_at": "TEXT",
+          "last_used_at": "TEXT NULL"
+        },
+        "migration": "0002_favorites.sql (v0.2)",
+        "planned_columns_v1_1": {
           "id": "PK",
           "name": "texto",
           "items_json": "JSON",
           "total_kcal": "número",
           "uses_count": "entero"
         },
-        "migration": "0002 (v0.2)"
+        "columns_from": "migraciones reales 2026-11-04"
       }
     },
     {
@@ -1586,11 +1746,18 @@
       "label": "weights",
       "properties": {
         "columns": {
+          "id": "TEXT PK",
+          "local_date": "TEXT UNIQUE (un peso por día; upsert)",
+          "weight_kg": "REAL",
+          "created_at": "TEXT"
+        },
+        "migration": "0003_weights.sql (v0.3)",
+        "planned_columns_v1_1": {
           "id": "PK",
           "date": "fecha",
           "weight_kg": "número"
         },
-        "migration": "0003 (v0.3)"
+        "columns_from": "migraciones reales 2026-11-04"
       }
     },
     {
@@ -1599,16 +1766,18 @@
       "label": "ai_usage",
       "properties": {
         "columns": {
-          "date": "fecha",
-          "calls": "entero",
-          "model": "texto"
+          "date": "TEXT (día de America/Mexico_City)",
+          "model": "TEXT (modelo principal)",
+          "calls": "INTEGER DEFAULT 0"
         },
         "purpose": "Límite de uso y ver consumo",
         "primary_key": [
           "date",
           "model"
         ],
-        "migration": "0001_init.sql (v0.1)"
+        "migration": "0001_init.sql (v0.1)",
+        "columns_from": "migraciones reales 2026-11-04",
+        "reservation": "dec:usage-atomic-reservation"
       }
     },
     {
@@ -2010,7 +2179,10 @@
       "properties": {
         "method": "Set de ~20 fotos con calorías conocidas (etiquetas o porciones pesadas en báscula)",
         "target": "Error promedio < ±25 %",
-        "action": "Ajustar el prompt"
+        "action": "Ajustar el prompt",
+        "formula": "MAPE = (1/n) Σ |estimado − real| / real × 100; también sesgo con signo",
+        "status": "sin mediciones reales todavía",
+        "documented_in": "context/ACCURACY.md"
       }
     },
     {
@@ -2042,7 +2214,10 @@
       "type": "Task",
       "label": "Arrancar v0.1",
       "properties": {
-        "status": "plan aprobado; siguiente paso M0"
+        "status": "cerrado",
+        "previous_status": "en curso: M0–M1 en develop; M2–M5 en código en feature/v0.1-api-pwa",
+        "closed_at": "2026-11-04",
+        "resolution": "v0.1–v1.0 terminadas en código en feature/v0.1-api-pwa; el despliegue queda en task:user-deploy"
       }
     },
     {
@@ -2051,7 +2226,8 @@
       "label": "Generar clave de Gemini y guardarla como secreto",
       "properties": {
         "owner": "Usuario",
-        "status": "pendiente"
+        "status": "en progreso",
+        "note": "El usuario agregó GEMINI_API_KEY como variable de entorno de la sesión en la nube; no estuvo disponible en la sesión de desarrollo del 2026-11-04. Falta subirla con wrangler secret put."
       }
     },
     {
@@ -2060,7 +2236,9 @@
       "label": "Escribir guía de despliegue paso a paso",
       "properties": {
         "owner": "Claude",
-        "status": "pendiente (parte de v0.1)"
+        "status": "cerrado",
+        "closed_at": "2026-11-04",
+        "resolution": "context/DEPLOY.md creado"
       }
     },
     {
@@ -2157,7 +2335,7 @@
       "label": "Plan del proyecto",
       "properties": {
         "path": "context/PLAN.md",
-        "version": "1.0",
+        "version": "1.3",
         "date": "2026-11-04",
         "sections": [
           "Visión y alcance",
@@ -2174,7 +2352,8 @@
           "Flujo de trabajo",
           "Riesgos del plan",
           "Pendientes del usuario"
-        ]
+        ],
+        "updated_at": "2026-11-04"
       }
     },
     {
@@ -2182,7 +2361,8 @@
       "type": "Document",
       "label": "README de /context",
       "properties": {
-        "path": "context/README.md"
+        "path": "context/README.md",
+        "updated_at": "2026-11-04"
       }
     },
     {
@@ -2191,7 +2371,10 @@
       "label": "Guía de despliegue",
       "properties": {
         "path": "context/DEPLOY.md",
-        "status": "por crear en M6"
+        "status": "creado",
+        "version": "1.1",
+        "date": "2026-11-04",
+        "updated_at": "2026-11-04"
       }
     },
     {
@@ -2200,7 +2383,10 @@
       "label": "Versiones del prompt de Gemini",
       "properties": {
         "path": "context/PROMPTS.md",
-        "status": "por crear en M4"
+        "status": "creado",
+        "version": "1.0",
+        "date": "2026-11-04",
+        "prompt_version": "1"
       }
     },
     {
@@ -2209,7 +2395,10 @@
       "label": "Resultados de precisión de la IA",
       "properties": {
         "path": "context/ACCURACY.md",
-        "status": "por crear en M6"
+        "status": "creado (protocolo; sin mediciones)",
+        "version": "1.1",
+        "date": "2026-11-04",
+        "updated_at": "2026-11-04"
       }
     },
     {
@@ -2254,7 +2443,19 @@
           "packages/shared completo (schemas, nutrition, constants)"
         ],
         "acceptance": "Pruebas reproducen el ejemplo de referencia (2,200/176/61/236 · 2,600/160/72/327 · 3,000/144/83/418) y casos de piso, Katch, IMC > 30 y avisos",
-        "status": "pendiente"
+        "status": "terminado",
+        "completed_at": "2026-11-04",
+        "branch": "feature/m1-nutrition-contract",
+        "merged_into": "develop (6ae963d)",
+        "qa": "APROBADO por qa-reviewer",
+        "commits": [
+          "b6d0fc3 feat(shared): add domain constants, date and format utilities",
+          "719e7e4 feat(shared): add Zod contract for the full roadmap",
+          "fde0173 feat(shared): add nutrition calculation (recommend, items, adaptive TDEE)",
+          "eede31a chore: add runtime and test dependencies for API and PWA",
+          "ce75340 fix(shared): harden calculation against impossible inputs"
+        ],
+        "follow_up": "feature/fix-vitest-instance (8924605, merge 292f180): jsdom en la raíz para una sola instancia de Vitest"
       }
     },
     {
@@ -2271,7 +2472,22 @@
           "/api/profile"
         ],
         "acceptance": "Pruebas con D1 local: 401 sin token; PUT recalcula y persiste",
-        "status": "pendiente"
+        "status": "terminado",
+        "branch": "feature/v0.1-api-pwa",
+        "qa": "QA final APROBADO: QA adversarial de API (13 hallazgos, corregidos) y de web (15 bugs, corregidos); suite total 736 pruebas en verde; e2e Playwright contra wrangler dev real",
+        "commits": [
+          "cb22eff feat(db): add D1 schema migrations (profile, entries, favorites, weights)",
+          "d36d36a feat(api): implement full REST API on the Worker",
+          "9de7212 fix(api): harden API after adversarial QA",
+          "e2532d1 test(api): add adversarial test suite (auth, SQLi, limits, Gemini failures, contract)",
+          "a2bacb7 fix(api): reject deeply nested JSON with 400 instead of crashing",
+          "abff913 refactor(api): use shared ADAPTIVE_WINDOW_DAYS",
+          "160feb4 chore: point wrangler.jsonc at the production D1 database"
+        ],
+        "previous_status": "terminado en código",
+        "completed_at": "2026-11-04",
+        "qa_history": "QA de API APROBADO tras correcciones (commit 9de7212 fix(api): harden API after adversarial QA; suite adversarial e2532d1)",
+        "previous_pending": "Merge a develop tras QA completo de la rama"
       }
     },
     {
@@ -2288,7 +2504,22 @@
           "Ajustes"
         ],
         "acceptance": "En iPhone: se agrega a inicio, abre a pantalla completa, crea perfil y muestra recomendación",
-        "status": "pendiente"
+        "status": "terminado",
+        "branch": "feature/v0.1-api-pwa",
+        "qa": "QA final APROBADO: QA adversarial de API (13 hallazgos, corregidos) y de web (15 bugs, corregidos); suite total 736 pruebas en verde; e2e Playwright contra wrangler dev real",
+        "commits": [
+          "9e015ed feat(web): add API client, token store, PWA update and review/onboarding logic",
+          "2911814 feat(web): add v0.1 screens (token, onboarding, today, capture, review, settings)",
+          "83312a8 feat(web): add logic for history, weight trend, favorites, offline queue, export, barcode and shortcut",
+          "d875f75 feat(web): add v0.2-v1.0 screens and fix v0.1 navigation issues",
+          "c933e18 test(web): add adversarial test suite (API client, dates, queue, review, security) — incluye correcciones de web",
+          "44fc7a3 feat(web): add security headers and cache rules for static assets"
+        ],
+        "previous_status": "terminado en código",
+        "completed_at": "2026-11-04",
+        "qa_history": "QA de web pendiente (apps/web aún en trabajo en paralelo)",
+        "previous_pending": "QA de web; prueba en iPhone (instalar, pantalla completa, crear perfil)",
+        "residual": "Instalación en iPhone real sin verificar (e2e con iPhone 13 emulado): ver doc:testing"
       }
     },
     {
@@ -2304,7 +2535,23 @@
           "context/PROMPTS.md"
         ],
         "acceptance": "Pruebas con Gemini simulado (ok, 429→respaldo, JSON inválido, límite) y prueba real con 3 fotos",
-        "status": "pendiente"
+        "status": "terminado",
+        "branch": "feature/v0.1-api-pwa",
+        "qa": "QA final APROBADO: QA adversarial de API (13 hallazgos, corregidos) y de web (15 bugs, corregidos); suite total 736 pruebas en verde; e2e Playwright contra wrangler dev real",
+        "commits": [
+          "d36d36a feat(api): implement full REST API on the Worker",
+          "04cf385 feat(api): add opt-in live Gemini check (test:gemini-live)",
+          "63519f5 feat(shared): add health/usage/export schemas, NOT_FOOD and UPSTREAM_UNAVAILABLE codes, signed formatters",
+          "15eaf73 fix(shared): parse multipart localHour strictly as 0-23 digits",
+          "2911814 feat(web): add v0.1 screens (token, onboarding, today, capture, review, settings)",
+          "68e6a3a fix(shared): use typographic minus in explanations; add ADAPTIVE_WINDOW_DAYS",
+          "4d8ef93 fix(shared): reject names and short texts made only of invisible characters"
+        ],
+        "previous_status": "terminado en código",
+        "completed_at": "2026-11-04",
+        "qa_history": "QA de API APROBADO tras correcciones (commit 9de7212 fix(api): harden API after adversarial QA; suite adversarial e2532d1); QA de web pendiente (apps/web aún en trabajo en paralelo)",
+        "previous_pending": "Prueba real con 3 fotos (falta GEMINI_API_KEY en la sesión); QA de web",
+        "residual": "Prueba real con 3 fotos no hecha (sin GEMINI_API_KEY en la sesión): ver risk:gemini-accuracy-unmeasured"
       }
     },
     {
@@ -2320,7 +2567,21 @@
           "Editar/borrar"
         ],
         "acceptance": "Flujo foto→guardar en ≤ 3 toques; totales del día correctos",
-        "status": "pendiente"
+        "status": "terminado",
+        "branch": "feature/v0.1-api-pwa",
+        "qa": "QA final APROBADO: QA adversarial de API (13 hallazgos, corregidos) y de web (15 bugs, corregidos); suite total 736 pruebas en verde; e2e Playwright contra wrangler dev real",
+        "commits": [
+          "d36d36a feat(api): implement full REST API on the Worker",
+          "2911814 feat(web): add v0.1 screens (token, onboarding, today, capture, review, settings)",
+          "83312a8 feat(web): add logic for history, weight trend, favorites, offline queue, export, barcode and shortcut",
+          "d875f75 feat(web): add v0.2-v1.0 screens and fix v0.1 navigation issues",
+          "c933e18 test(web): add adversarial test suite (API client, dates, queue, review, security) — incluye correcciones de web"
+        ],
+        "previous_status": "terminado en código",
+        "completed_at": "2026-11-04",
+        "qa_history": "QA de API APROBADO tras correcciones (commit 9de7212 fix(api): harden API after adversarial QA; suite adversarial e2532d1); QA de web pendiente (apps/web aún en trabajo en paralelo)",
+        "previous_pending": "QA de web; verificar foto→guardar en ≤ 3 toques en el iPhone",
+        "residual": "Flujo en iPhone real sin verificar (e2e emulado aprobado): ver doc:testing"
       }
     },
     {
@@ -2336,7 +2597,11 @@
           "Línea base en context/ACCURACY.md"
         ],
         "acceptance": "App en producción usada un día completo; error medio medido con ~20 fotos",
-        "status": "pendiente"
+        "status": "en progreso: despliegue pendiente del usuario",
+        "progress": "DEPLOY.md, ACCURACY.md (protocolo) y TESTING.md (checklist iPhone) listos; D1 de producción kalapp-db creada el 2026-11-04 en WNAM (id en wrangler.jsonc); código v1.0 terminado y verificado",
+        "pending": "Despliegue por el usuario (secretos GEMINI_API_KEY y APP_TOKEN + Workers Builds); las migraciones se aplican al desplegar; checklist iPhone (TESTING.md); línea base de precisión con ~20 fotos (sin medir)",
+        "previous_progress": "context/DEPLOY.md y context/ACCURACY.md (protocolo) creados el 2026-11-04",
+        "previous_pending": "Primer deploy (database_id real, secretos, Workers Builds), checklist iPhone, línea base con ~20 fotos"
       }
     },
     {
@@ -2392,7 +2657,12 @@
       "properties": {
         "date": "2026-11-04",
         "detail": "Integración Git de Cloudflare: push a main = producción, ramas = vista previa; no hace falta token de Cloudflare en GitHub. Comando: pnpm install && pnpm build → wrangler d1 migrations apply kalapp-db --remote && wrangler deploy.",
-        "source": "doc:plan"
+        "source": "doc:plan",
+        "commands_v2": {
+          "build": "pnpm install --frozen-lockfile && pnpm build",
+          "deploy": "pnpm db:migrate:remote && npx wrangler deploy"
+        },
+        "commands_updated_at": "2026-11-04"
       }
     },
     {
@@ -2483,7 +2753,9 @@
       "properties": {
         "date": "2026-11-04",
         "detail": "Validar tamaño/tipo → contar uso → prompt + responseSchema + temperature 0 → modelo principal; si 429/5xx/timeout 25 s → respaldo → Zod → recálculo 4/4/9 (energy_mismatch si > 15 %) → totales.",
-        "source": "doc:plan"
+        "source": "doc:plan",
+        "status": "superseded",
+        "superseded_at": "2026-11-04"
       }
     },
     {
@@ -2503,7 +2775,13 @@
       "properties": {
         "purpose": "Verificar despliegue",
         "auth": false,
-        "phase": "v0.1"
+        "phase": "v0.1",
+        "response": {
+          "status": "ok",
+          "app": "Kalapp"
+        },
+        "only_get_public": true,
+        "implemented": true
       }
     },
     {
@@ -2513,7 +2791,8 @@
       "properties": {
         "owner": "Usuario",
         "status": "pendiente (para M6)",
-        "command": "npx wrangler login"
+        "command": "npx wrangler login",
+        "note": "Pasos detallados en context/DEPLOY.md. Opcional si se despliega solo con Workers Builds y los secretos se ponen en el dashboard."
       }
     },
     {
@@ -2739,7 +3018,8 @@
       "properties": {
         "date": "2026-11-04",
         "detail": "vite-plugin-pwa registerType prompt (generateSW); la UI de \"Actualizar\" (useRegisterSW) se implementa en M3.",
-        "source": "M0"
+        "source": "M0",
+        "implemented": "2026-11-04 (dec:sw-update-ui)"
       }
     },
     {
@@ -2772,8 +3052,10 @@
       "label": "UI de actualización del service worker (useRegisterSW)",
       "properties": {
         "owner": "web-pwa",
-        "status": "pendiente",
-        "origin": "Hallazgo de QA en M0"
+        "status": "cerrado",
+        "origin": "Hallazgo de QA en M0",
+        "closed_at": "2026-11-04",
+        "resolution": "UI de actualización con useRegisterSW en apps/web/src/lib/pwa.tsx (9e015ed)"
       }
     },
     {
@@ -2782,8 +3064,10 @@
       "label": "Borrar migrations/0000_placeholder.sql al crear 0001_init.sql (antes del primer --remote)",
       "properties": {
         "owner": "api-worker",
-        "status": "pendiente",
-        "origin": "Hallazgo de QA en M0"
+        "status": "cerrado",
+        "origin": "Hallazgo de QA en M0",
+        "closed_at": "2026-11-04",
+        "resolution": "Se borró 0000_placeholder; las migraciones reales son 0001_init, 0002_favorites, 0003_weights (cb22eff)"
       }
     },
     {
@@ -2792,8 +3076,672 @@
       "label": "Prueba del handler onError (no filtrar err.message)",
       "properties": {
         "owner": "api-worker",
+        "status": "cerrado",
+        "origin": "Hallazgo de QA en M0",
+        "closed_at": "2026-11-04",
+        "resolution": "onError global probado: nunca devuelve err.message; INTERNAL genérico (apps/api/src/routes/hardening.test.ts y suite adversarial)"
+      }
+    },
+    {
+      "id": "dec:auth-before-404",
+      "type": "Decision",
+      "label": "Rutas inexistentes sin token responden 401",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "requireToken se aplica a todo /api salvo GET /api/health antes del enrutado, así que /api/no-existe sin token da 401 (no se enumeran rutas); con token da 404 NOT_FOUND.",
+        "source": "QA adversarial de API / feature/v0.1-api-pwa"
+      }
+    },
+    {
+      "id": "dec:token-sha256-compare",
+      "type": "Decision",
+      "label": "Comparación del token con SHA-256 + timingSafeEqual",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "Se comparan los digest SHA-256 (32 bytes) con crypto.subtle.timingSafeEqual (o XOR en bucle si no existe): no se filtra ni el contenido ni la longitud del token. Solo Authorization: Bearer (esquema sin distinguir mayúsculas; token sí); query, cookie y otros headers no valen.",
+        "source": "QA adversarial de API / feature/v0.1-api-pwa"
+      }
+    },
+    {
+      "id": "dec:token-fail-closed",
+      "type": "Decision",
+      "label": "Fail-closed si APP_TOKEN mide < 16",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "Si APP_TOKEN falta o tiene menos de 16 caracteres, toda ruta protegida responde 500 'Servidor sin configurar' y se registra en logs.",
+        "source": "QA adversarial de API / feature/v0.1-api-pwa",
+        "min_length": 16
+      }
+    },
+    {
+      "id": "dec:api-security-headers",
+      "type": "Decision",
+      "label": "Headers no-store y nosniff en toda la API",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "Toda respuesta de /api (incluidas 401/4xx/5xx) lleva Cache-Control: no-store y X-Content-Type-Options: nosniff (datos personales).",
+        "source": "QA adversarial de API / feature/v0.1-api-pwa"
+      }
+    },
+    {
+      "id": "dec:body-limits",
+      "type": "Decision",
+      "label": "Límites de cuerpo",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "JSON y cualquier otro cuerpo: 256 KB. Multipart solo en POST /api/analyze: MAX_IMAGE_BYTES + 16 KB de margen. Se usa Content-Length o se cuentan bytes del stream; excedido → 413 PAYLOAD_TOO_LARGE.",
+        "source": "QA adversarial de API / feature/v0.1-api-pwa",
+        "json_max_bytes": 262144,
+        "multipart_overhead_bytes": 16384
+      }
+    },
+    {
+      "id": "dec:image-signature",
+      "type": "Decision",
+      "label": "Verificar la firma real de la imagen",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "Solo JPEG (FF D8 FF), PNG (89 50 4E 47) y WebP (RIFF....WEBP); si el tipo declarado no coincide con los bytes → 415 UNSUPPORTED_MEDIA.",
+        "source": "QA adversarial de API / feature/v0.1-api-pwa"
+      }
+    },
+    {
+      "id": "dec:usage-atomic-reservation",
+      "type": "Decision",
+      "label": "Reserva atómica del cupo diario",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "Una sola sentencia INSERT … ON CONFLICT … WHERE SUM(calls) < limit reserva el intento antes de llamar a Gemini (con peticiones en paralelo nunca pasan más de DAILY_ANALYZE_LIMIT). Principal + respaldo = 1 intento. El día de uso es el de America/Mexico_City (no el del perfil), así el cupo se reinicia a medianoche de CDMX y cambiar de zona no lo reinicia. Las peticiones rechazadas por validación (formato, tamaño, multipart inválido) no consumen cupo porque se validan antes de reservar.",
+        "source": "QA adversarial de API / feature/v0.1-api-pwa",
+        "usage_timezone": "America/Mexico_City"
+      }
+    },
+    {
+      "id": "dec:gemini-fallback-policy",
+      "type": "Decision",
+      "label": "Política de respaldo de modelo",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "Respaldo (una vez) si el principal da 429, 5xx, 404 (modelo retirado), timeout 25 s, error de red o respuesta inválida (no JSON / no cumple el esquema). 400/401/403 → 503 AI_UNAVAILABLE directo, sin respaldo. Final: inválido → 502 AI_INVALID_RESPONSE; no disponible → 503. La clave va en x-goog-api-key y el cuerpo de error de Gemini se descarta.",
+        "source": "QA adversarial de API / feature/v0.1-api-pwa"
+      }
+    },
+    {
+      "id": "dec:error-codes-v2",
+      "type": "Decision",
+      "label": "Códigos NOT_FOOD (422) y UPSTREAM_UNAVAILABLE (503)",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "NOT_FOOD 422 cuando Gemini responde not_food (foto/texto sin comida). UPSTREAM_UNAVAILABLE 503 cuando Open Food Facts no responde o responde inválido.",
+        "source": "QA adversarial de API / feature/v0.1-api-pwa",
+        "codes": {
+          "UNAUTHORIZED": 401,
+          "VALIDATION": 400,
+          "NOT_FOUND": 404,
+          "PAYLOAD_TOO_LARGE": 413,
+          "UNSUPPORTED_MEDIA": 415,
+          "DAILY_LIMIT": 429,
+          "AI_UNAVAILABLE": 503,
+          "AI_INVALID_RESPONSE": 502,
+          "PROFILE_REQUIRED": 409,
+          "CONFLICT": 409,
+          "INTERNAL": 500,
+          "NOT_FOOD": 422,
+          "UPSTREAM_UNAVAILABLE": 503
+        }
+      }
+    },
+    {
+      "id": "dec:uuid-lowercase",
+      "type": "Decision",
+      "label": "UUID normalizados a minúsculas",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "Los id (cuerpo y parámetros de ruta) se recortan y pasan a minúsculas antes de validar: el mismo UUID en mayúsculas no duplica registros (idempotencia).",
+        "source": "QA adversarial de API / feature/v0.1-api-pwa"
+      }
+    },
+    {
+      "id": "dec:reject-invisible-names",
+      "type": "Decision",
+      "label": "Nombres invisibles rechazados",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "name/title hechos solo de espacios y caracteres invisibles (U+200B–U+200D, U+FEFF) se rechazan con VALIDATION.",
+        "source": "QA adversarial de API / feature/v0.1-api-pwa",
+        "status": "superseded"
+      }
+    },
+    {
+      "id": "dec:export-format",
+      "type": "Decision",
+      "label": "Formato de exportación",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "Rango máximo 366 días (from ≤ to). CSV: una fila por ingrediente, BOM UTF-8 y CRLF (Excel/Numbers), RFC 4180, celdas que empiezan con = + - @ tab CR se prefijan con ' (neutraliza fórmulas). JSON: profile, entries, weights, favorites.",
+        "source": "QA adversarial de API / feature/v0.1-api-pwa",
+        "max_range_days": 366
+      }
+    },
+    {
+      "id": "dec:extra-endpoints",
+      "type": "Decision",
+      "label": "Endpoints adicionales a los del plan",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "GET /api/usage, GET /api/shortcut/today, GET /api/barcode/:code, POST /api/favorites/:id/use, GET /api/adaptive; además DELETE /api/weights/:localDate.",
+        "source": "QA adversarial de API / feature/v0.1-api-pwa"
+      }
+    },
+    {
+      "id": "dec:migrations-split",
+      "type": "Decision",
+      "label": "Migraciones 0001/0002/0003",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "0001_init (profile, entries, entry_items, ai_usage), 0002_favorites, 0003_weights. Se borró la migración placeholder 0000. D1 aplica foreign_keys=ON siempre (ON DELETE CASCADE funciona sin PRAGMA).",
+        "source": "QA adversarial de API / feature/v0.1-api-pwa"
+      }
+    },
+    {
+      "id": "dec:onerror-no-leak",
+      "type": "Decision",
+      "label": "onError nunca filtra err.message",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "HttpError → su código; ZodError → VALIDATION con details resumidos (sin valores de entrada); HTTPException < 500 → VALIDATION; el resto → INTERNAL genérico y console.error. Probado.",
+        "source": "QA adversarial de API / feature/v0.1-api-pwa"
+      }
+    },
+    {
+      "id": "dec:sw-update-ui",
+      "type": "Decision",
+      "label": "UI de actualización del service worker",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "useRegisterSW (virtual:pwa-register/react) en apps/web/src/lib/pwa.tsx muestra el aviso 'Actualizar' (registerType prompt).",
+        "source": "QA adversarial de API / feature/v0.1-api-pwa"
+      }
+    },
+    {
+      "id": "dec:carbs-floor",
+      "type": "Decision",
+      "label": "Carbohidratos redondeados hacia abajo",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "carbs = floor((meta − proteína − grasa) / 4) para no exceder la meta; si el resto es negativo → 0 g con aviso CARBS_CLAMPED.",
+        "source": "QA adversarial de API / feature/v0.1-api-pwa"
+      }
+    },
+    {
+      "id": "dec:fat-min-real-weight",
+      "type": "Decision",
+      "label": "Grasa mínima sobre el peso real",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "Grasa = max(25 % de la meta, 0.6 g/kg × peso real); el peso ajustado a IMC 25 solo se usa para la proteína.",
+        "source": "QA adversarial de API / feature/v0.1-api-pwa"
+      }
+    },
+    {
+      "id": "dec:calc-warnings-v2",
+      "type": "Decision",
+      "label": "Avisos DEFICIT_NOT_POSSIBLE e IMPLAUSIBLE_RESULT",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "DEFICIT_NOT_POSSIBLE: objetivo déficit pero la meta (tras el piso de seguridad) ≥ gasto. IMPLAUSIBLE_RESULT: el gasto adaptativo fuera de 800–6,000 kcal se reporta como datos insuficientes.",
+        "source": "QA adversarial de API / feature/v0.1-api-pwa"
+      }
+    },
+    {
+      "id": "fact:vitest-single-instance",
+      "type": "Fact",
+      "label": "Una sola instancia de Vitest (jsdom en la raíz)",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "jsdom se instala en el package.json raíz para que web y shared resuelvan el mismo Vitest; con dos instancias fallaban las pruebas.",
+        "commit": "8924605 fix: hoist jsdom to root so a single Vitest instance is used"
+      }
+    },
+    {
+      "id": "fact:gemini-key-not-in-session",
+      "type": "Fact",
+      "label": "Sin clave de Gemini en la sesión de desarrollo",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "GEMINI_API_KEY no estaba disponible en el entorno el 2026-11-04: test:gemini-live se omite y no hay mediciones reales de precisión."
+      }
+    },
+    {
+      "id": "fact:d1-id-placeholder",
+      "type": "Fact",
+      "label": "database_id de D1 aún es marcador",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "wrangler.jsonc trae database_id 00000000-0000-0000-0000-000000000000; el usuario debe reemplazarlo por el id real (DEPLOY.md §2).",
+        "status": "superseded"
+      }
+    },
+    {
+      "id": "fact:pnpm-deploy-builtin",
+      "type": "Fact",
+      "label": "`pnpm deploy` es un comando interno de pnpm",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "Para el script raíz 'deploy' hay que usar `pnpm run deploy`; DEPLOY.md lo indica así."
+      }
+    },
+    {
+      "id": "fact:gemini-live-script",
+      "type": "Fact",
+      "label": "Prueba real opt-in test:gemini-live",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "GEMINI_API_KEY=… pnpm test:gemini-live [foto.jpg]; lee también .dev.vars; sin clave imprime 'omitido' y sale 0; reutiliza src/gemini/* con Vitest en Node. Nunca corre en CI.",
+        "commit": "04cf385"
+      }
+    },
+    {
+      "id": "fact:prompt-version-1",
+      "type": "Fact",
+      "label": "Prompt de Gemini versión 1",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "PROMPT_VERSION='1' en apps/api/src/gemini/prompt.ts; documentado en context/PROMPTS.md."
+      }
+    },
+    {
+      "id": "api:usage",
+      "type": "Endpoint",
+      "label": "GET /api/usage",
+      "properties": {
+        "auth": true,
+        "implemented": true,
+        "purpose": "Análisis usados hoy y límite: { date, calls, limit } (día de CDMX)",
+        "phase": "v0.1"
+      }
+    },
+    {
+      "id": "api:shortcut-today",
+      "type": "Endpoint",
+      "label": "GET /api/shortcut/today",
+      "properties": {
+        "auth": true,
+        "implemented": true,
+        "purpose": "Totales de hoy para el Atajo de iOS → Apple Salud: { localDate, kcal, proteinG, carbsG, fatG, targetKcal, remainingKcal }",
+        "phase": "v1.0"
+      }
+    },
+    {
+      "id": "api:barcode",
+      "type": "Endpoint",
+      "label": "GET /api/barcode/:code",
+      "properties": {
+        "auth": true,
+        "implemented": true,
+        "purpose": "Producto por código (6–14 dígitos) desde Open Food Facts, normalizado a por 100 g; timeout 8 s",
+        "errors": [
+          "400",
+          "404 NOT_FOUND",
+          "503 UPSTREAM_UNAVAILABLE"
+        ],
+        "phase": "v1.0"
+      }
+    },
+    {
+      "id": "api:favorites-use",
+      "type": "Endpoint",
+      "label": "POST /api/favorites/:id/use",
+      "properties": {
+        "auth": true,
+        "implemented": true,
+        "purpose": "Marca un favorito como usado (uses_count, last_used_at) y lo devuelve",
+        "phase": "v0.2"
+      }
+    },
+    {
+      "id": "api:adaptive",
+      "type": "Endpoint",
+      "label": "GET /api/adaptive",
+      "properties": {
+        "auth": true,
+        "implemented": true,
+        "purpose": "Gasto adaptativo en ventana de 28 días; propone meta, nunca la cambia",
+        "errors": [
+          "409 PROFILE_REQUIRED"
+        ],
+        "phase": "v0.3"
+      }
+    },
+    {
+      "id": "fact:d1-production-created",
+      "type": "Fact",
+      "label": "D1 de producción kalapp-db creada",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "Base kalapp-db creada el 2026-11-04 en la región WNAM con id bb8a8875-29b3-4197-ad2b-0c74ffaf9806, ya puesto en wrangler.jsonc (160feb4). El id no es secreto. Las migraciones 0001–0003 se aplican al desplegar.",
+        "region": "WNAM",
+        "database_id": "bb8a8875-29b3-4197-ad2b-0c74ffaf9806"
+      }
+    },
+    {
+      "id": "fact:test-suite-736",
+      "type": "Fact",
+      "label": "Suite total: 736 pruebas en verde",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "pnpm test en verde: shared 177, api 261, web 298 (incluye suites adversariales). Gemini siempre simulado.",
+        "shared": 177,
+        "api": 261,
+        "web": 298,
+        "total": 736
+      }
+    },
+    {
+      "id": "fact:qa-adversarial-api",
+      "type": "Fact",
+      "label": "QA adversarial de API: 13 hallazgos corregidos",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "Auth, SQLi, límites de cuerpo, fallas de Gemini y contrato; 13 hallazgos, todos corregidos (9de7212, a2bacb7) y cubiertos por la suite adversarial (e2532d1)."
+      }
+    },
+    {
+      "id": "fact:qa-adversarial-web",
+      "type": "Fact",
+      "label": "QA adversarial de web: 15 bugs corregidos",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "Cliente de API, fechas/zona horaria, cola offline, Revisar, seguridad; 15 bugs, todos corregidos y cubiertos por *.adversarial.test.ts(x) (c933e18)."
+      }
+    },
+    {
+      "id": "fact:e2e-playwright",
+      "type": "Fact",
+      "label": "e2e con Playwright (iPhone 13 emulado) contra wrangler dev real",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "Flujos verificados: onboarding → foto → revisar → guardar; doble toque en Guardar (sin duplicados); historial; peso y gasto adaptativo; código de barras manual; cola offline de foto y de texto; CSP sin violaciones; service worker registrado. Gemini simulado; no es un iPhone real.",
+        "device": "iPhone 13 (emulado)"
+      }
+    },
+    {
+      "id": "fact:curl-attacks",
+      "type": "Fact",
+      "label": "Ataques con curl al Worker real (wrangler dev)",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "Imagen de 5 MB → 413; JSON anidado → 400; Content-Length mentiroso → 400; 100 GET en paralelo → ok; .dev.vars no se expone como asset."
+      }
+    },
+    {
+      "id": "fact:commit-c933e18-mixed",
+      "type": "Fact",
+      "label": "El commit c933e18 mezcla pruebas y correcciones de web",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "'test(web): add adversarial test suite' incluye también las correcciones de la web de esa ronda de QA. No se dividió porque habría que reescribir historia ya publicada (prohibido por Gitflow).",
+        "commit": "c933e18"
+      }
+    },
+    {
+      "id": "dec:web-nav-five",
+      "type": "Decision",
+      "label": "Navegación inferior de 5 elementos",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "Barra fija: Hoy · Historial · 📷 (Capturar, al centro) · Peso · Ajustes.",
+        "source": "QA final de web / feature/v0.1-api-pwa"
+      }
+    },
+    {
+      "id": "dec:nav-hidden-focus",
+      "type": "Decision",
+      "label": "Barra oculta en Revisar y en editar perfil",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "En Revisar y en editar perfil no se muestra la barra para evitar salir a medias y perder la propuesta o el formulario.",
+        "source": "QA final de web / feature/v0.1-api-pwa"
+      }
+    },
+    {
+      "id": "dec:per-gram-density",
+      "type": "Decision",
+      "label": "Densidad por gramo en ítems base",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "Cada ingrediente guarda su densidad (kcal y macros por gramo) del ítem base; editar gramos recalcula desde ahí. Poner 0 g no destruye los datos: al volver a subir los gramos se recupera la proporción.",
+        "source": "QA final de web / feature/v0.1-api-pwa"
+      }
+    },
+    {
+      "id": "dec:offline-queue-dexie",
+      "type": "Decision",
+      "label": "Cola offline con Dexie (kalapp-offline)",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "IndexedDB 'kalapp-offline' para fotos, textos y comidas por guardar; máximo 20 elementos; backoff 30 s → 30 min; 5 intentos que solo cuentan fallas con respuesta del servidor (4xx/5xx), no errores de red; 401 pausa la cola hasta recapturar el token; 429 (límite diario) reintenta sin contar intento. Idempotente por id de cliente.",
+        "source": "QA final de web / feature/v0.1-api-pwa"
+      }
+    },
+    {
+      "id": "dec:favorites-validated",
+      "type": "Decision",
+      "label": "Favoritos validados por elemento",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "La lista de favoritos se valida elemento por elemento: uno corrupto se omite sin tirar toda la pantalla.",
+        "source": "QA final de web / feature/v0.1-api-pwa"
+      }
+    },
+    {
+      "id": "dec:token-trim-header",
+      "type": "Decision",
+      "label": "Token con trim y validación de header",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "El token capturado se recorta (espacios/saltos al pegar) y se valida que sea apto para un header HTTP antes de guardarlo; si no, se pide de nuevo.",
+        "source": "QA final de web / feature/v0.1-api-pwa"
+      }
+    },
+    {
+      "id": "dec:zoned-iso-dst",
+      "type": "Decision",
+      "label": "zonedIso seguro ante cambios de horario",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "La conversión de fecha/hora local a ISO con zona se calcula por la zona del perfil y es correcta en saltos de horario (horas que no existen o se repiten), p. ej. Chile.",
+        "source": "QA final de web / feature/v0.1-api-pwa"
+      }
+    },
+    {
+      "id": "dec:lazy-routes",
+      "type": "Decision",
+      "label": "Carga perezosa de Historial, Peso y Código",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "HistoryScreen, WeightScreen (Recharts) y BarcodePanel (zxing) se cargan con React.lazy para que el arranque sea ligero.",
+        "source": "QA final de web / feature/v0.1-api-pwa"
+      }
+    },
+    {
+      "id": "dec:export-share-or-download",
+      "type": "Decision",
+      "label": "Export con navigator.share o descarga",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "El CSV/JSON se entrega con navigator.share({ files }) si el navegador lo permite (hoja de compartir de iOS → Archivos/Numbers); si no, descarga normal.",
+        "source": "QA final de web / feature/v0.1-api-pwa"
+      }
+    },
+    {
+      "id": "dec:shortcut-token-mask",
+      "type": "Decision",
+      "label": "Atajo de iOS con token enmascarado",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "En Ajustes → Atajo de iOS el token se muestra enmascarado: se ven como máximo 1/4 de los caracteres y nunca más de 4 (tokens ≤ 8: todo oculto); se copia con un botón.",
+        "source": "QA final de web / feature/v0.1-api-pwa"
+      }
+    },
+    {
+      "id": "dec:static-security-headers",
+      "type": "Decision",
+      "label": "Cabeceras de seguridad de los assets (_headers)",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "apps/web/public/_headers: CSP sin unsafe-eval (script-src 'self', connect-src 'self', frame-ancestors 'none'), X-Frame-Options DENY, Referrer-Policy no-referrer, Permissions-Policy camera=(self), no-cache en HTML y SW, assets con hash public max-age=31536000 immutable.",
+        "source": "QA final de web / feature/v0.1-api-pwa"
+      }
+    },
+    {
+      "id": "dec:json-depth-limit",
+      "type": "Decision",
+      "label": "JSON con profundidad > 32 → 400",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "Antes de parsear se mide la profundidad (MAX_JSON_DEPTH = 32); más anidado → 400 VALIDATION en lugar de reventar el Worker.",
+        "source": "a2bacb7",
+        "max_depth": 32
+      }
+    },
+    {
+      "id": "dec:env-vars-default",
+      "type": "Decision",
+      "label": "Vars DAILY_ANALYZE_LIMIT/MAX_IMAGE_BYTES inválidas → default",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "Si DAILY_ANALYZE_LIMIT o MAX_IMAGE_BYTES no son enteros positivos válidos, se usan los valores por defecto (60 y 1048576).",
+        "source": "QA adversarial de API"
+      }
+    },
+    {
+      "id": "dec:invisible-names-shared",
+      "type": "Decision",
+      "label": "Nombres invisibles rechazados en NameSchema (shared)",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "La regla de nombres/títulos y textos cortos hechos solo de espacios o caracteres invisibles (ZWSP, ZWNJ, ZWJ, WJ, BOM, guion suave, LRM) vive en packages/shared (NameSchema, ShortTextSchema, hasVisibleText); la API y la web la importan.",
+        "source": "4d8ef93"
+      }
+    },
+    {
+      "id": "dec:adaptive-window-shared",
+      "type": "Decision",
+      "label": "ADAPTIVE_WINDOW_DAYS compartido",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "La ventana del gasto adaptativo (28 días) es la constante ADAPTIVE_WINDOW_DAYS de packages/shared; la API la importa (abff913).",
+        "source": "68e6a3a, abff913",
+        "value": 28
+      }
+    },
+    {
+      "id": "dec:typographic-minus",
+      "type": "Decision",
+      "label": "Signo menos tipográfico en explicaciones",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "Las explicaciones y formateadores con signo usan − (U+2212) en lugar del guion.",
+        "source": "68e6a3a"
+      }
+    },
+    {
+      "id": "risk:gemini-accuracy-unmeasured",
+      "type": "Risk",
+      "label": "Precisión real de Gemini sin medir",
+      "properties": {
+        "category": "residual (v1.0)",
+        "severity": "alta",
+        "cause": "No hubo GEMINI_API_KEY en la sesión: todo se probó con Gemini simulado.",
+        "mitigation": "Tras desplegar: pnpm test:gemini-live y set de ~20 fotos (ACCURACY.md).",
+        "status": "abierto",
+        "date": "2026-11-04"
+      }
+    },
+    {
+      "id": "risk:shortcut-unverified",
+      "type": "Risk",
+      "label": "Instrucciones del Atajo sin verificar en iPhone real",
+      "properties": {
+        "category": "residual (v1.0)",
+        "severity": "media",
+        "cause": "Las instrucciones de Ajustes → Atajo de iOS no se han seguido en un iPhone.",
+        "mitigation": "Checklist manual de TESTING.md (Atajo + Salud + Siri + recordatorio).",
+        "status": "abierto",
+        "date": "2026-11-04"
+      }
+    },
+    {
+      "id": "risk:zxing-ios-unverified",
+      "type": "Risk",
+      "label": "Escaneo en vivo con zxing sin verificar en iOS",
+      "properties": {
+        "category": "residual (v1.0)",
+        "severity": "media",
+        "cause": "El e2e solo cubrió el código de barras manual; la cámara en vivo no se probó en Safari iOS.",
+        "mitigation": "Checklist de TESTING.md; queda la captura manual del código como alternativa.",
+        "status": "abierto",
+        "date": "2026-11-04"
+      }
+    },
+    {
+      "id": "risk:dst-chile-unverified",
+      "type": "Risk",
+      "label": "Cambio de horario de Chile sin verificar en dispositivo",
+      "properties": {
+        "category": "residual (v1.0)",
+        "severity": "baja",
+        "cause": "zonedIso se probó en unidad, no en un iPhone con zona America/Santiago durante el cambio.",
+        "mitigation": "Probar en el siguiente cambio de horario si el usuario usa esa zona.",
+        "status": "abierto",
+        "date": "2026-11-04"
+      }
+    },
+    {
+      "id": "risk:parse-number-trailing-dot",
+      "type": "Risk",
+      "label": "parseNumber marca inválido '60.' mientras se escribe",
+      "properties": {
+        "category": "residual (v1.0)",
+        "severity": "baja",
+        "cause": "parseNumber es estricto: un número con punto final (estado intermedio al teclear) se marca como inválido.",
+        "mitigation": "Cosmético; corregir si molesta en el uso real.",
+        "status": "abierto",
+        "date": "2026-11-04"
+      }
+    },
+    {
+      "id": "task:user-deploy",
+      "type": "Task",
+      "label": "Desplegar: secretos + Workers Builds",
+      "properties": {
+        "owner": "Usuario",
         "status": "pendiente",
-        "origin": "Hallazgo de QA en M0"
+        "detail": "wrangler secret put GEMINI_API_KEY y APP_TOKEN; conectar el repo en Workers Builds (las migraciones se aplican en el deploy); merge release → main con aprobación.",
+        "documented_in": "context/DEPLOY.md"
+      }
+    },
+    {
+      "id": "task:first-real-test",
+      "type": "Task",
+      "label": "Primera prueba real en el iPhone",
+      "properties": {
+        "owner": "Usuario",
+        "status": "pendiente",
+        "detail": "/api/health, instalar, onboarding, una foto real con Gemini, pnpm test:gemini-live y checklist de TESTING.md.",
+        "documented_in": "context/DEPLOY.md, context/TESTING.md"
+      }
+    },
+    {
+      "id": "doc:testing",
+      "type": "Document",
+      "label": "Guía de pruebas y checklist del iPhone",
+      "properties": {
+        "path": "context/TESTING.md",
+        "version": "1.0",
+        "date": "2026-11-04",
+        "status": "creado"
       }
     }
   ],
@@ -4594,6 +5542,1012 @@
       "source": "task:onerror-test",
       "type": "TARGETS",
       "target": "ms:m2"
+    },
+    {
+      "source": "dec:gemini-pipeline",
+      "type": "SUPERSEDED_BY",
+      "target": "dec:gemini-fallback-policy",
+      "note": "Se amplían los casos de respaldo (404, red, respuesta inválida) y 400/401/403 → 503 directo"
+    },
+    {
+      "source": "api:usage",
+      "type": "IMPLEMENTED_IN",
+      "target": "comp:worker"
+    },
+    {
+      "source": "dec:extra-endpoints",
+      "type": "APPLIES_TO",
+      "target": "api:usage"
+    },
+    {
+      "source": "api:shortcut-today",
+      "type": "IMPLEMENTED_IN",
+      "target": "comp:worker"
+    },
+    {
+      "source": "dec:extra-endpoints",
+      "type": "APPLIES_TO",
+      "target": "api:shortcut-today"
+    },
+    {
+      "source": "api:barcode",
+      "type": "IMPLEMENTED_IN",
+      "target": "comp:worker"
+    },
+    {
+      "source": "dec:extra-endpoints",
+      "type": "APPLIES_TO",
+      "target": "api:barcode"
+    },
+    {
+      "source": "api:favorites-use",
+      "type": "IMPLEMENTED_IN",
+      "target": "comp:worker"
+    },
+    {
+      "source": "dec:extra-endpoints",
+      "type": "APPLIES_TO",
+      "target": "api:favorites-use"
+    },
+    {
+      "source": "api:adaptive",
+      "type": "IMPLEMENTED_IN",
+      "target": "comp:worker"
+    },
+    {
+      "source": "dec:extra-endpoints",
+      "type": "APPLIES_TO",
+      "target": "api:adaptive"
+    },
+    {
+      "source": "api:usage",
+      "type": "READS",
+      "target": "table:ai_usage"
+    },
+    {
+      "source": "api:shortcut-today",
+      "type": "READS",
+      "target": "table:entries"
+    },
+    {
+      "source": "api:shortcut-today",
+      "type": "READS",
+      "target": "table:profile"
+    },
+    {
+      "source": "api:barcode",
+      "type": "USES",
+      "target": "tech:open-food-facts"
+    },
+    {
+      "source": "api:favorites-use",
+      "type": "READS_WRITES",
+      "target": "table:favorites"
+    },
+    {
+      "source": "api:adaptive",
+      "type": "READS",
+      "target": "table:entries"
+    },
+    {
+      "source": "api:adaptive",
+      "type": "READS",
+      "target": "table:weights"
+    },
+    {
+      "source": "api:adaptive",
+      "type": "READS",
+      "target": "table:profile"
+    },
+    {
+      "source": "api:adaptive",
+      "type": "USES",
+      "target": "calc:adaptive-tdee"
+    },
+    {
+      "source": "feat:shortcut-health",
+      "type": "CALLS",
+      "target": "api:shortcut-today"
+    },
+    {
+      "source": "feat:barcode",
+      "type": "CALLS",
+      "target": "api:barcode"
+    },
+    {
+      "source": "feat:favorites",
+      "type": "CALLS",
+      "target": "api:favorites-use"
+    },
+    {
+      "source": "feat:weight-adaptive",
+      "type": "CALLS",
+      "target": "api:adaptive"
+    },
+    {
+      "source": "api:export",
+      "type": "READS",
+      "target": "table:favorites"
+    },
+    {
+      "source": "api:export",
+      "type": "READS",
+      "target": "table:profile"
+    },
+    {
+      "source": "dec:auth-before-404",
+      "type": "APPLIES_TO",
+      "target": "feat:token-auth"
+    },
+    {
+      "source": "dec:token-sha256-compare",
+      "type": "APPLIES_TO",
+      "target": "feat:token-auth"
+    },
+    {
+      "source": "dec:token-fail-closed",
+      "type": "APPLIES_TO",
+      "target": "feat:token-auth"
+    },
+    {
+      "source": "dec:api-security-headers",
+      "type": "APPLIES_TO",
+      "target": "comp:worker"
+    },
+    {
+      "source": "dec:body-limits",
+      "type": "APPLIES_TO",
+      "target": "comp:worker"
+    },
+    {
+      "source": "dec:image-signature",
+      "type": "APPLIES_TO",
+      "target": "api:analyze"
+    },
+    {
+      "source": "dec:usage-atomic-reservation",
+      "type": "APPLIES_TO",
+      "target": "table:ai_usage"
+    },
+    {
+      "source": "dec:usage-atomic-reservation",
+      "type": "APPLIES_TO",
+      "target": "api:analyze"
+    },
+    {
+      "source": "dec:gemini-fallback-policy",
+      "type": "APPLIES_TO",
+      "target": "api:analyze"
+    },
+    {
+      "source": "dec:gemini-fallback-policy",
+      "type": "APPLIES_TO",
+      "target": "comp:analyzer"
+    },
+    {
+      "source": "dec:error-codes-v2",
+      "type": "APPLIES_TO",
+      "target": "api:analyze"
+    },
+    {
+      "source": "dec:error-codes-v2",
+      "type": "APPLIES_TO",
+      "target": "api:barcode"
+    },
+    {
+      "source": "dec:uuid-lowercase",
+      "type": "APPLIES_TO",
+      "target": "api:entries"
+    },
+    {
+      "source": "dec:uuid-lowercase",
+      "type": "APPLIES_TO",
+      "target": "api:favorites"
+    },
+    {
+      "source": "dec:reject-invisible-names",
+      "type": "APPLIES_TO",
+      "target": "api:entries"
+    },
+    {
+      "source": "dec:reject-invisible-names",
+      "type": "APPLIES_TO",
+      "target": "api:favorites"
+    },
+    {
+      "source": "dec:export-format",
+      "type": "APPLIES_TO",
+      "target": "api:export"
+    },
+    {
+      "source": "dec:migrations-split",
+      "type": "APPLIES_TO",
+      "target": "repo:migrations"
+    },
+    {
+      "source": "dec:onerror-no-leak",
+      "type": "APPLIES_TO",
+      "target": "comp:worker"
+    },
+    {
+      "source": "dec:sw-update-ui",
+      "type": "APPLIES_TO",
+      "target": "feat:update-prompt"
+    },
+    {
+      "source": "dec:carbs-floor",
+      "type": "APPLIES_TO",
+      "target": "calc:macros"
+    },
+    {
+      "source": "dec:fat-min-real-weight",
+      "type": "APPLIES_TO",
+      "target": "calc:macros"
+    },
+    {
+      "source": "dec:fat-min-real-weight",
+      "type": "APPLIES_TO",
+      "target": "calc:adjusted-weight"
+    },
+    {
+      "source": "dec:calc-warnings-v2",
+      "type": "APPLIES_TO",
+      "target": "calc:warnings"
+    },
+    {
+      "source": "dec:calc-warnings-v2",
+      "type": "APPLIES_TO",
+      "target": "calc:adaptive-tdee"
+    },
+    {
+      "source": "dec:token-sha256-compare",
+      "type": "MITIGATES",
+      "target": "risk:open-proxy"
+    },
+    {
+      "source": "dec:token-fail-closed",
+      "type": "MITIGATES",
+      "target": "risk:open-proxy"
+    },
+    {
+      "source": "dec:usage-atomic-reservation",
+      "type": "MITIGATES",
+      "target": "risk:open-proxy"
+    },
+    {
+      "source": "dec:body-limits",
+      "type": "MITIGATES",
+      "target": "risk:heic-size"
+    },
+    {
+      "source": "dec:gemini-fallback-policy",
+      "type": "MITIGATES",
+      "target": "risk:model-deprecation"
+    },
+    {
+      "source": "dec:gemini-fallback-policy",
+      "type": "MITIGATES",
+      "target": "risk:free-tier-change"
+    },
+    {
+      "source": "dec:sw-update-ui",
+      "type": "MITIGATES",
+      "target": "risk:stale-sw"
+    },
+    {
+      "source": "dec:pwa-prompt",
+      "type": "RELATES_TO",
+      "target": "dec:sw-update-ui"
+    },
+    {
+      "source": "dec:migrations-split",
+      "type": "CLOSES",
+      "target": "task:remove-placeholder-migration"
+    },
+    {
+      "source": "dec:onerror-no-leak",
+      "type": "CLOSES",
+      "target": "task:onerror-test"
+    },
+    {
+      "source": "dec:sw-update-ui",
+      "type": "CLOSES",
+      "target": "task:sw-update-ui"
+    },
+    {
+      "source": "doc:deploy",
+      "type": "CLOSES",
+      "target": "task:deploy-guide"
+    },
+    {
+      "source": "ms:m2",
+      "type": "RECORDS",
+      "target": "dec:auth-before-404"
+    },
+    {
+      "source": "ms:m2",
+      "type": "RECORDS",
+      "target": "dec:token-sha256-compare"
+    },
+    {
+      "source": "ms:m2",
+      "type": "RECORDS",
+      "target": "dec:token-fail-closed"
+    },
+    {
+      "source": "ms:m2",
+      "type": "RECORDS",
+      "target": "dec:api-security-headers"
+    },
+    {
+      "source": "ms:m2",
+      "type": "RECORDS",
+      "target": "dec:body-limits"
+    },
+    {
+      "source": "ms:m2",
+      "type": "RECORDS",
+      "target": "dec:image-signature"
+    },
+    {
+      "source": "ms:m2",
+      "type": "RECORDS",
+      "target": "dec:usage-atomic-reservation"
+    },
+    {
+      "source": "ms:m2",
+      "type": "RECORDS",
+      "target": "dec:gemini-fallback-policy"
+    },
+    {
+      "source": "ms:m2",
+      "type": "RECORDS",
+      "target": "dec:error-codes-v2"
+    },
+    {
+      "source": "ms:m2",
+      "type": "RECORDS",
+      "target": "dec:uuid-lowercase"
+    },
+    {
+      "source": "ms:m2",
+      "type": "RECORDS",
+      "target": "dec:reject-invisible-names"
+    },
+    {
+      "source": "ms:m2",
+      "type": "RECORDS",
+      "target": "dec:export-format"
+    },
+    {
+      "source": "ms:m2",
+      "type": "RECORDS",
+      "target": "dec:extra-endpoints"
+    },
+    {
+      "source": "ms:m2",
+      "type": "RECORDS",
+      "target": "dec:migrations-split"
+    },
+    {
+      "source": "ms:m2",
+      "type": "RECORDS",
+      "target": "dec:onerror-no-leak"
+    },
+    {
+      "source": "ms:m3",
+      "type": "RECORDS",
+      "target": "dec:sw-update-ui"
+    },
+    {
+      "source": "ms:m1",
+      "type": "RECORDS",
+      "target": "dec:carbs-floor"
+    },
+    {
+      "source": "ms:m1",
+      "type": "RECORDS",
+      "target": "dec:fat-min-real-weight"
+    },
+    {
+      "source": "ms:m1",
+      "type": "RECORDS",
+      "target": "dec:calc-warnings-v2"
+    },
+    {
+      "source": "ms:m1",
+      "type": "PRODUCES",
+      "target": "fact:vitest-single-instance"
+    },
+    {
+      "source": "fact:vitest-single-instance",
+      "type": "RELATES_TO",
+      "target": "dec:vitest-plugin"
+    },
+    {
+      "source": "ms:m4",
+      "type": "PRODUCES",
+      "target": "fact:gemini-live-script"
+    },
+    {
+      "source": "ms:m4",
+      "type": "PRODUCES",
+      "target": "fact:prompt-version-1"
+    },
+    {
+      "source": "fact:prompt-version-1",
+      "type": "DOCUMENTED_IN",
+      "target": "doc:prompts"
+    },
+    {
+      "source": "fact:gemini-key-not-in-session",
+      "type": "AFFECTS",
+      "target": "metric:accuracy"
+    },
+    {
+      "source": "fact:gemini-key-not-in-session",
+      "type": "RELATES_TO",
+      "target": "task:gemini-key"
+    },
+    {
+      "source": "fact:d1-id-placeholder",
+      "type": "AFFECTS",
+      "target": "deploy:d1-create"
+    },
+    {
+      "source": "fact:pnpm-deploy-builtin",
+      "type": "DOCUMENTED_IN",
+      "target": "doc:deploy"
+    },
+    {
+      "source": "fact:gemini-live-script",
+      "type": "DOCUMENTED_IN",
+      "target": "doc:deploy"
+    },
+    {
+      "source": "doc:deploy",
+      "type": "DOCUMENTS",
+      "target": "deploy:secrets"
+    },
+    {
+      "source": "doc:deploy",
+      "type": "DOCUMENTS",
+      "target": "deploy:d1-create"
+    },
+    {
+      "source": "doc:deploy",
+      "type": "DOCUMENTS",
+      "target": "deploy:iphone-install"
+    },
+    {
+      "source": "doc:deploy",
+      "type": "DOCUMENTS",
+      "target": "deploy:previews"
+    },
+    {
+      "source": "doc:prompts",
+      "type": "DOCUMENTS",
+      "target": "dec:gemini-fallback-policy"
+    },
+    {
+      "source": "ms:m2",
+      "type": "DELIVERS",
+      "target": "api:profile"
+    },
+    {
+      "source": "ms:m4",
+      "type": "DELIVERS",
+      "target": "api:analyze"
+    },
+    {
+      "source": "ms:m4",
+      "type": "DELIVERS",
+      "target": "api:usage"
+    },
+    {
+      "source": "ms:m5",
+      "type": "DELIVERS",
+      "target": "api:entries"
+    },
+    {
+      "source": "fact:d1-id-placeholder",
+      "type": "SUPERSEDED_BY",
+      "target": "fact:d1-production-created"
+    },
+    {
+      "source": "fact:d1-production-created",
+      "type": "AFFECTS",
+      "target": "deploy:d1-create"
+    },
+    {
+      "source": "fact:d1-production-created",
+      "type": "RELATES_TO",
+      "target": "tech:cf-d1"
+    },
+    {
+      "source": "agent:qa-reviewer",
+      "type": "PRODUCES",
+      "target": "fact:test-suite-736"
+    },
+    {
+      "source": "agent:qa-reviewer",
+      "type": "PRODUCES",
+      "target": "fact:qa-adversarial-api"
+    },
+    {
+      "source": "agent:qa-reviewer",
+      "type": "PRODUCES",
+      "target": "fact:qa-adversarial-web"
+    },
+    {
+      "source": "agent:qa-reviewer",
+      "type": "PRODUCES",
+      "target": "fact:e2e-playwright"
+    },
+    {
+      "source": "agent:qa-reviewer",
+      "type": "PRODUCES",
+      "target": "fact:curl-attacks"
+    },
+    {
+      "source": "fact:test-suite-736",
+      "type": "VERIFIES",
+      "target": "metric:calc-tests"
+    },
+    {
+      "source": "fact:qa-adversarial-api",
+      "type": "VERIFIES",
+      "target": "comp:worker"
+    },
+    {
+      "source": "fact:qa-adversarial-web",
+      "type": "VERIFIES",
+      "target": "comp:client"
+    },
+    {
+      "source": "fact:e2e-playwright",
+      "type": "VERIFIES",
+      "target": "comp:client"
+    },
+    {
+      "source": "fact:curl-attacks",
+      "type": "VERIFIES",
+      "target": "comp:worker"
+    },
+    {
+      "source": "fact:commit-c933e18-mixed",
+      "type": "RELATES_TO",
+      "target": "dec:gitflow"
+    },
+    {
+      "source": "fact:commit-c933e18-mixed",
+      "type": "RELATES_TO",
+      "target": "fact:qa-adversarial-web"
+    },
+    {
+      "source": "ms:m3",
+      "type": "RECORDS",
+      "target": "dec:web-nav-five"
+    },
+    {
+      "source": "dec:web-nav-five",
+      "type": "APPLIES_TO",
+      "target": "comp:client"
+    },
+    {
+      "source": "dec:web-nav-five",
+      "type": "APPLIES_TO",
+      "target": "feat:today-dashboard"
+    },
+    {
+      "source": "dec:web-nav-five",
+      "type": "APPLIES_TO",
+      "target": "feat:history"
+    },
+    {
+      "source": "dec:web-nav-five",
+      "type": "APPLIES_TO",
+      "target": "feat:weight-adaptive"
+    },
+    {
+      "source": "ms:m3",
+      "type": "RECORDS",
+      "target": "dec:nav-hidden-focus"
+    },
+    {
+      "source": "dec:nav-hidden-focus",
+      "type": "APPLIES_TO",
+      "target": "comp:client"
+    },
+    {
+      "source": "dec:nav-hidden-focus",
+      "type": "APPLIES_TO",
+      "target": "feat:review-edit"
+    },
+    {
+      "source": "dec:nav-hidden-focus",
+      "type": "APPLIES_TO",
+      "target": "feat:onboarding-profile"
+    },
+    {
+      "source": "ms:m5",
+      "type": "RECORDS",
+      "target": "dec:per-gram-density"
+    },
+    {
+      "source": "dec:per-gram-density",
+      "type": "APPLIES_TO",
+      "target": "comp:client"
+    },
+    {
+      "source": "dec:per-gram-density",
+      "type": "APPLIES_TO",
+      "target": "feat:review-edit"
+    },
+    {
+      "source": "ms:m5",
+      "type": "RECORDS",
+      "target": "dec:offline-queue-dexie"
+    },
+    {
+      "source": "dec:offline-queue-dexie",
+      "type": "APPLIES_TO",
+      "target": "comp:client"
+    },
+    {
+      "source": "dec:offline-queue-dexie",
+      "type": "APPLIES_TO",
+      "target": "feat:offline-queue"
+    },
+    {
+      "source": "ms:m5",
+      "type": "RECORDS",
+      "target": "dec:favorites-validated"
+    },
+    {
+      "source": "dec:favorites-validated",
+      "type": "APPLIES_TO",
+      "target": "comp:client"
+    },
+    {
+      "source": "dec:favorites-validated",
+      "type": "APPLIES_TO",
+      "target": "feat:favorites"
+    },
+    {
+      "source": "ms:m3",
+      "type": "RECORDS",
+      "target": "dec:token-trim-header"
+    },
+    {
+      "source": "dec:token-trim-header",
+      "type": "APPLIES_TO",
+      "target": "comp:client"
+    },
+    {
+      "source": "dec:token-trim-header",
+      "type": "APPLIES_TO",
+      "target": "feat:token-auth"
+    },
+    {
+      "source": "ms:m5",
+      "type": "RECORDS",
+      "target": "dec:zoned-iso-dst"
+    },
+    {
+      "source": "dec:zoned-iso-dst",
+      "type": "APPLIES_TO",
+      "target": "comp:client"
+    },
+    {
+      "source": "dec:zoned-iso-dst",
+      "type": "APPLIES_TO",
+      "target": "feat:today-dashboard"
+    },
+    {
+      "source": "dec:zoned-iso-dst",
+      "type": "APPLIES_TO",
+      "target": "feat:meal-type"
+    },
+    {
+      "source": "ms:m3",
+      "type": "RECORDS",
+      "target": "dec:lazy-routes"
+    },
+    {
+      "source": "dec:lazy-routes",
+      "type": "APPLIES_TO",
+      "target": "comp:client"
+    },
+    {
+      "source": "dec:lazy-routes",
+      "type": "APPLIES_TO",
+      "target": "feat:history"
+    },
+    {
+      "source": "dec:lazy-routes",
+      "type": "APPLIES_TO",
+      "target": "feat:weight-adaptive"
+    },
+    {
+      "source": "dec:lazy-routes",
+      "type": "APPLIES_TO",
+      "target": "feat:barcode"
+    },
+    {
+      "source": "ms:m5",
+      "type": "RECORDS",
+      "target": "dec:export-share-or-download"
+    },
+    {
+      "source": "dec:export-share-or-download",
+      "type": "APPLIES_TO",
+      "target": "comp:client"
+    },
+    {
+      "source": "dec:export-share-or-download",
+      "type": "APPLIES_TO",
+      "target": "feat:export"
+    },
+    {
+      "source": "ms:m3",
+      "type": "RECORDS",
+      "target": "dec:shortcut-token-mask"
+    },
+    {
+      "source": "dec:shortcut-token-mask",
+      "type": "APPLIES_TO",
+      "target": "comp:client"
+    },
+    {
+      "source": "dec:shortcut-token-mask",
+      "type": "APPLIES_TO",
+      "target": "feat:shortcut-health"
+    },
+    {
+      "source": "ms:m3",
+      "type": "RECORDS",
+      "target": "dec:static-security-headers"
+    },
+    {
+      "source": "dec:static-security-headers",
+      "type": "APPLIES_TO",
+      "target": "comp:client"
+    },
+    {
+      "source": "dec:offline-queue-dexie",
+      "type": "USES",
+      "target": "tech:dexie"
+    },
+    {
+      "source": "risk:offline",
+      "type": "MITIGATED_BY",
+      "target": "dec:offline-queue-dexie"
+    },
+    {
+      "source": "dec:lazy-routes",
+      "type": "APPLIES_TO",
+      "target": "tech:recharts"
+    },
+    {
+      "source": "dec:lazy-routes",
+      "type": "APPLIES_TO",
+      "target": "tech:zxing"
+    },
+    {
+      "source": "dec:static-security-headers",
+      "type": "IMPLEMENTED_IN",
+      "target": "repo:apps-web"
+    },
+    {
+      "source": "dec:shortcut-token-mask",
+      "type": "APPLIES_TO",
+      "target": "sec:secrets"
+    },
+    {
+      "source": "dec:token-trim-header",
+      "type": "APPLIES_TO",
+      "target": "sec:token-rate-limit"
+    },
+    {
+      "source": "dec:reject-invisible-names",
+      "type": "SUPERSEDED_BY",
+      "target": "dec:invisible-names-shared"
+    },
+    {
+      "source": "ms:m2",
+      "type": "RECORDS",
+      "target": "dec:json-depth-limit"
+    },
+    {
+      "source": "ms:m2",
+      "type": "RECORDS",
+      "target": "dec:env-vars-default"
+    },
+    {
+      "source": "ms:m1",
+      "type": "RECORDS",
+      "target": "dec:invisible-names-shared"
+    },
+    {
+      "source": "ms:m1",
+      "type": "RECORDS",
+      "target": "dec:adaptive-window-shared"
+    },
+    {
+      "source": "ms:m1",
+      "type": "RECORDS",
+      "target": "dec:typographic-minus"
+    },
+    {
+      "source": "dec:json-depth-limit",
+      "type": "REFINES",
+      "target": "dec:body-limits"
+    },
+    {
+      "source": "dec:json-depth-limit",
+      "type": "APPLIES_TO",
+      "target": "comp:worker"
+    },
+    {
+      "source": "dec:env-vars-default",
+      "type": "APPLIES_TO",
+      "target": "api:analyze"
+    },
+    {
+      "source": "dec:invisible-names-shared",
+      "type": "IMPLEMENTED_IN",
+      "target": "repo:packages-shared"
+    },
+    {
+      "source": "dec:invisible-names-shared",
+      "type": "APPLIES_TO",
+      "target": "api:entries"
+    },
+    {
+      "source": "dec:invisible-names-shared",
+      "type": "APPLIES_TO",
+      "target": "api:favorites"
+    },
+    {
+      "source": "dec:adaptive-window-shared",
+      "type": "IMPLEMENTED_IN",
+      "target": "repo:packages-shared"
+    },
+    {
+      "source": "dec:adaptive-window-shared",
+      "type": "APPLIES_TO",
+      "target": "api:adaptive"
+    },
+    {
+      "source": "dec:adaptive-window-shared",
+      "type": "REFINES",
+      "target": "dec:adaptive-rule"
+    },
+    {
+      "source": "dec:typographic-minus",
+      "type": "APPLIES_TO",
+      "target": "ux:explainable"
+    },
+    {
+      "source": "risk:gemini-accuracy-unmeasured",
+      "type": "AFFECTS",
+      "target": "metric:accuracy"
+    },
+    {
+      "source": "risk:gemini-accuracy-unmeasured",
+      "type": "AFFECTS",
+      "target": "tech:gemini"
+    },
+    {
+      "source": "risk:shortcut-unverified",
+      "type": "AFFECTS",
+      "target": "feat:shortcut-health"
+    },
+    {
+      "source": "risk:shortcut-unverified",
+      "type": "AFFECTS",
+      "target": "feat:reminders"
+    },
+    {
+      "source": "risk:zxing-ios-unverified",
+      "type": "AFFECTS",
+      "target": "feat:barcode"
+    },
+    {
+      "source": "risk:zxing-ios-unverified",
+      "type": "AFFECTS",
+      "target": "tech:zxing"
+    },
+    {
+      "source": "risk:dst-chile-unverified",
+      "type": "AFFECTS",
+      "target": "dec:zoned-iso-dst"
+    },
+    {
+      "source": "risk:parse-number-trailing-dot",
+      "type": "AFFECTS",
+      "target": "feat:onboarding-profile"
+    },
+    {
+      "source": "risk:parse-number-trailing-dot",
+      "type": "AFFECTS",
+      "target": "feat:barcode"
+    },
+    {
+      "source": "risk:barcode-safari",
+      "type": "RELATES_TO",
+      "target": "risk:zxing-ios-unverified"
+    },
+    {
+      "source": "ms:m6",
+      "type": "DEPENDS_ON",
+      "target": "task:user-deploy"
+    },
+    {
+      "source": "ms:m6",
+      "type": "DEPENDS_ON",
+      "target": "task:first-real-test"
+    },
+    {
+      "source": "task:user-deploy",
+      "type": "PRECEDES",
+      "target": "task:first-real-test"
+    },
+    {
+      "source": "task:user-deploy",
+      "type": "DEPENDS_ON",
+      "target": "task:gemini-key"
+    },
+    {
+      "source": "task:first-real-test",
+      "type": "MITIGATES",
+      "target": "risk:gemini-accuracy-unmeasured"
+    },
+    {
+      "source": "task:first-real-test",
+      "type": "MITIGATES",
+      "target": "risk:shortcut-unverified"
+    },
+    {
+      "source": "task:first-real-test",
+      "type": "MITIGATES",
+      "target": "risk:zxing-ios-unverified"
+    },
+    {
+      "source": "doc:testing",
+      "type": "DOCUMENTS",
+      "target": "fact:test-suite-736"
+    },
+    {
+      "source": "doc:testing",
+      "type": "DOCUMENTS",
+      "target": "fact:e2e-playwright"
+    },
+    {
+      "source": "doc:testing",
+      "type": "DOCUMENTS",
+      "target": "task:first-real-test"
+    },
+    {
+      "source": "ms:m6",
+      "type": "DELIVERS",
+      "target": "doc:testing"
+    },
+    {
+      "source": "repo:context",
+      "type": "CONTAINS",
+      "target": "doc:testing"
+    },
+    {
+      "source": "doc:deploy",
+      "type": "DOCUMENTS",
+      "target": "task:user-deploy"
+    },
+    {
+      "source": "doc:deploy",
+      "type": "DOCUMENTS",
+      "target": "task:first-real-test"
     }
   ],
   "conversation_log": [
@@ -4638,6 +6592,18 @@
       "date": "2026-11-04",
       "user_request": "Arrancar; trabajar con Gitflow y commits por implementación.",
       "outcome": "Ramas main/develop/feature creadas; M0 implementado en 8 commits, aprobado por QA e integrado en develop."
+    },
+    {
+      "step": 8,
+      "date": "2026-11-04",
+      "user_request": "Terminar la app de principio a fin y probarla buscando fallas. Agregó GEMINI_API_KEY como variable de entorno (sesión en la nube) y conectó el MCP de Cloudflare.",
+      "outcome": "M1 integrado en develop; en feature/v0.1-api-pwa: migraciones 0001–0003, API REST completa (v0.1–v1.0), endurecimiento tras QA adversarial (aprobado), pantallas web de v0.1 (QA web pendiente); DEPLOY.md, PROMPTS.md y ACCURACY.md creados. La clave no estuvo disponible en la sesión: sin prueba real de Gemini."
+    },
+    {
+      "step": 9,
+      "date": "2026-11-04",
+      "user_request": "Cerrar la v1.0 completa (web y API) con QA adversarial y e2e antes del release; la D1 de producción ya existe.",
+      "outcome": "v0.1–v1.0 terminadas en código; QA adversarial de API (13) y web (15) corregidos; 736 pruebas en verde; e2e Playwright y ataques con curl al Worker real; D1 kalapp-db (WNAM) en wrangler.jsonc. Pendiente: despliegue del usuario y prueba real de Gemini."
     }
   ],
   "changelog": [
@@ -4656,6 +6622,14 @@
     {
       "date": "2026-11-04",
       "change": "M0 terminado: versiones fijadas, decisiones (Gitflow, TS 6, Vitest 4.1, vitest-plugin, versiones exactas, SW prompt), hallazgos de QA como tareas para M2/M3."
+    },
+    {
+      "date": "2026-11-04",
+      "change": "M1 terminado; M2–M5 terminados en código (QA API aprobado, QA web pendiente); M6 en progreso. 19 decisiones nuevas (auth, headers, límites, firma de imagen, cupo atómico CDMX, respaldo de modelo, códigos NOT_FOOD/UPSTREAM_UNAVAILABLE, UUID minúsculas, nombres invisibles, export, endpoints extra, migraciones, onError, UI del SW, carbs floor, grasa sobre peso real, avisos); dec:gemini-pipeline → superseded por dec:gemini-fallback-policy; 5 endpoints nuevos; columnas reales de las tablas; 6 hechos; tareas de QA de M0 cerradas; docs DEPLOY/PROMPTS/ACCURACY creados; PLAN 1.2; nuevo tipo de arista CLOSES (decisión/documento que cierra una tarea)."
+    },
+    {
+      "date": "2026-11-04",
+      "change": "Cierre de v1.0 en código: ms:m2–m5 terminados; phase:v0.2/v0.3/v1.0 terminadas en código; ms:m6 en progreso (despliegue del usuario). 11 decisiones de web y 5 de API/shared; dec:reject-invisible-names → superseded por dec:invisible-names-shared; fact:d1-id-placeholder → superseded por fact:d1-production-created; 6 hechos de verificación; 5 riesgos residuales; tareas task:user-deploy y task:first-real-test; task:start-v0.1 cerrada; doc:testing (TESTING.md) nuevo; PLAN 1.3, DEPLOY 1.1, ACCURACY 1.1."
     }
   ]
 }

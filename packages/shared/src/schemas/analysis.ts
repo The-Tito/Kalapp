@@ -90,7 +90,9 @@ export const AnalyzePhotoFieldsSchema = z.object({
   localHour: z.preprocess((v) => {
     if (typeof v !== 'string') return v
     const s = v.trim()
-    return s === '' ? undefined : Number(s)
+    if (s === '') return undefined
+    // Solo 1–2 dígitos decimales: Number() aceptaría "0x10", "1e1" o "0b101".
+    return /^\d{1,2}$/.test(s) ? Number(s) : Number.NaN
   }, z.number({ error: 'Hora local inválida' }).int().min(0).max(23).optional()),
 })
 export type AnalyzePhotoFields = z.infer<typeof AnalyzePhotoFieldsSchema>
