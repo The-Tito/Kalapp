@@ -6,7 +6,7 @@
     "language": "es-MX",
     "created_at": "2026-11-04",
     "updated_at": "2026-11-04",
-    "status": "Plan completo aprobado (context/PLAN.md); implementación v0.1 por iniciar (M0)",
+    "status": "Plan aprobado y equipo multi-agente definido; siguiente paso M0",
     "git_branch": "claude/eager-cori-r3qu9s",
     "conventions": {
       "node_id_format": "<prefijo>:<slug>  (ej. feat:photo-logging)",
@@ -40,7 +40,8 @@
         "task": "Siguiente paso / pendiente",
         "src": "Fuente de investigación",
         "doc": "Documento en /context",
-        "ms": "Milestone (hito) de una fase"
+        "ms": "Milestone (hito) de una fase",
+        "agent": "Agente del equipo de desarrollo"
       },
       "edge_format": "{ source, type, target, note? }",
       "how_to_update": "Agregar nodos nuevos sin borrar los anteriores; si algo se reemplaza, marcar el nodo viejo con status='superseded' y crear una arista SUPERSEDED_BY hacia el nuevo. Actualizar metadata.updated_at y añadir una entrada en changelog."
@@ -2499,6 +2500,148 @@
         "status": "pendiente (para M6)",
         "command": "npx wrangler login"
       }
+    },
+    {
+      "id": "req:multi-agent",
+      "type": "Requirement",
+      "label": "Estructura multi-agente para desarrollar",
+      "properties": {
+        "detail": "Flujo óptimo y mayor velocidad de desarrollo con varios agentes.",
+        "source": "Mensaje 6 del usuario"
+      }
+    },
+    {
+      "id": "agent:orchestrator",
+      "type": "Agent",
+      "label": "Orquestador (sesión principal)",
+      "properties": {
+        "owns": [
+          "package.json",
+          "pnpm-workspace.yaml",
+          "tsconfig.base.json",
+          "biome.json",
+          ".github/**",
+          "CLAUDE.md",
+          ".claude/**"
+        ],
+        "role": "Pasos 1 y 6: planear, asignar, archivos raíz, commit/push",
+        "model": "inherit"
+      }
+    },
+    {
+      "id": "agent:shared-nutrition",
+      "type": "Agent",
+      "label": "shared-nutrition",
+      "properties": {
+        "owns": [
+          "packages/shared/**"
+        ],
+        "role": "Paso 2: contrato primero (esquemas, tipos, cálculo)",
+        "model": "inherit",
+        "definition_file": ".claude/agents/shared-nutrition.md"
+      }
+    },
+    {
+      "id": "agent:api-worker",
+      "type": "Agent",
+      "label": "api-worker",
+      "properties": {
+        "owns": [
+          "apps/api/**",
+          "migrations/**",
+          "wrangler.jsonc"
+        ],
+        "role": "Paso 3: en paralelo con web-pwa",
+        "model": "inherit",
+        "definition_file": ".claude/agents/api-worker.md"
+      }
+    },
+    {
+      "id": "agent:web-pwa",
+      "type": "Agent",
+      "label": "web-pwa",
+      "properties": {
+        "owns": [
+          "apps/web/**"
+        ],
+        "role": "Paso 3: en paralelo con api-worker",
+        "model": "inherit",
+        "definition_file": ".claude/agents/web-pwa.md"
+      }
+    },
+    {
+      "id": "agent:qa-reviewer",
+      "type": "Agent",
+      "label": "qa-reviewer",
+      "properties": {
+        "owns": [
+          "**/*.test.ts(x)",
+          "fixtures/"
+        ],
+        "role": "Paso 4: lint, typecheck, test, build, revisión; veredicto APROBADO / CAMBIOS REQUERIDOS",
+        "model": "inherit",
+        "definition_file": ".claude/agents/qa-reviewer.md"
+      }
+    },
+    {
+      "id": "agent:context-keeper",
+      "type": "Agent",
+      "label": "context-keeper",
+      "properties": {
+        "owns": [
+          "context/**"
+        ],
+        "role": "Paso 5: KG y documentos",
+        "model": "inherit",
+        "definition_file": ".claude/agents/context-keeper.md"
+      }
+    },
+    {
+      "id": "dec:multi-agent",
+      "type": "Decision",
+      "label": "Equipo multi-agente con carpetas exclusivas",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "Orquestador + 5 especialistas; cada uno escribe solo en sus carpetas para poder trabajar en paralelo sin conflictos; contrato en packages/shared primero. Solo el orquestador hace commit/push. Reporte de 5 puntos obligatorio.",
+        "pieces": {
+          "agents": ".claude/agents/*.md",
+          "rules": "CLAUDE.md",
+          "workflow": ".claude/skills/milestone/SKILL.md (comando /milestone <id>) y context/AGENTS.md"
+        },
+        "flow": [
+          "1 Planear (orquestador)",
+          "2 Contrato primero (shared-nutrition)",
+          "3 Implementar en paralelo (api-worker ∥ web-pwa)",
+          "4 Verificar (qa-reviewer, máx. 3 vueltas)",
+          "5 Conocimiento (context-keeper)",
+          "6 Cierre: verificación final, commit, push (orquestador)"
+        ],
+        "limits": "Subagentes arrancan sin memoria; tareas pequeñas las hace el orquestador; paralelismo real en M3–M5 y v0.2+."
+      }
+    },
+    {
+      "id": "doc:agents",
+      "type": "Document",
+      "label": "Equipo multi-agente y flujo",
+      "properties": {
+        "path": "context/AGENTS.md"
+      }
+    },
+    {
+      "id": "doc:claude-md",
+      "type": "Document",
+      "label": "Reglas del proyecto (CLAUDE.md)",
+      "properties": {
+        "path": "CLAUDE.md"
+      }
+    },
+    {
+      "id": "doc:milestone-skill",
+      "type": "Document",
+      "label": "Comando /milestone",
+      "properties": {
+        "path": ".claude/skills/milestone/SKILL.md"
+      }
     }
   ],
   "edges": [
@@ -4068,6 +4211,156 @@
       "source": "task:wrangler-login",
       "type": "FEEDS",
       "target": "deploy:d1-create"
+    },
+    {
+      "source": "proj:kalapp",
+      "type": "HAS_REQUIREMENT",
+      "target": "req:multi-agent"
+    },
+    {
+      "source": "dec:multi-agent",
+      "type": "DEFINES",
+      "target": "agent:orchestrator"
+    },
+    {
+      "source": "dec:multi-agent",
+      "type": "DEFINES",
+      "target": "agent:shared-nutrition"
+    },
+    {
+      "source": "dec:multi-agent",
+      "type": "DEFINES",
+      "target": "agent:api-worker"
+    },
+    {
+      "source": "dec:multi-agent",
+      "type": "DEFINES",
+      "target": "agent:web-pwa"
+    },
+    {
+      "source": "dec:multi-agent",
+      "type": "DEFINES",
+      "target": "agent:qa-reviewer"
+    },
+    {
+      "source": "dec:multi-agent",
+      "type": "DEFINES",
+      "target": "agent:context-keeper"
+    },
+    {
+      "source": "dec:multi-agent",
+      "type": "ANSWERS",
+      "target": "req:multi-agent"
+    },
+    {
+      "source": "repo:context",
+      "type": "CONTAINS",
+      "target": "doc:agents"
+    },
+    {
+      "source": "dec:multi-agent",
+      "type": "DOCUMENTED_IN",
+      "target": "doc:agents"
+    },
+    {
+      "source": "dec:multi-agent",
+      "type": "DOCUMENTED_IN",
+      "target": "doc:claude-md"
+    },
+    {
+      "source": "dec:multi-agent",
+      "type": "DOCUMENTED_IN",
+      "target": "doc:milestone-skill"
+    },
+    {
+      "source": "agent:shared-nutrition",
+      "type": "OWNS",
+      "target": "repo:packages-shared"
+    },
+    {
+      "source": "agent:api-worker",
+      "type": "OWNS",
+      "target": "repo:apps-api"
+    },
+    {
+      "source": "agent:api-worker",
+      "type": "OWNS",
+      "target": "repo:migrations"
+    },
+    {
+      "source": "agent:web-pwa",
+      "type": "OWNS",
+      "target": "repo:apps-web"
+    },
+    {
+      "source": "agent:context-keeper",
+      "type": "OWNS",
+      "target": "repo:context"
+    },
+    {
+      "source": "agent:orchestrator",
+      "type": "OWNS",
+      "target": "repo:root"
+    },
+    {
+      "source": "agent:qa-reviewer",
+      "type": "VERIFIES",
+      "target": "metric:calc-tests"
+    },
+    {
+      "source": "agent:shared-nutrition",
+      "type": "PRECEDES",
+      "target": "agent:api-worker"
+    },
+    {
+      "source": "agent:shared-nutrition",
+      "type": "PRECEDES",
+      "target": "agent:web-pwa"
+    },
+    {
+      "source": "ms:m0",
+      "type": "ASSIGNED_TO",
+      "target": "agent:orchestrator"
+    },
+    {
+      "source": "ms:m1",
+      "type": "ASSIGNED_TO",
+      "target": "agent:shared-nutrition"
+    },
+    {
+      "source": "ms:m2",
+      "type": "ASSIGNED_TO",
+      "target": "agent:api-worker"
+    },
+    {
+      "source": "ms:m3",
+      "type": "ASSIGNED_TO",
+      "target": "agent:web-pwa"
+    },
+    {
+      "source": "ms:m4",
+      "type": "ASSIGNED_TO",
+      "target": "agent:api-worker"
+    },
+    {
+      "source": "ms:m4",
+      "type": "ASSIGNED_TO",
+      "target": "agent:web-pwa"
+    },
+    {
+      "source": "ms:m5",
+      "type": "ASSIGNED_TO",
+      "target": "agent:api-worker"
+    },
+    {
+      "source": "ms:m5",
+      "type": "ASSIGNED_TO",
+      "target": "agent:web-pwa"
+    },
+    {
+      "source": "ms:m6",
+      "type": "ASSIGNED_TO",
+      "target": "agent:context-keeper"
     }
   ],
   "conversation_log": [
@@ -4100,6 +4393,12 @@
       "date": "2026-11-04",
       "user_request": "GitHub reconectado; realizar la planeación completa del proyecto y guardarla en /context.",
       "outcome": "Push del commit pendiente; creado context/PLAN.md; KG actualizado con milestones M0–M6, 12 decisiones nuevas, documentos de /context y refinamientos del modelo de datos."
+    },
+    {
+      "step": 6,
+      "date": "2026-11-04",
+      "user_request": "Crear una estructura multi-agente para desarrollar la app con flujo óptimo y mayor velocidad; ¿se hace con un plan, una regla o cómo?",
+      "outcome": "Se explicó que son tres piezas (agentes, reglas, flujo) y se crearon CLAUDE.md, 5 agentes en .claude/agents, el comando /milestone y context/AGENTS.md."
     }
   ],
   "changelog": [
@@ -4110,6 +4409,10 @@
     {
       "date": "2026-11-04",
       "change": "Plan completo: doc:plan, milestones ms:m0–ms:m6, decisiones de planeación, api:health, tecnologías Biome/Workers Builds/GitHub Actions/React Router, columnas local_date y timezone, config del Worker."
+    },
+    {
+      "date": "2026-11-04",
+      "change": "Equipo multi-agente: req:multi-agent, dec:multi-agent, nodos agent:*, documentos CLAUDE.md, AGENTS.md y /milestone; asignación de agentes a milestones."
     }
   ]
 }

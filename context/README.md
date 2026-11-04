@@ -9,6 +9,7 @@ Esta carpeta guarda **todo el conocimiento del proyecto**: requisitos, investiga
 | `knowledge-graph.json` | Grafo de conocimiento (KG) con toda la información del proyecto |
 | `README.md` | Este archivo: cómo está organizada la carpeta y cómo usar el grafo |
 | `PLAN.md` | Plan completo del proyecto: stack, estructura, datos, API, pantallas, roadmap con milestones, pruebas, despliegue y flujo de trabajo |
+| `AGENTS.md` | Equipo multi-agente, dueños de carpetas y flujo por milestone |
 | `DEPLOY.md` *(M6)* | Guía de despliegue paso a paso |
 | `PROMPTS.md` *(M4)* | Versiones del prompt de Gemini |
 | `ACCURACY.md` *(M6)* | Resultados de precisión de la IA |
@@ -39,6 +40,7 @@ Esta carpeta guarda **todo el conocimiento del proyecto**: requisitos, investiga
 | `dec:` | Decisión | `dec:monorepo`, `dec:single-worker` |
 | `doc:` | Documento de /context | `doc:plan` |
 | `ms:` | Milestone de una fase | `ms:m0` … `ms:m6` |
+| `agent:` | Agente del equipo | `agent:api-worker` |
 | `risk:` | Riesgo y su mitigación | `risk:hidden-fats`, `risk:api-key-leak` |
 | `feat:` | Funcionalidad | `feat:photo-logging`, `feat:goal-recommendation` |
 | `ux:` | Regla de experiencia | `ux:three-taps` |
