@@ -8,11 +8,11 @@ import {
 import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
+import { ExportCard } from '../components/ExportCard'
 import { ScreenTitle } from '../components/Layout'
-import { ProfileWizard } from '../components/ProfileWizard'
+import { ShortcutCard } from '../components/ShortcutCard'
 import { Button, Card, Spinner } from '../components/ui'
 import { useDraft } from '../lib/draft'
-import { profileToForm } from '../lib/onboarding'
 import { usePwa } from '../lib/pwa'
 import { useProfileQuery } from '../lib/queries'
 import { tokenStore } from '../lib/token'
@@ -23,25 +23,10 @@ export function SettingsScreen() {
   const navigate = useNavigate()
   const { setDraft } = useDraft()
   const pwa = usePwa()
-  const [editing, setEditing] = useState(false)
   const [confirmLogout, setConfirmLogout] = useState(false)
   const [checked, setChecked] = useState(false)
 
   if (!profile) return <Spinner />
-
-  if (editing) {
-    return (
-      <div>
-        <ScreenTitle>Editar perfil</ScreenTitle>
-        <ProfileWizard
-          initialValues={profileToForm(profile)}
-          saveLabel="Guardar cambios"
-          onCancel={() => setEditing(false)}
-          onSaved={() => setEditing(false)}
-        />
-      </div>
-    )
-  }
 
   const logout = () => {
     tokenStore.clear()
@@ -71,10 +56,14 @@ export function SettingsScreen() {
           {profile.goal !== 'recomp' && ` · ${getIntensityLabel(profile.goal, profile.intensity)}`}{' '}
           · {ACTIVITY_LEVEL_LABELS[profile.activityLevel]} · {profile.trainingDays} días de pesas
         </p>
-        <Button variant="secondary" onClick={() => setEditing(true)}>
+        <Button variant="secondary" onClick={() => navigate('/ajustes/perfil')}>
           Editar perfil y objetivo
         </Button>
       </Card>
+
+      <ExportCard timezone={profile.timezone} />
+
+      <ShortcutCard />
 
       <Card className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">Acceso</h2>

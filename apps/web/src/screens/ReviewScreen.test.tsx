@@ -1,8 +1,11 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, screen } from '@testing-library/react'
+import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
+import { Route } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createApiClient } from '../lib/api'
 import type { Draft } from '../lib/draft'
+import { OfflineQueue } from '../lib/offlineQueue'
 import { queryKeys } from '../lib/queryClient'
 import { createTokenStore } from '../lib/token'
 import { jsonResponse, memoryStorage, referenceProfile, tacosProposal } from '../test/fixtures'
@@ -22,7 +25,10 @@ const draft: Draft = {
   localHour: 13,
 }
 
-function setup(fetchImpl: (url: string, init: RequestInit) => Promise<Response>) {
+function setup(
+  fetchImpl: (url: string, init: RequestInit) => Promise<Response>,
+  opts: { draft?: Draft; queue?: OfflineQueue } = {},
+) {
   const tokens = createTokenStore(() => memoryStorage())
   tokens.set('secreto')
   const fetchFn = vi.fn(fetchImpl)
@@ -30,8 +36,10 @@ function setup(fetchImpl: (url: string, init: RequestInit) => Promise<Response>)
   const utils = renderWithProviders(<ReviewScreen />, {
     api,
     route: '/revisar',
-    draft,
+    draft: opts.draft ?? draft,
+    queue: opts.queue ?? null,
     setup: (qc) => qc.setQueryData(queryKeys.profile, referenceProfile),
+    extraRoutes: <Route path="/" element={<p>Pantalla Hoy</p>} />,
   })
   return { ...utils, fetchFn }
 }
@@ -110,5 +118,102 @@ describe('Revisar', () => {
       (c) => JSON.parse(String((c as unknown as [string, RequestInit])[1].body)).id,
     )
     expect(ids).toEqual([ID, ID])
+  })
+
+  it('Guardar queda en una barra fija (no hay barra de navegación en Revisar)', () => {
+    setup(async () => jsonResponse({}))
+    expect(screen.queryByRole('navigation')).toBeNull()
+    const save = screen.getByRole('button', { name: 'Guardar' })
+    expect(save.closest('.fixed')?.className).toContain('pb-safe')
+  })
+
+  it('⭐ también como favorito: POST /favorites tras guardar la comida, con el nombre editado', async () => {
+    const { fetchFn } = setup(async (url, init) => {
+      const body = JSON.parse(String(init.body))
+      if (url === '/api/entries')
+        return jsonResponse({
+          ...body,
+          totals: { kcal: 345, proteinG: 21.9, carbsG: 30.6, fatG: 15.7 },
+          createdAt: '2026-11-04T19:00:00Z',
+        })
+      return jsonResponse(
+        {
+          ...body,
+          totals: { kcal: 345, proteinG: 21.9, carbsG: 30.6, fatG: 15.7 },
+          usesCount: 0,
+          createdAt: '2026-11-04T19:00:00Z',
+          lastUsedAt: null,
+        },
+        201,
+      )
+    })
+    fireEvent.click(screen.getByLabelText('⭐ Guardar también como favorito'))
+    const name = screen.getByLabelText('Nombre del favorito') as HTMLInputElement
+    expect(name.value).toBe('Tacos al pastor')
+    fireEvent.change(name, { target: { value: 'Tacos de la esquina' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+    expect(await screen.findByText('Pantalla Hoy')).toBeTruthy()
+    const urls = fetchFn.mock.calls.map((c) => c[0])
+    expect(urls).toEqual(['/api/entries', '/api/favorites'])
+    const fav = JSON.parse(
+      String((fetchFn.mock.calls[1] as unknown as [string, RequestInit])[1].body),
+    )
+    expect(fav).toMatchObject({ name: 'Tacos de la esquina', mealType: 'lunch' })
+    expect(fav.items[0]).not.toHaveProperty('confidence')
+  })
+
+  it('sin red: la comida va a la cola con el mismo id y vuelve a Hoy', async () => {
+    const queue = new OfflineQueue({
+      name: 'review-test',
+      indexedDB: new IDBFactory(),
+      IDBKeyRange,
+    })
+    setup(
+      async () => {
+        throw new TypeError('offline')
+      },
+      { queue },
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+    expect(await screen.findByText('Pantalla Hoy')).toBeTruthy()
+    const items = await queue.list()
+    expect(items).toHaveLength(1)
+    expect(items[0]?.kind === 'entry' && items[0].input.id).toBe(ID)
+    queue.db.close()
+  })
+
+  it('en edición permite cambiar el día (sin fechas futuras) y manda PATCH con localDate', async () => {
+    const entry = {
+      id: ID,
+      localDate: '2026-11-04',
+      eatenAt: '2026-11-04T08:15:00-06:00',
+      mealType: 'breakfast' as const,
+      source: 'photo' as const,
+      note: null,
+      title: 'Tacos al pastor',
+      items: tacosProposal.items,
+      aiModel: 'gemini-test',
+      aiConfidence: 'medium' as const,
+      totals: tacosProposal.totals,
+      createdAt: '2026-11-04T14:15:00Z',
+    }
+    const { fetchFn } = setup(
+      async (_url, init) => jsonResponse({ ...entry, ...JSON.parse(String(init.body)) }),
+      { draft: { kind: 'edit', entry } },
+    )
+    const date = screen.getByLabelText('Día') as HTMLInputElement
+    expect(date.max).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+    fireEvent.change(date, { target: { value: '2999-01-01' } })
+    expect(date.value).toBe('2026-11-04') // se ignora la fecha futura
+    fireEvent.change(date, { target: { value: '2026-11-02' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+    await vi.waitFor(() => expect(fetchFn).toHaveBeenCalledTimes(1))
+    const [url, init] = fetchFn.mock.calls[0] as unknown as [string, RequestInit]
+    expect(url).toBe(`/api/entries/${ID}`)
+    expect(init.method).toBe('PATCH')
+    expect(JSON.parse(String(init.body))).toMatchObject({
+      localDate: '2026-11-02',
+      eatenAt: '2026-11-02T08:15:00-06:00',
+    })
   })
 })

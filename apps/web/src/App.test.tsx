@@ -2,27 +2,34 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { cleanup, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { AppRoutes } from './App'
 import { createApiClient } from './lib/api'
 import { ApiProvider } from './lib/apiContext'
-import { DraftProvider } from './lib/draft'
+import { type Draft, DraftProvider } from './lib/draft'
 import { tokenStore } from './lib/token'
-import { jsonResponse, referenceProfile } from './test/fixtures'
+import { jsonResponse, referenceProfile, tacosProposal } from './test/fixtures'
+import { mockResizeObserver } from './test/resizeObserver'
+
+beforeAll(() => mockResizeObserver())
 
 afterEach(() => {
   cleanup()
   tokenStore.clear()
 })
 
-function renderApp(route: string, fetchImpl: (url: string) => Promise<Response>) {
+function renderApp(
+  route: string,
+  fetchImpl: (url: string) => Promise<Response>,
+  draft: Draft | null = null,
+) {
   const fetchFn = vi.fn(fetchImpl)
   const api = createApiClient({ fetchFn: fetchFn as unknown as typeof fetch })
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={qc}>
       <ApiProvider client={api}>
-        <DraftProvider initialDraft={null}>
+        <DraftProvider initialDraft={draft}>
           <MemoryRouter initialEntries={[route]}>
             <AppRoutes />
           </MemoryRouter>
@@ -67,5 +74,55 @@ describe('guardias de la app', () => {
     expect(await screen.findByRole('heading', { name: 'Hoy' })).toBeTruthy()
     expect(await screen.findByText('Aún no registras comidas hoy.')).toBeTruthy()
     expect(await screen.findByText('Análisis de hoy: 2 de 50')).toBeTruthy()
+  })
+
+  const appFetch = async (url: string) => {
+    if (url === '/api/profile') return jsonResponse(referenceProfile)
+    if (url.startsWith('/api/entries')) return jsonResponse([])
+    if (url.startsWith('/api/summary')) {
+      const u = new URL(url, 'http://x')
+      return jsonResponse({
+        from: u.searchParams.get('from'),
+        to: u.searchParams.get('to'),
+        days: [],
+        loggedDays: 0,
+        averages: { kcal: 0, proteinG: 0, carbsG: 0, fatG: 0 },
+      })
+    }
+    return jsonResponse({ date: '2026-11-04', calls: 2, limit: 50 })
+  }
+
+  it('barra inferior: Hoy · Historial · 📷 · Peso · Ajustes', async () => {
+    tokenStore.set('secreto')
+    renderApp('/', appFetch)
+    const nav = await screen.findByRole('navigation', { name: 'Navegación principal' })
+    const labels = [...nav.querySelectorAll('a')].map(
+      (a) =>
+        a.getAttribute('aria-label') ??
+        a.textContent?.replace(/\p{Extended_Pictographic}|\uFE0F/gu, '').trim(),
+    )
+    expect(labels).toEqual(['Hoy', 'Historial', 'Registrar comida', 'Peso', 'Ajustes'])
+  })
+
+  it('Revisar oculta la barra inferior', async () => {
+    tokenStore.set('secreto')
+    renderApp('/revisar', appFetch, {
+      kind: 'new',
+      id: '7c9e6679-7425-40de-944b-e07fc1f90ae7',
+      proposal: tacosProposal,
+      source: 'photo',
+      note: null,
+      photo: null,
+      localHour: 13,
+    })
+    expect(await screen.findByRole('button', { name: 'Guardar' })).toBeTruthy()
+    expect(screen.queryByRole('navigation', { name: 'Navegación principal' })).toBeNull()
+  })
+
+  it('Historial se carga perezosamente', async () => {
+    tokenStore.set('secreto')
+    renderApp('/historial', appFetch)
+    expect(await screen.findByRole('heading', { name: 'Historial' })).toBeTruthy()
+    expect(await screen.findByText('No hay registros en estos 7 días.')).toBeTruthy()
   })
 })

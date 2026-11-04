@@ -5,6 +5,8 @@ import {
   formatGrams,
   formatKcal,
   formatNumber,
+  formatSignedNumber,
+  formatSignedPct,
   GOAL_CONFIG,
   GOALS,
   getIntensityLabel,
@@ -28,6 +30,7 @@ import {
   validateStep,
 } from '../lib/onboarding'
 import { queryKeys } from '../lib/queryClient'
+import { FixedActionBar } from './Layout'
 import { Button, ErrorBox, Field, inputClass, WarningBox } from './ui'
 
 const TRAINING_DAY_OPTIONS = Array.from(
@@ -121,11 +124,7 @@ const errProps = (id: string, error?: string) => ({
   'aria-describedby': error ? `${id}-error` : undefined,
 })
 
-function signedKg(kg: number): string {
-  if (kg === 0) return '0 kg'
-  const sign = kg > 0 ? '+' : '−'
-  return `${sign}${formatNumber(Math.abs(kg), 2)} kg`
-}
+const signedKg = (kg: number): string => `${formatSignedNumber(kg, 2)} kg`
 
 export function RecommendationView({ rec }: { rec: Recommendation }) {
   return (
@@ -162,10 +161,7 @@ export function RecommendationView({ rec }: { rec: Recommendation }) {
         <div className="rounded-xl bg-gray-100 p-3 dark:bg-gray-800">
           <dt className="text-gray-600 dark:text-gray-400">Gasto diario</dt>
           <dd className="font-semibold tabular-nums">{formatKcal(rec.tdee)}</dd>
-          <dd className="text-xs text-gray-500">
-            Ajuste {rec.adjustPct > 0 ? '+' : ''}
-            {formatNumber(rec.adjustPct)} %
-          </dd>
+          <dd className="text-xs text-gray-500">Ajuste {formatSignedPct(rec.adjustPct)}</dd>
         </div>
       </dl>
       {rec.warnings.map((w) => (
@@ -428,7 +424,7 @@ export function ProfileWizard({
                       checked={values.intensity === i}
                       onChange={() => set('intensity', i)}
                       title={getIntensityLabel(goal, i)}
-                      description={`${pct > 0 ? '+' : '−'}${Math.abs(pct)} %`}
+                      description={formatSignedPct(pct)}
                     />
                   )
                 })}
@@ -481,16 +477,16 @@ export function ProfileWizard({
         </>
       )}
 
-      <div className="flex gap-3 pt-2">
+      <FixedActionBar>
         {(step > 1 || onCancel) && (
-          <Button variant="secondary" onClick={back} className="flex-1">
+          <Button variant="secondary" onClick={back} className="min-h-12 flex-1">
             {step > 1 ? 'Atrás' : 'Cancelar'}
           </Button>
         )}
-        <Button type="submit" className="flex-[2]" disabled={save.isPending}>
+        <Button type="submit" className="min-h-12 flex-[2]" disabled={save.isPending}>
           {step < 4 ? 'Siguiente' : save.isPending ? 'Guardando…' : saveLabel}
         </Button>
-      </div>
+      </FixedActionBar>
     </form>
   )
 }

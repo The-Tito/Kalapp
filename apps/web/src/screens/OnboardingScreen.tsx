@@ -10,7 +10,7 @@ export function OnboardingScreen() {
   const navigate = useNavigate()
   const [initial] = useState(() => emptyProfileForm(deviceTimeZone()))
   return (
-    <PlainShell>
+    <PlainShell withActionBar>
       <h1 className="mb-1 text-2xl font-bold">Bienvenido a {APP_NAME}</h1>
       <p className="mb-6 text-gray-600 dark:text-gray-400">
         Con tus datos calculamos cuántas calorías y macros te tocan al día.

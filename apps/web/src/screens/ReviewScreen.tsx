@@ -14,7 +14,7 @@ import {
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useId, useReducer, useRef, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router'
-import { ScreenTitle } from '../components/Layout'
+import { FixedActionBar, ScreenTitle } from '../components/Layout'
 import {
   Button,
   Card,
@@ -24,12 +24,16 @@ import {
   inputClass,
   WarningBox,
 } from '../components/ui'
-import { errorMessage } from '../lib/api'
+import { ApiError, errorMessage } from '../lib/api'
 import { useApi } from '../lib/apiContext'
+import { formatDayLabel, todayIn } from '../lib/dates'
 import { type Draft, useDraft } from '../lib/draft'
+import { buildFavoriteInput } from '../lib/favorites'
+import { todayUrl } from '../lib/nav'
 import { parseNumber } from '../lib/onboarding'
 import { useProfileQuery } from '../lib/queries'
 import { queryKeys } from '../lib/queryClient'
+import { useQueue } from '../lib/queueContext'
 import {
   buildEntryInput,
   buildEntryPatch,
@@ -42,12 +46,15 @@ import {
   type ReviewState,
   reviewReducer,
 } from '../lib/review'
+import { newId } from '../lib/uuid'
 
 function initState(draft: Draft): ReviewState {
   return draft.kind === 'new'
-    ? initReviewFromProposal(draft.proposal, draft.localHour, draft.note)
+    ? initReviewFromProposal(draft.proposal, draft.localHour, draft.note, draft.localDate ?? null)
     : initReviewFromEntry(draft.entry)
 }
+
+type SaveOutcome = { localDate: string; queued: boolean; favoriteFailed: boolean }
 
 function ItemRow({
   item,
@@ -223,52 +230,118 @@ function AddItemForm({ onAdd, onClose }: { onAdd(item: EntryItemInput): void; on
 }
 
 export function ReviewScreen() {
-  const { draft } = useDraft()
-  if (!draft) return <Navigate to="/capturar" replace />
-  return <ReviewEditor key={draft.kind === 'new' ? draft.id : draft.entry.id} draft={draft} />
+  const { draft, setDraft } = useDraft()
+  const navigate = useNavigate()
+  // Al salir (guardar/descartar) se borra el borrador; sin esta bandera el redirect de abajo
+  // podía ganarle a la navegación y mandar a Capturar en vez de a Hoy.
+  const [exiting, setExiting] = useState(false)
+  if (!draft) return exiting ? null : <Navigate to="/capturar" replace />
+  const exit = (url: string) => {
+    setExiting(true)
+    navigate(url, { replace: true })
+    setDraft(null)
+  }
+  return (
+    <ReviewEditor
+      key={draft.kind === 'new' ? draft.id : draft.entry.id}
+      draft={draft}
+      onExit={exit}
+    />
+  )
 }
 
-function ReviewEditor({ draft }: { draft: Draft }) {
+function ReviewEditor({ draft, onExit }: { draft: Draft; onExit(url: string): void }) {
   const api = useApi()
-  const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { setDraft } = useDraft()
+  const queue = useQueue()
   const profile = useProfileQuery().data
   const uid = useId()
   const [state, dispatch] = useReducer(reviewReducer, draft, initState)
   const [adding, setAdding] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
+  const [asFavorite, setAsFavorite] = useState(false)
+  const [favoriteName, setFavoriteName] = useState<string | null>(null)
   const savingRef = useRef(false)
 
   const timezone = profile?.timezone ?? DEFAULT_TIMEZONE
+  const today = todayIn(timezone)
   const items = displayItems(state)
   const totals = sumTotals(items)
   const anyMismatch = items.some((i) => hasEnergyMismatch(i))
+  const isNew = draft.kind === 'new'
   const proposal = draft.kind === 'new' ? draft.proposal : null
+  const fromAi = draft.kind === 'new' && draft.source !== 'barcode'
+  const pendingPhotoId = draft.kind === 'new' ? (draft.pendingPhotoId ?? null) : null
+  const favName = favoriteName ?? state.title
+  const selectedDate = state.localDate ?? today
+
+  const clearPending = async () => {
+    if (!pendingPhotoId) return
+    const q = await queue.getQueue()
+    await q?.remove(pendingPhotoId).catch(() => {})
+    await queue.refresh()
+  }
 
   const save = useMutation({
-    mutationFn: async (): Promise<Entry> => {
+    mutationFn: async (): Promise<SaveOutcome> => {
       if (draft.kind === 'new') {
         const input = buildEntryInput({
           id: draft.id,
           state,
           source: draft.source,
-          aiModel: draft.proposal.model,
-          aiConfidence: draft.proposal.confidence,
+          aiModel: fromAi ? draft.proposal.model : null,
+          aiConfidence: fromAi ? draft.proposal.confidence : null,
           timezone,
           now: new Date(),
         })
         if (!input.success) throw new Error(firstIssueMessage(input.error))
-        return api.createEntry(input.data)
+        const fav = asFavorite
+          ? buildFavoriteInput({
+              id: newId(),
+              name: favName,
+              items: input.data.items,
+              mealType: input.data.mealType,
+            })
+          : null
+        if (fav && !fav.success) throw new Error(firstIssueMessage(fav.error))
+        try {
+          await api.createEntry(input.data)
+        } catch (err) {
+          // Sin red: a la cola (el id es estable, reenviar no duplica).
+          if (err instanceof ApiError && err.code === 'NETWORK') {
+            const q = await queue.getQueue()
+            if (!q) throw err
+            await q.enqueueEntry(input.data)
+            await clearPending()
+            await queue.refresh()
+            return { localDate: input.data.localDate, queued: true, favoriteFailed: !!fav }
+          }
+          throw err
+        }
+        await clearPending()
+        let favoriteFailed = false
+        if (fav?.success) {
+          try {
+            await api.createFavorite(fav.data)
+            void queryClient.invalidateQueries({ queryKey: queryKeys.favorites })
+          } catch {
+            favoriteFailed = true
+          }
+        }
+        return { localDate: input.data.localDate, queued: false, favoriteFailed }
       }
-      const patch = buildEntryPatch(state)
+      const patch = buildEntryPatch(state, draft.entry, timezone)
       if (!patch.success) throw new Error(firstIssueMessage(patch.error))
-      return api.updateEntry(draft.entry.id, patch.data)
+      const entry: Entry = await api.updateEntry(draft.entry.id, patch.data)
+      return { localDate: entry.localDate, queued: false, favoriteFailed: false }
     },
-    onSuccess: (entry) => {
+    onSuccess: (r) => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.entriesAll })
-      navigate(draft.kind === 'edit' ? `/?fecha=${entry.localDate}` : '/', { replace: true })
-      setDraft(null)
+      void queryClient.invalidateQueries({ queryKey: queryKeys.summaryAll })
+      const flags: Record<string, string> = {}
+      if (r.queued) flags.cola = 'comida'
+      if (r.favoriteFailed) flags.aviso = 'favorito'
+      onExit(todayUrl(r.localDate === today ? null : r.localDate, flags))
     },
     onSettled: () => {
       savingRef.current = false
@@ -281,9 +354,19 @@ function ReviewEditor({ draft }: { draft: Draft }) {
       setFormError('Agrega al menos un ingrediente.')
       return
     }
+    if (asFavorite && favName.trim() === '') {
+      setFormError('Escribe un nombre para el favorito.')
+      return
+    }
     setFormError(null)
     savingRef.current = true
     save.mutate()
+  }
+
+  const discard = () => {
+    void clearPending()
+    const back = draft.kind === 'edit' ? draft.entry.localDate : (state.localDate ?? null)
+    onExit(todayUrl(back === today ? null : back))
   }
 
   const saveError = save.isError
@@ -294,7 +377,7 @@ function ReviewEditor({ draft }: { draft: Draft }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <ScreenTitle>{draft.kind === 'new' ? 'Revisar' : 'Editar comida'}</ScreenTitle>
+      <ScreenTitle>{isNew ? 'Revisar' : 'Editar comida'}</ScreenTitle>
 
       <div className="flex items-center gap-3">
         {draft.kind === 'new' && draft.photo && (
@@ -315,10 +398,13 @@ function ReviewEditor({ draft }: { draft: Draft }) {
             onChange={(e) => dispatch({ type: 'setTitle', title: e.target.value })}
             className={`${inputClass} font-semibold`}
           />
-          {proposal && (
+          {proposal && fromAi && (
             <div>
               <ConfidencePill confidence={proposal.confidence} />
             </div>
+          )}
+          {draft.kind === 'new' && draft.source === 'barcode' && (
+            <p className="text-xs text-gray-500">Datos de Open Food Facts</p>
           )}
         </div>
       </div>
@@ -416,7 +502,7 @@ function ReviewEditor({ draft }: { draft: Draft }) {
       {proposal && proposal.assumptions.length > 0 && (
         <details className="rounded-xl bg-gray-100 p-3 dark:bg-gray-800" open>
           <summary className="min-h-11 cursor-pointer content-center font-semibold">
-            Supuestos de la IA
+            {fromAi ? 'Supuestos de la IA' : 'Origen de los datos'}
           </summary>
           <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-gray-700 dark:text-gray-300">
             {proposal.assumptions.map((a) => (
@@ -453,6 +539,22 @@ function ReviewEditor({ draft }: { draft: Draft }) {
         </div>
       </fieldset>
 
+      <Field id={`${uid}-date`} label="Día" hint={formatDayLabel(selectedDate, today)}>
+        <input
+          id={`${uid}-date`}
+          type="date"
+          max={today}
+          value={selectedDate}
+          onChange={(e) => {
+            const v = e.target.value
+            // iOS permite borrar el campo: vacío = hoy. Nunca una fecha futura.
+            if (!v) dispatch({ type: 'setLocalDate', localDate: isNew ? null : today })
+            else if (v <= today) dispatch({ type: 'setLocalDate', localDate: v })
+          }}
+          className={inputClass}
+        />
+      </Field>
+
       <Field id={`${uid}-note`} label="Nota (opcional)">
         <input
           id={`${uid}-note`}
@@ -463,20 +565,36 @@ function ReviewEditor({ draft }: { draft: Draft }) {
         />
       </Field>
 
+      {isNew && (
+        <div className="flex flex-col gap-2 rounded-xl bg-gray-50 p-3 dark:bg-gray-800/60">
+          <label className="flex min-h-11 items-center gap-3">
+            <input
+              type="checkbox"
+              className="size-5 accent-green-600"
+              checked={asFavorite}
+              onChange={(e) => setAsFavorite(e.target.checked)}
+            />
+            <span>⭐ Guardar también como favorito</span>
+          </label>
+          {asFavorite && (
+            <Field id={`${uid}-fav`} label="Nombre del favorito">
+              <input
+                id={`${uid}-fav`}
+                value={favName}
+                maxLength={LIMITS.nameMaxLength}
+                onChange={(e) => setFavoriteName(e.target.value)}
+                className={inputClass}
+              />
+            </Field>
+          )}
+        </div>
+      )}
+
       {formError && <ErrorBox>{formError}</ErrorBox>}
       {saveError && <ErrorBox>{saveError}</ErrorBox>}
 
-      <div className="flex gap-3">
-        <Button
-          variant="secondary"
-          className="flex-1"
-          onClick={() => {
-            navigate(draft.kind === 'edit' ? `/?fecha=${draft.entry.localDate}` : '/', {
-              replace: true,
-            })
-            setDraft(null)
-          }}
-        >
+      <FixedActionBar>
+        <Button variant="secondary" className="min-h-14 flex-1" onClick={discard}>
           Descartar
         </Button>
         <Button
@@ -486,7 +604,7 @@ function ReviewEditor({ draft }: { draft: Draft }) {
         >
           {save.isPending ? 'Guardando…' : 'Guardar'}
         </Button>
-      </div>
+      </FixedActionBar>
     </div>
   )
 }
