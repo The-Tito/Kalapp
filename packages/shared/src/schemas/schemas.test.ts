@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { addDays } from '../utils/dates'
+import { addDays, toLocalDate } from '../utils/dates'
 import { AnalyzePhotoFieldsSchema, AnalyzeTextRequestSchema } from './analysis'
 import { API_ERROR_STATUS, ApiErrorSchema, apiError, ExportQuerySchema } from './api'
 import { BarcodeProductSchema } from './barcode'
@@ -12,7 +12,8 @@ import { WeightInputSchema } from './weight'
 
 const UUID = '3f1c2b7e-9a4d-4c1e-8f2a-6b5d4e3c2a10'
 const todayUtc = new Date().toISOString().slice(0, 10)
-const yearsAgo = (n: number) => `${Number(todayUtc.slice(0, 4)) - n}${todayUtc.slice(4)}`
+const todayMx = toLocalDate(new Date(), 'America/Mexico_City')
+const yearsAgo = (n: number) => `${Number(todayMx.slice(0, 4)) - n}${todayMx.slice(4)}`
 
 const profile = {
   sex: 'male',
@@ -227,6 +228,11 @@ describe('otros esquemas', () => {
   })
   it('AnalyzePhotoFields convierte localHour del multipart', () => {
     expect(AnalyzePhotoFieldsSchema.parse({ localHour: '9' }).localHour).toBe(9)
+    expect(AnalyzePhotoFieldsSchema.parse({ localHour: '' }).localHour).toBeUndefined()
+    expect(AnalyzePhotoFieldsSchema.parse({ localHour: '   ' }).localHour).toBeUndefined()
+    expect(AnalyzePhotoFieldsSchema.parse({}).localHour).toBeUndefined()
+    expect(AnalyzePhotoFieldsSchema.safeParse({ localHour: 'abc' }).success).toBe(false)
+    expect(AnalyzePhotoFieldsSchema.safeParse({ localHour: '9.5' }).success).toBe(false)
   })
   it('FavoriteInput y WeightInput', () => {
     expect(

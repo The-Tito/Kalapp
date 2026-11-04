@@ -29,14 +29,17 @@ export function energyFromMacros(m: Macros): number {
 
 /**
  * `true` si las kcal declaradas difieren de 4/4/9 más que `tolerance` (relativo a las kcal
- * declaradas). Se ignoran ítems con menos de 20 kcal.
+ * declaradas). Se ignoran ítems con menos de 20 kcal declaradas, salvo que declaren 0 kcal
+ * (o menos) mientras sus macros suman ≥ 20 kcal: ese es un error típico del modelo y se marca.
  */
 export function hasEnergyMismatch(
   item: Macros & { kcal: number },
   tolerance = ENERGY_MISMATCH_TOLERANCE,
 ): boolean {
+  const fromMacros = energyFromMacros(item)
+  if (item.kcal <= 0) return fromMacros >= ENERGY_MISMATCH_MIN_KCAL
   if (item.kcal < ENERGY_MISMATCH_MIN_KCAL) return false
-  return Math.abs(energyFromMacros(item) - item.kcal) / item.kcal > tolerance
+  return Math.abs(fromMacros - item.kcal) / item.kcal > tolerance
 }
 
 /** Suma de kcal (entero) y macros (1 decimal). */
@@ -71,7 +74,8 @@ function scaleOne<T extends NutritionItem>(item: T, factor: number, grams?: numb
 }
 
 /**
- * Multiplica porciones (½×, 2×…). `factor` entre 0.25 y 10; si no, lanza `RangeError`.
+ * Multiplica porciones. La UI ofrece presets de ½× a 2×, pero el contrato permite cualquier
+ * `factor` entre 0.25 y 10 (inclusive); fuera de ese rango, NaN o Infinity lanza `RangeError`.
  * Gramos y macros a 1 decimal; kcal a entero. Conserva el resto de los campos.
  */
 export function scaleItems<T extends NutritionItem>(items: readonly T[], factor: number): T[] {

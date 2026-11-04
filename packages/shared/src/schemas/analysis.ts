@@ -86,6 +86,11 @@ export type AnalyzeTextRequest = z.infer<typeof AnalyzeTextRequestSchema>
  */
 export const AnalyzePhotoFieldsSchema = z.object({
   note: NoteSchema.optional(),
-  localHour: z.coerce.number().int().min(0).max(23).optional(),
+  /** "" o solo espacios = ausente; texto no numérico = error. */
+  localHour: z.preprocess((v) => {
+    if (typeof v !== 'string') return v
+    const s = v.trim()
+    return s === '' ? undefined : Number(s)
+  }, z.number({ error: 'Hora local inválida' }).int().min(0).max(23).optional()),
 })
 export type AnalyzePhotoFields = z.infer<typeof AnalyzePhotoFieldsSchema>

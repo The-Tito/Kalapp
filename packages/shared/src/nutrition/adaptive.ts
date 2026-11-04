@@ -53,9 +53,25 @@ export function linearSlope(points: readonly { x: number; y: number }[]): number
  * Gasto adaptativo: ingesta media − pendiente de peso (kg/día) × 7,700.
  * Requiere rango ≥ 14 días, ≥ 80 % de días registrados y ≥ 2 pesos separados ≥ 7 días.
  * Solo propone; nunca cambia la meta.
+ * Lanza `RangeError` si `from > to`, si hay fechas inexistentes o si alguna kcal o peso no es
+ * un número finito ≥ 0. Si el gasto estimado queda fuera de 800–6,000 kcal devuelve
+ * `insufficient_data` con `IMPLAUSIBLE_RESULT`.
  */
 export function adaptiveTdee(input: AdaptiveTdeeInput): AdaptiveTdeeResult {
   const { from, to } = input
+  if (daysBetween(from, to) < 0) {
+    throw new RangeError(`Rango invertido: ${from} > ${to}`)
+  }
+  for (const d of input.days) {
+    if (!Number.isFinite(d.kcal) || d.kcal < 0) {
+      throw new RangeError(`kcal inválidas el ${d.localDate}: ${d.kcal}`)
+    }
+  }
+  for (const w of input.weights) {
+    if (!Number.isFinite(w.weightKg) || w.weightKg <= 0) {
+      throw new RangeError(`Peso inválido el ${w.localDate}: ${w.weightKg}`)
+    }
+  }
   const rangeDays = daysBetween(from, to) + 1
   if (rangeDays < ADAPTIVE_TDEE.minRangeDays) {
     const daysNeeded = Math.max(0, ADAPTIVE_TDEE.minRangeDays - rangeDays)
@@ -115,6 +131,15 @@ export function adaptiveTdee(input: AdaptiveTdeeInput): AdaptiveTdeeResult {
     avgIntake - slopeKgPerDay * KCAL_PER_KG_BODY_WEIGHT,
     ADAPTIVE_TDEE.roundingKcal,
   )
+  const plausible = ADAPTIVE_TDEE.plausibleTdeeKcal
+  if (estimatedTdee < plausible.min || estimatedTdee > plausible.max) {
+    return {
+      status: 'insufficient_data',
+      reason: 'IMPLAUSIBLE_RESULT',
+      message:
+        'Los registros de comida y peso no dan un gasto creíble; revisa que estén completos y vuelve a intentarlo en unos días.',
+    }
+  }
   const adjustPct = getAdjustPct(input.goal, input.intensity)
   const computed = roundToStep(estimatedTdee * (1 + adjustPct / 100), TARGET_ROUNDING_KCAL)
   const floor = safetyFloorKcal(input.sex, input.bmr)

@@ -68,6 +68,22 @@ export function toLocalHour(date: Date | string | number, timezone: string): num
   return Number(hour) % 24
 }
 
+/**
+ * Fecha local de `asOf`: si es YYYY-MM-DD se usa tal cual; si es un instante (Date, número o
+ * ISO datetime) se convierte con `timezone`. Una fecha con forma YYYY-MM-DD pero inexistente
+ * (ej. 2025-02-29, también como prefijo de un datetime) lanza `RangeError`.
+ */
+export function resolveLocalDate(asOf: Date | string | number, timezone: string): string {
+  if (typeof asOf === 'string') {
+    const prefix = /^(\d{4}-\d{2}-\d{2})/.exec(asOf.trim())?.[1]
+    if (prefix !== undefined && !isValidLocalDate(prefix)) {
+      throw new RangeError(`Fecha inválida: ${asOf}`)
+    }
+    if (isValidLocalDate(asOf)) return asOf
+  }
+  return toLocalDate(asOf, timezone)
+}
+
 /** Suma `n` días (puede ser negativo) a una fecha local. */
 export function addDays(localDate: string, n: number): string {
   return formatUtcMs(parseLocalDateToUtcMs(localDate) + Math.trunc(n) * MS_PER_DAY)

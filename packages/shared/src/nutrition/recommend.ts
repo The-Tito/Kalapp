@@ -3,6 +3,7 @@ import {
   BMI_ADJUST_THRESHOLD,
   BMI_ADJUSTED_TARGET,
   BMR_FORMULA_LABELS,
+  DEFAULT_TIMEZONE,
   FAT_MIN_G_PER_KG,
   FAT_PCT_OF_KCAL,
   GAIN_HIGH_BODY_FAT_PCT,
@@ -11,10 +12,11 @@ import {
   getIntensityLabel,
   KCAL_PER_GRAM,
   KCAL_PER_KG_BODY_WEIGHT,
+  LIMITS,
   TARGET_ROUNDING_KCAL,
 } from '../constants'
 import type { ProfileInput, Recommendation, RecommendationWarning } from '../schemas/profile'
-import { isValidLocalDate, toLocalDate } from '../utils/dates'
+import { resolveLocalDate } from '../utils/dates'
 import { formatNumber as n } from '../utils/format'
 import { roundTo, roundToStep } from '../utils/math'
 import { ageOn } from './age'
@@ -26,6 +28,38 @@ export type RecommendInput = Omit<ProfileInput, 'timezone' | 'manualTargetKcal'>
   manualTargetKcal?: number | null
 }
 
+function assertInRange(value: unknown, min: number, max: number, label: string): void {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < min || value > max) {
+    throw new RangeError(`${label} fuera de rango (${min}–${max}): ${String(value)}`)
+  }
+}
+
+/** Rechaza entradas numéricas imposibles (NaN, Infinity, negativas o fuera de LIMITS). */
+function assertRecommendInput(input: RecommendInput): void {
+  assertInRange(input.heightCm, LIMITS.heightCm.min, LIMITS.heightCm.max, 'Estatura (cm)')
+  assertInRange(input.weightKg, LIMITS.weightKg.min, LIMITS.weightKg.max, 'Peso (kg)')
+  if (input.bodyFatPct != null) {
+    assertInRange(input.bodyFatPct, LIMITS.bodyFatPct.min, LIMITS.bodyFatPct.max, '% de grasa')
+  }
+  assertInRange(
+    input.trainingDays,
+    LIMITS.trainingDays.min,
+    LIMITS.trainingDays.max,
+    'Días de entrenamiento',
+  )
+  if (!Number.isInteger(input.trainingDays)) {
+    throw new RangeError('Días de entrenamiento: debe ser entero')
+  }
+  if (input.manualTargetKcal != null) {
+    assertInRange(
+      input.manualTargetKcal,
+      LIMITS.manualTargetKcal.min,
+      LIMITS.manualTargetKcal.max,
+      'Meta manual (kcal)',
+    )
+  }
+}
+
 function signedPct(pct: number): string {
   return pct > 0 ? `+${pct}` : `−${Math.abs(pct)}`
 }
@@ -33,11 +67,13 @@ function signedPct(pct: number): string {
 /**
  * Recomendación diaria (función pura). `asOf` es la fecha en la que se calcula la edad:
  * YYYY-MM-DD o un instante (que se convierte a fecha local con `input.timezone`).
+ * Lanza `RangeError` con fechas inexistentes o números imposibles (NaN, Infinity, fuera de
+ * LIMITS). No revisa la edad 14–100 (eso lo hace `ProfileInputSchema`).
  */
 export function recommend(input: RecommendInput, asOf: Date | string): Recommendation {
-  const timezone = input.timezone ?? 'America/Mexico_City'
-  const asOfDate =
-    typeof asOf === 'string' && isValidLocalDate(asOf) ? asOf : toLocalDate(asOf, timezone)
+  assertRecommendInput(input)
+  const timezone = input.timezone ?? DEFAULT_TIMEZONE
+  const asOfDate = resolveLocalDate(asOf, timezone)
   const age = ageOn(input.birthDate, asOfDate)
   const { sex, weightKg, heightCm, activityLevel, goal, intensity, trainingDays } = input
   const bodyFatPct = input.bodyFatPct ?? null
@@ -104,6 +140,13 @@ export function recommend(input: RecommendInput, asOf: Date | string): Recommend
       code: 'SAFETY_FLOOR_APPLIED',
       message: `La meta calculada (${n(computedTarget)} kcal) quedaba debajo del mínimo seguro; se ajustó a ${n(floor)} kcal.`,
     })
+    if (goal === 'deficit' && targetKcal >= tdeeKcal) {
+      warnings.push({
+        code: 'DEFICIT_NOT_POSSIBLE',
+        message:
+          'Con tu gasto actual no es posible un déficit sin bajar del mínimo seguro; aumenta tu actividad o consulta a un profesional.',
+      })
+    }
   }
 
   // 5. Proteína (peso ajustado a IMC 25 si IMC > 30)

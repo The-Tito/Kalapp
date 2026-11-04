@@ -28,7 +28,7 @@ describe('ageOn', () => {
   it('acepta Date con zona horaria', () => {
     // 2026-11-05T03:00Z es todavía 4 de noviembre en CDMX
     expect(ageOn('1998-11-05', new Date('2026-11-05T03:00:00Z'), 'America/Mexico_City')).toBe(27)
-    expect(ageOn('1998-11-05', new Date('2026-11-05T03:00:00Z'))).toBe(28)
+    expect(ageOn('1998-11-05', new Date('2026-11-05T03:00:00Z'), 'UTC')).toBe(28)
   })
   it('rechaza fechas inválidas', () => {
     expect(() => ageOn('1998-02-30', AS_OF)).toThrow(RangeError)
@@ -159,7 +159,8 @@ describe('recommend — casos límite', () => {
     )
     expect(r.targetKcal).toBe(1200)
     expect(r.safetyFloorApplied).toBe(true)
-    expect(codes(r)).toEqual(['SAFETY_FLOOR_APPLIED'])
+    // TDEE 1,052 ≤ piso 1,200 → el déficit no es posible
+    expect(codes(r)).toEqual(['SAFETY_FLOOR_APPLIED', 'DEFICIT_NOT_POSSIBLE'])
   })
 
   it('piso = BMR redondeado hacia arriba cuando supera el mínimo por sexo', () => {
@@ -179,6 +180,8 @@ describe('recommend — casos límite', () => {
     expect(r.bmr).toBe(2605)
     expect(r.targetKcal).toBe(2650)
     expect(r.safetyFloorApplied).toBe(true)
+    // piso 2,650 < TDEE 3,126: aún hay déficit
+    expect(codes(r)).toEqual(['SAFETY_FLOOR_APPLIED'])
   })
 
   it('meta manual bajo el piso: no se sube, pero avisa', () => {
@@ -191,6 +194,39 @@ describe('recommend — casos límite', () => {
     expect(r.proteinG).toBe(176)
     expect(r.fatG).toBe(48)
     expect(r.carbsG).toBe(Math.floor((1400 - 704 - 432) / 4)) // 66
+  })
+
+  it('DEFICIT_NOT_POSSIBLE solo en déficit con piso ≥ TDEE (no en meta manual)', () => {
+    const tiny = {
+      ...reference,
+      birthDate: '1966-01-01',
+      heightCm: 160,
+      weightKg: 50,
+      activityLevel: 'sedentary' as const,
+    }
+    const r = recommend(tiny, AS_OF) // TDEE 1,446, meta 1,150 → piso 1,500 ≥ 1,446
+    expect(codes(r)).toEqual(['SAFETY_FLOOR_APPLIED', 'DEFICIT_NOT_POSSIBLE'])
+    expect(r.warnings[1]?.message).toMatch(/no es posible un déficit/)
+    expect(codes(recommend({ ...tiny, manualTargetKcal: 1400 }, AS_OF))).toEqual([
+      'BELOW_SAFETY_FLOOR',
+    ])
+  })
+
+  it('entradas imposibles lanzan RangeError', () => {
+    for (const patch of [
+      { weightKg: Number.NaN },
+      { weightKg: -80 },
+      { heightCm: Number.POSITIVE_INFINITY },
+      { heightCm: 99 },
+      { bodyFatPct: 71 },
+      { trainingDays: 1.5 },
+      { trainingDays: 8 },
+      { manualTargetKcal: 500 },
+    ]) {
+      expect(() => recommend({ ...reference, ...patch }, AS_OF)).toThrow(RangeError)
+    }
+    expect(() => recommend(reference, '2025-02-29')).toThrow(RangeError)
+    expect(() => recommend(reference, '2025-02-29T12:00:00Z')).toThrow(RangeError)
   })
 
   it('meta manual sobre el piso: sin avisos', () => {

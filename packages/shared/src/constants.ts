@@ -210,6 +210,8 @@ export const ADAPTIVE_TDEE = {
   minWeights: 2,
   minWeightSpanDays: 7,
   roundingKcal: 10,
+  /** Fuera de este rango el gasto estimado se considera irreal (IMPLAUSIBLE_RESULT). */
+  plausibleTdeeKcal: { min: 800, max: 6000 },
 } as const
 
 /** Límites de `scaleItems`. */

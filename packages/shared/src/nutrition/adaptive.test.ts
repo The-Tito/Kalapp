@@ -158,4 +158,33 @@ describe('adaptiveTdee', () => {
     // pendiente 0.05 kg/día → 2000 − 385 = 1615 → 1620; +10 % = 1782 → 1800 (piso 1800)
     expect(r).toMatchObject({ status: 'ok', estimatedTdee: 1620, suggestedTargetKcal: 1800 })
   })
+
+  it('rango invertido, kcal no finitas o pesos inválidos lanzan RangeError', () => {
+    expect(() => adaptiveTdee(base({ from: TO, to: FROM }))).toThrow(RangeError)
+    const days = base().days.map((d, i) => (i === 3 ? { ...d, kcal: Number.NaN } : d))
+    expect(() => adaptiveTdee(base({ days }))).toThrow(RangeError)
+    expect(() =>
+      adaptiveTdee(base({ days: [{ localDate: FROM, kcal: Number.POSITIVE_INFINITY }] })),
+    ).toThrow(RangeError)
+    expect(() =>
+      adaptiveTdee(base({ weights: [{ localDate: FROM, weightKg: Number.NaN }] })),
+    ).toThrow(RangeError)
+  })
+
+  it('gasto irreal fuera de 800–6,000 → IMPLAUSIBLE_RESULT', () => {
+    // ingesta 0 y −0.3 kg/semana → 330 kcal (< 800)
+    const zero = base().days.map((d) => ({ ...d, kcal: 0 }))
+    const r = adaptiveTdee(base({ days: zero }))
+    expect(r).toMatchObject({ status: 'insufficient_data', reason: 'IMPLAUSIBLE_RESULT' })
+    expect(AdaptiveTdeeResultSchema.safeParse(r).success).toBe(true)
+    // ingesta 7,000 estable → 7,000 (> 6,000)
+    const huge = base().days.map((d) => ({ ...d, kcal: 7000 }))
+    const stable = [
+      { localDate: FROM, weightKg: 80 },
+      { localDate: TO, weightKg: 80 },
+    ]
+    expect(adaptiveTdee(base({ days: huge, weights: stable }))).toMatchObject({
+      reason: 'IMPLAUSIBLE_RESULT',
+    })
+  })
 })

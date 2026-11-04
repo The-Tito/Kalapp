@@ -48,6 +48,11 @@ describe('energyFromMacros / hasEnergyMismatch', () => {
     expect(hasEnergyMismatch({ kcal: 19, proteinG: 0, carbsG: 0, fatG: 0 })).toBe(false)
     expect(hasEnergyMismatch({ kcal: 20, proteinG: 0, carbsG: 0, fatG: 0 })).toBe(true)
   })
+  it('0 kcal declaradas con macros ≥ 20 kcal se marca', () => {
+    expect(hasEnergyMismatch({ kcal: 0, proteinG: 50, carbsG: 50, fatG: 50 })).toBe(true)
+    expect(hasEnergyMismatch({ kcal: 0, proteinG: 1, carbsG: 1, fatG: 0 })).toBe(false) // 8 kcal
+    expect(hasEnergyMismatch({ kcal: 0, proteinG: 0, carbsG: 0, fatG: 0 })).toBe(false)
+  })
 })
 
 describe('sumTotals', () => {
@@ -148,8 +153,30 @@ describe('productToItem', () => {
       confidence: 'high',
     })
   })
-  it('sin marca usa solo el nombre; gramos negativos lanzan error', () => {
+  it('sin marca usa solo el nombre; gramos fuera de 0–5,000 lanzan error', () => {
     expect(productToItem({ ...product, brand: null }, 100).name).toBe('Galletas Marías')
     expect(() => productToItem(product, -5)).toThrow(RangeError)
+    expect(() => productToItem(product, 5001)).toThrow(RangeError)
+    const water = { ...product, per100g: { kcal: 0, proteinG: 0, carbsG: 0, fatG: 0 } }
+    expect(productToItem(water, 5000).grams).toBe(5000)
+  })
+  it('kcal o macros que exceden el esquema lanzan error', () => {
+    const dense = { ...product, per100g: { kcal: 900, proteinG: 0, carbsG: 0, fatG: 100 } }
+    // 5,000 g → 45,000 kcal y 5,000 g de grasa
+    expect(() => productToItem(dense, 5000)).toThrow(RangeError)
+    expect(productToItem(dense, 1000).kcal).toBe(9000)
+  })
+  it('recorta nombre + marca a 120 sin dejar " (" colgando', () => {
+    const long = productToItem(
+      { ...product, name: 'N'.repeat(100), brand: 'Marca muy larga SA de CV' },
+      10,
+    )
+    expect(long.name.length).toBeLessThanOrEqual(120)
+    expect(long.name).toBe(`${'N'.repeat(100)} (Marca muy larga S)`) // 17 caracteres de marca
+    const noRoom = productToItem({ ...product, name: 'N'.repeat(118), brand: 'Gamesa' }, 10)
+    expect(noRoom.name).toBe('N'.repeat(118))
+    const full = productToItem({ ...product, name: 'N'.repeat(130), brand: 'Gamesa' }, 10)
+    expect(full.name).toBe('N'.repeat(120))
+    expect(full.name).not.toMatch(/\($/)
   })
 })

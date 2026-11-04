@@ -76,6 +76,7 @@ export const RecommendationWarningCodeSchema = z.enum([
   'SAFETY_FLOOR_APPLIED',
   'BELOW_SAFETY_FLOOR',
   'CARBS_CLAMPED',
+  'DEFICIT_NOT_POSSIBLE',
 ])
 export type RecommendationWarningCode = z.infer<typeof RecommendationWarningCodeSchema>
 

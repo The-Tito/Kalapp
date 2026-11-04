@@ -4,6 +4,7 @@ export const AdaptiveTdeeReasonSchema = z.enum([
   'RANGE_TOO_SHORT',
   'LOW_LOGGING',
   'NOT_ENOUGH_WEIGHTS',
+  'IMPLAUSIBLE_RESULT',
 ])
 export type AdaptiveTdeeReason = z.infer<typeof AdaptiveTdeeReasonSchema>
 
