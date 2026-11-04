@@ -333,15 +333,15 @@ describe('adversarial: respuestas de Gemini', () => {
     )
   })
 
-  it('50 items → 502', async () => {
-    await fail(
-      () =>
-        geminiResponse({
-          ...AI_OUTPUT,
-          items: Array.from({ length: 50 }, () => AI_OUTPUT.items[0]),
-        }),
-      502,
+  it('50 items → se recortan a 30 con supuesto (el responseSchema ya no puede limitar)', async () => {
+    mockFetch(() =>
+      geminiResponse({ ...AI_OUTPUT, items: Array.from({ length: 50 }, () => AI_OUTPUT.items[0]) }),
     )
+    const res = await postText({ text: 'tacos' })
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as { items: unknown[]; assumptions: string[] }
+    expect(body.items).toHaveLength(30)
+    expect(body.assumptions.join(' ')).toMatch(/Se combinaron ingredientes menores/)
   })
 
   it('kcal como string "130" → 502 (no se coacciona)', async () => {
@@ -592,7 +592,7 @@ describe('adversarial: configuración', () => {
 
   it('fallback igual al principal → un solo intento', async () => {
     const spy = mockFetch(() => jsonResponse({}, 500))
-    await withEnv({ GEMINI_FALLBACK_MODEL: 'gemini-flash-latest' })({
+    await withEnv({ GEMINI_FALLBACK_MODEL: env.GEMINI_MODEL })({
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: '{"text":"tacos"}',

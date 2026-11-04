@@ -27,7 +27,7 @@
   // Valores no secretos. Los secretos (GEMINI_API_KEY, APP_TOKEN) van con `wrangler secret put`
   // y, en local, en .dev.vars (ignorado por git; ver .dev.vars.example).
   "vars": {
-    "GEMINI_MODEL": "gemini-flash-latest",
+    "GEMINI_MODEL": "gemini-2.5-flash",
     "GEMINI_FALLBACK_MODEL": "gemini-flash-lite-latest",
     "DAILY_ANALYZE_LIMIT": "60",
     "MAX_IMAGE_BYTES": "1048576"

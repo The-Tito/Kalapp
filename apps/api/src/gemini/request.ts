@@ -1,4 +1,4 @@
-import { type AiAnalysisOutput, AiAnalysisOutputSchema, roundTo } from '@kalapp/shared'
+import { type AiAnalysisOutput, AiAnalysisOutputSchema, LIMITS, roundTo } from '@kalapp/shared'
 import { type AnalyzePromptInput, buildAnalyzePrompt } from './prompt'
 import { GEMINI_RESPONSE_SCHEMA } from './schema'
 
@@ -106,6 +106,43 @@ function tidy(output: AiAnalysisOutput): AiAnalysisOutput {
   }
 }
 
+export const MERGED_ITEMS_ASSUMPTION = 'Se combinaron ingredientes menores'
+
+/**
+ * Ajustes antes de Zod (el responseSchema ya no lleva límites): con más de 30 ingredientes se
+ * conservan los 30 de más kcal y se agrega un supuesto; `assumptions`/`questions` se recortan
+ * a 20. Los valores fuera de rango NO se corrigen: los rechaza Zod (→ 502).
+ */
+export function trimAiOutput(json: unknown): unknown {
+  if (typeof json !== 'object' || json === null || Array.isArray(json)) return json
+  const out: Record<string, unknown> = { ...(json as Record<string, unknown>) }
+  const maxItems = LIMITS.itemsPerEntry.max
+  const maxList = LIMITS.listMaxItems
+  let merged = false
+  if (Array.isArray(out.items) && out.items.length > maxItems) {
+    const kcalOf = (it: unknown) => {
+      const k = (it as { kcal?: unknown } | null)?.kcal
+      return typeof k === 'number' && Number.isFinite(k) ? k : 0
+    }
+    out.items = out.items
+      .map((it, i) => ({ it, i }))
+      .sort((a, b) => kcalOf(b.it) - kcalOf(a.it) || a.i - b.i)
+      .slice(0, maxItems)
+      .sort((a, b) => a.i - b.i)
+      .map((x) => x.it)
+    merged = true
+  }
+  if (merged) {
+    const prev = Array.isArray(out.assumptions) ? out.assumptions : []
+    out.assumptions = [MERGED_ITEMS_ASSUMPTION, ...prev]
+  }
+  for (const key of ['assumptions', 'questions'] as const) {
+    const list = out[key]
+    if (Array.isArray(list) && list.length > maxList) out[key] = list.slice(0, maxList)
+  }
+  return out
+}
+
 /** Interpreta el JSON de `generateContent` y lo valida con `AiAnalysisOutputSchema`. */
 export function parseGeminiResponse(body: unknown): ParsedGemini {
   const extracted = extractText(body)
@@ -123,7 +160,7 @@ export function parseGeminiResponse(body: unknown): ParsedGemini {
   ) {
     return { kind: 'not_food' }
   }
-  const r = AiAnalysisOutputSchema.safeParse(json)
+  const r = AiAnalysisOutputSchema.safeParse(trimAiOutput(json))
   if (!r.success) {
     const where = r.error.issues
       .slice(0, 3)
