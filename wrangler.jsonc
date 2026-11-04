@@ -1,0 +1,35 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "kalapp",
+  "main": "apps/api/src/index.ts",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+
+  // El mismo Worker sirve la PWA (assets) y la API (/api/*).
+  "assets": {
+    "directory": "apps/web/dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+
+  // Base D1 de producción creada el 2026-11-04 (región WNAM). Las migraciones se aplican al desplegar.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "kalapp-db",
+      "database_id": "bb8a8875-29b3-4197-ad2b-0c74ffaf9806",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  // Valores no secretos. Los secretos (GEMINI_API_KEY, APP_TOKEN) van con `wrangler secret put`
+  // y, en local, en .dev.vars (ignorado por git; ver .dev.vars.example).
+  "vars": {
+    "GEMINI_MODEL": "gemini-2.5-flash",
+    "GEMINI_FALLBACK_MODEL": "gemini-flash-lite-latest",
+    "DAILY_ANALYZE_LIMIT": "60",
+    "MAX_IMAGE_BYTES": "1048576"
+  }
+}

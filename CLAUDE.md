@@ -36,7 +36,7 @@ Flujo por milestone (detalle en `context/AGENTS.md`; se dispara con `/milestone 
 - **Datos personales:** el perfil real del usuario se captura en la app; nunca en el código ni en fixtures. Usar el ejemplo ficticio `ex:reference-male`.
 - **Gemini:** nunca llamarlo de verdad en pruebas ni en CI; usar `fetch` simulado.
 - **Calidad mínima** antes de reportar terminado: `pnpm lint && pnpm typecheck && pnpm test` del paquete tocado, en verde.
-- **Solo el orquestador** hace commits, pushes y PRs. Formato: Conventional Commits (`feat:`, `fix:`, `docs:`, `test:`, `chore:`).
+- **Solo el orquestador** hace commits, merges, pushes y PRs, siguiendo la sección Gitflow.
 - **Idioma:** la interfaz y los documentos van en español (es-MX); los identificadores de código, en inglés.
 - **Reporte final de cada agente**, siempre con esta forma:
   1. Archivos creados o modificados.
@@ -56,6 +56,18 @@ pnpm build
 pnpm db:migrate:local
 ```
 
-## Git
-- Rama de trabajo: `claude/eager-cori-r3qu9s` (o la que indique la sesión). Un PR por milestone hacia `main`.
-- Merge a `main` = despliegue a producción (Workers Builds); solo lo hace el usuario.
+## Git: Gitflow
+| Rama | Sale de | Se integra en | Para qué |
+|---|---|---|---|
+| `main` | — | — | Producción. Merge a `main` = despliegue (Workers Builds). Cada release lleva tag `vX.Y.Z` |
+| `develop` | `main` | — | Integración: siempre en verde |
+| `feature/<milestone>-<slug>` (ej. `feature/m1-nutrition-calc`) | `develop` | `develop` | Un milestone o una funcionalidad |
+| `release/<X.Y.Z>` (ej. `release/0.1.0`) | `develop` | `main` y `develop` | Cerrar una fase (v0.1, v0.2…): ajustes finales, versión, changelog |
+| `hotfix/<X.Y.Z>` | `main` | `main` y `develop` | Corrección urgente en producción |
+
+Reglas:
+- **Un commit por implementación:** cada pieza terminada es un commit atómico en Conventional Commits (`feat(api): …`, `fix(web): …`, `test(shared): …`, `chore: …`, `ci: …`, `docs(context): …`). Cada commit debe pasar `pnpm lint` y los tests del paquete que toca.
+- Las features se integran en `develop` con `git merge --no-ff` (o con un PR si el usuario lo pide) solo después de que `qa-reviewer` apruebe y la verificación completa esté en verde.
+- **`main` solo recibe `release/*` y `hotfix/*`, y únicamente con aprobación explícita del usuario**, porque despliega a producción.
+- Nunca reescribir historia publicada (`push --force`) en `main` ni en `develop`.
+- `claude/eager-cori-r3qu9s` fue la rama de arranque (documentación inicial); ya no se usa para desarrollo.

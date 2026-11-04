@@ -1,0 +1,22 @@
+{
+  "name": "@kalapp/api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --config ../../wrangler.jsonc --port 8787",
+    "lint": "biome check .",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "test:gemini-live": "node scripts/gemini-live.mjs"
+  },
+  "dependencies": {
+    "@kalapp/shared": "workspace:*",
+    "hono": "4.13.16",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-plugin": "1.5.1",
+    "@cloudflare/workers-types": "5.20261104.1"
+  }
+}

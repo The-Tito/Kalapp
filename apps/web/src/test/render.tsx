@@ -1,0 +1,48 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { render } from '@testing-library/react'
+import type { ReactNode } from 'react'
+import { MemoryRouter, Route, Routes } from 'react-router'
+import type { ApiClient } from '../lib/api'
+import { ApiProvider } from '../lib/apiContext'
+import { type Draft, DraftProvider } from '../lib/draft'
+import type { OfflineQueue } from '../lib/offlineQueue'
+import { QueueProvider } from '../lib/queueContext'
+
+export function renderWithProviders(
+  ui: ReactNode,
+  opts: {
+    api: ApiClient
+    route?: string
+    draft?: Draft | null
+    setup?: (qc: QueryClient) => void
+    extraRoutes?: ReactNode
+    /** Cola sin internet (fake-indexeddb); sin ella la cola queda desactivada. */
+    queue?: OfflineQueue | null
+  },
+) {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false, staleTime: Number.POSITIVE_INFINITY } },
+  })
+  opts.setup?.(queryClient)
+  const route = opts.route ?? '/'
+  const path = route.split('?')[0] ?? route
+  const queue = opts.queue ?? null
+  const loader = async () => queue
+  const utils = render(
+    <QueryClientProvider client={queryClient}>
+      <ApiProvider client={opts.api}>
+        <QueueProvider loader={loader}>
+          <DraftProvider initialDraft={opts.draft ?? null}>
+            <MemoryRouter initialEntries={[route]}>
+              <Routes>
+                <Route path={path} element={ui} />
+                {opts.extraRoutes}
+              </Routes>
+            </MemoryRouter>
+          </DraftProvider>
+        </QueueProvider>
+      </ApiProvider>
+    </QueryClientProvider>,
+  )
+  return { ...utils, queryClient }
+}
