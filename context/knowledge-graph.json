@@ -3880,6 +3880,15 @@
         "date": "2026-11-04",
         "detail": "Para pnpm test:gemini-live en la sesión en la nube: NODE_USE_ENV_PROXY=1 y NODE_EXTRA_CA_CERTS=/root/.ccr/ca-bundle.crt. No aplica a producción (Workers)."
       }
+    },
+    {
+      "id": "fact:workers-builds-branch-snapshot",
+      "type": "Fact",
+      "label": "Workers Builds copia la rama de producción al crear el proyecto",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "El proyecto quedó construyendo claude/eager-cori-r3qu9s (rama principal de GitHub en ese momento) y falló con ERR_PNPM_NO_PKG_MANIFEST. Solución: Settings → Build → Production branch = main y un commit nuevo en main (hotfix/1.0.1). La rama principal de GitHub se cambió a main el mismo día."
+      }
     }
   ],
   "edges": [
@@ -6829,6 +6838,11 @@
       "source": "fact:cloud-session-node-proxy",
       "type": "DOCUMENTED_IN",
       "target": "doc:deploy"
+    },
+    {
+      "source": "fact:workers-builds-branch-snapshot",
+      "type": "RELATES_TO",
+      "target": "deploy:worker"
     }
   ],
   "conversation_log": [
@@ -6921,6 +6935,10 @@
     {
       "date": "2026-11-04",
       "change": "Primera prueba real con Gemini: fact:gemini-schema-too-many-states (HTTP 400 en todas las llamadas) corregido por dec:gemini-schema-no-bounds (4eb87d7); dec:gemini-primary-2-5-flash (por fact:gemini-flash-latest-503); dec:gemini-error-logging (refina dec:gemini-fallback-policy); fact:gemini-first-live-results y fact:cloud-session-node-proxy; fact:gemini-key-not-in-session → superseded; tech:gemini y comp:worker con modelo principal gemini-2.5-flash; task:gemini-key parcialmente cerrada; risk:gemini-accuracy-unmeasured con avance; PROMPTS 1.1, ACCURACY 1.2, DEPLOY 1.2, PLAN 1.4."
+    },
+    {
+      "date": "2026-11-04",
+      "change": "hotfix/1.0.1: documentada la rama de producción de Workers Builds y la diferencia entre variables de build y secretos."
     }
   ]
 }
