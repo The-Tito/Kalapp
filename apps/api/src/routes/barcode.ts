@@ -75,17 +75,17 @@ barcodeRoutes.get('/:code', async (c) => {
       signal: AbortSignal.timeout(OFF_TIMEOUT_MS),
     })
   } catch {
-    throw new HttpError('AI_UNAVAILABLE', 'Open Food Facts no responde; intenta más tarde')
+    throw new HttpError('UPSTREAM_UNAVAILABLE', 'Open Food Facts no responde; intenta más tarde')
   }
   if (res.status === 404) throw notFound()
   if (!res.ok) {
-    throw new HttpError('AI_UNAVAILABLE', 'Open Food Facts no responde; intenta más tarde')
+    throw new HttpError('UPSTREAM_UNAVAILABLE', 'Open Food Facts no responde; intenta más tarde')
   }
   let body: unknown
   try {
     body = await res.json()
   } catch {
-    throw new HttpError('AI_UNAVAILABLE', 'Open Food Facts devolvió una respuesta inválida')
+    throw new HttpError('UPSTREAM_UNAVAILABLE', 'Open Food Facts devolvió una respuesta inválida')
   }
   const product = normalizeOffProduct(code, body)
   if (!product) throw notFound()

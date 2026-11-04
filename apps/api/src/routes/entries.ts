@@ -4,7 +4,7 @@ import { deleteEntry, getEntry, insertEntry, listEntriesByDate, patchEntry } fro
 import type { AppEnv } from '../env'
 import { HttpError } from '../lib/errors'
 import { nowIso } from '../lib/time'
-import { readJson, readQuery } from '../lib/validate'
+import { normalizeId, readJson, readQuery } from '../lib/validate'
 
 export const entriesRoutes = new Hono<AppEnv>()
 
@@ -12,7 +12,7 @@ const notFound = () => new HttpError('NOT_FOUND', 'No se encontró el registro')
 
 /** Un id que no es UUID no puede existir: 404 directo. */
 function entryId(raw: string): string {
-  const r = UuidSchema.safeParse(raw)
+  const r = UuidSchema.safeParse(normalizeId(raw))
   if (!r.success) throw notFound()
   return r.data
 }

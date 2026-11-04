@@ -1,4 +1,4 @@
-import { API_ERROR_MESSAGES, MAX_IMAGE_BYTES } from '@kalapp/shared'
+import { formatBytes, MAX_IMAGE_BYTES } from '@kalapp/shared'
 import type { MiddlewareHandler } from 'hono'
 import { bodyLimit } from 'hono/body-limit'
 import type { AppEnv, Env } from '../env'
@@ -8,37 +8,45 @@ import { errorResponse } from '../lib/errors'
 export const MAX_JSON_BODY_BYTES = 256 * 1024
 /** Margen para los encabezados del multipart y los campos de texto (`note`, `localHour`). */
 export const MULTIPART_OVERHEAD_BYTES = 16 * 1024
+/** Única ruta que acepta multipart (foto). */
+const ANALYZE_PATH = '/api/analyze'
+
+/** Entero positivo de una variable de entorno; vacío, basura o < 1 → `fallback`. */
+export function positiveIntVar(value: string | undefined, fallback: number): number {
+  const s = value?.trim() ?? ''
+  if (!/^\d+$/.test(s)) return fallback
+  const n = Number(s)
+  return Number.isSafeInteger(n) && n >= 1 ? n : fallback
+}
 
 /** MAX_IMAGE_BYTES del entorno (por defecto 1 MiB). */
 export function maxImageBytes(env: Env): number {
-  const n = Number(env.MAX_IMAGE_BYTES)
-  return Number.isFinite(n) && n > 0 ? Math.floor(n) : MAX_IMAGE_BYTES
+  return positiveIntVar(env.MAX_IMAGE_BYTES, MAX_IMAGE_BYTES)
 }
 
 export function imageTooLargeMessage(max: number): string {
-  if (max === 1_048_576) return API_ERROR_MESSAGES.PAYLOAD_TOO_LARGE
-  const mb = Math.round((max / 1_048_576) * 10) / 10
-  return `La imagen pesa más de ${mb} MB`
+  return `La imagen pesa más de ${formatBytes(max)}`
 }
 
 /**
  * Limita el cuerpo antes de leerlo: usa Content-Length si viene y, si no, cuenta los bytes del
- * stream. Multipart (foto) → MAX_IMAGE_BYTES + margen; el resto → 256 KB.
+ * stream. Solo multipart en /api/analyze → MAX_IMAGE_BYTES + margen; todo lo demás → 256 KB,
+ * sin importar el content-type declarado.
  */
 export const limitBody: MiddlewareHandler<AppEnv> = async (c, next) => {
-  const isMultipart = (c.req.header('content-type') ?? '')
-    .toLowerCase()
-    .startsWith('multipart/form-data')
+  const isPhoto =
+    c.req.path === ANALYZE_PATH &&
+    (c.req.header('content-type') ?? '').toLowerCase().startsWith('multipart/form-data')
   const maxImage = maxImageBytes(c.env)
   const limiter = bodyLimit({
-    maxSize: isMultipart ? maxImage + MULTIPART_OVERHEAD_BYTES : MAX_JSON_BODY_BYTES,
+    maxSize: isPhoto ? maxImage + MULTIPART_OVERHEAD_BYTES : MAX_JSON_BODY_BYTES,
     onError: (ctx) =>
       errorResponse(
         ctx,
         'PAYLOAD_TOO_LARGE',
-        isMultipart
+        isPhoto
           ? imageTooLargeMessage(maxImage)
-          : 'El cuerpo de la petición es demasiado grande',
+          : `El cuerpo de la petición pesa más de ${formatBytes(MAX_JSON_BODY_BYTES)}`,
       ),
   })
   return limiter(c, next)

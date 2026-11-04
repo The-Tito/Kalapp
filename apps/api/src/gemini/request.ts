@@ -116,7 +116,11 @@ export function parseGeminiResponse(body: unknown): ParsedGemini {
   } catch {
     return { kind: 'invalid', reason: 'JSON inválido' }
   }
-  if (typeof json === 'object' && json !== null && (json as { not_food?: unknown }).not_food) {
+  if (
+    typeof json === 'object' &&
+    json !== null &&
+    (json as { not_food?: unknown }).not_food === true
+  ) {
     return { kind: 'not_food' }
   }
   const r = AiAnalysisOutputSchema.safeParse(json)

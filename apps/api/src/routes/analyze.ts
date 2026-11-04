@@ -5,26 +5,38 @@ import {
   ANALYZE_NOTE_FIELD,
   AnalyzePhotoFieldsSchema,
   AnalyzeTextRequestSchema,
+  DEFAULT_TIMEZONE,
   toAnalysisProposal,
+  toLocalDate,
   toLocalHour,
 } from '@kalapp/shared'
 import { Hono } from 'hono'
 import { getProfileTimezone } from '../db/profile'
-import { getUsageCalls, incrementUsage } from '../db/usage'
+import { tryReserveUsage } from '../db/usage'
 import type { AppEnv, Env } from '../env'
 import { analyzeWithFallback } from '../gemini/client'
 import type { AnalyzePromptInput } from '../gemini/prompt'
 import { bytesToBase64, type GeminiImage } from '../gemini/request'
 import { HttpError } from '../lib/errors'
-import { safeTimeZone, todayIn } from '../lib/time'
+import { safeTimeZone } from '../lib/time'
 import { parseWith, readJson } from '../lib/validate'
-import { imageTooLargeMessage, maxImageBytes } from '../middleware/body-limit'
+import { imageTooLargeMessage, maxImageBytes, positiveIntVar } from '../middleware/body-limit'
 
 export const DEFAULT_DAILY_ANALYZE_LIMIT = 60
 
+/** DAILY_ANALYZE_LIMIT; vacío, no numérico o < 1 → 60. */
 export function dailyLimit(env: Env): number {
-  const n = Number(env.DAILY_ANALYZE_LIMIT)
-  return Number.isFinite(n) && n >= 0 ? Math.floor(n) : DEFAULT_DAILY_ANALYZE_LIMIT
+  return positiveIntVar(env.DAILY_ANALYZE_LIMIT, DEFAULT_DAILY_ANALYZE_LIMIT)
+}
+
+/**
+ * Fecha del contador de uso. Se usa SIEMPRE la zona predeterminada (America/Mexico_City), no la
+ * del perfil: si el contador siguiera la zona del perfil, cambiarla a mitad del día (p. ej. de
+ * UTC−11 a UTC+14) movería la fecha y reiniciaría el límite. Para una app personal basta con que
+ * el día del límite cambie a medianoche de la Ciudad de México aunque el usuario viaje.
+ */
+export function usageDate(now: Date = new Date()): string {
+  return toLocalDate(now, DEFAULT_TIMEZONE)
 }
 
 type AllowedImageType = (typeof ALLOWED_IMAGE_TYPES)[number]
@@ -42,7 +54,17 @@ function matchesSignature(type: AllowedImageType, b: Uint8Array): boolean {
     case 'image/png':
       return at(0) === 0x89 && at(1) === 0x50 && at(2) === 0x4e && at(3) === 0x47
     case 'image/webp':
-      return at(0) === 0x52 && at(1) === 0x49 && at(2) === 0x46 && at(3) === 0x46 && at(8) === 0x57
+      // "RIFF" (0–3) + tamaño (4–7) + "WEBP" (8–11); un WAV/AVI también empieza con RIFF.
+      return (
+        at(0) === 0x52 &&
+        at(1) === 0x49 &&
+        at(2) === 0x46 &&
+        at(3) === 0x46 &&
+        at(8) === 0x57 &&
+        at(9) === 0x45 &&
+        at(10) === 0x42 &&
+        at(11) === 0x50
+      )
   }
 }
 
@@ -127,11 +149,10 @@ analyzeRoutes.post('/', async (c) => {
 
   const tz = safeTimeZone(await getProfileTimezone(c.env.DB))
   if (prompt.localHour === undefined) prompt.localHour = toLocalHour(new Date(), tz)
-  const date = todayIn(tz)
-  const limit = dailyLimit(c.env)
-  if ((await getUsageCalls(c.env.DB, date)) >= limit) throw new HttpError('DAILY_LIMIT')
-  // Se cuenta antes de llamar: un intento = principal + respaldo.
-  await incrementUsage(c.env.DB, date, primary)
+  // Se cuenta antes de llamar (un intento = principal + respaldo), de forma atómica: con
+  // peticiones en paralelo nunca pasan más de `limit`.
+  const reserved = await tryReserveUsage(c.env.DB, usageDate(), primary, dailyLimit(c.env))
+  if (!reserved) throw new HttpError('DAILY_LIMIT')
 
   const { result, attempts } = await analyzeWithFallback(
     { primary, fallback: c.env.GEMINI_FALLBACK_MODEL },
@@ -147,12 +168,10 @@ analyzeRoutes.post('/', async (c) => {
       return c.json(toAnalysisProposal(result.output, result.model))
     case 'not_food':
       throw new HttpError(
-        'VALIDATION',
+        'NOT_FOOD',
         prompt.mode === 'photo'
           ? 'No se detectó comida en la foto'
           : 'No se reconoció comida en la descripción',
-        undefined,
-        422,
       )
     case 'invalid':
       throw new HttpError('AI_INVALID_RESPONSE')

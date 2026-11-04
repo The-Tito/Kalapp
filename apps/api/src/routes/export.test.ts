@@ -1,3 +1,4 @@
+import { ExportJsonSchema } from '@kalapp/shared'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { api, entryInput, ITEM, json, PROFILE_INPUT, resetDb } from '../test/helpers'
 import { csvCell } from './export'
@@ -65,13 +66,9 @@ describe('GET /api/export', () => {
     expect(res.headers.get('content-disposition')).toMatch(
       /^attachment; filename="kalapp-inicio-\d{4}-\d{2}-\d{2}\.json"$/,
     )
-    const body = (await res.json()) as {
-      profile: { targetKcal: number }
-      entries: { items: unknown[] }[]
-      weights: unknown[]
-      favorites: unknown[]
-    }
-    expect(body.profile.targetKcal).toBeGreaterThan(0)
+    const body = ExportJsonSchema.parse(await res.json())
+    expect(body.profile?.targetKcal).toBeGreaterThan(0)
+    expect([body.from, body.to]).toEqual([null, null])
     expect(body.entries).toHaveLength(1)
     expect(body.entries[0]?.items).toHaveLength(2)
     expect(body.weights).toHaveLength(1)

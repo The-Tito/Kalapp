@@ -7,13 +7,27 @@ export async function getUsageCalls(db: D1Database, date: string): Promise<numbe
   return row?.calls ?? 0
 }
 
-/** Suma un intento (el respaldo de modelo no cuenta aparte). */
-export async function incrementUsage(db: D1Database, date: string, model: string): Promise<void> {
-  await db
+/**
+ * Reserva un intento de forma atómica: una sola sentencia (D1/SQLite la ejecuta serializada)
+ * que suma 1 solo si el total del día (todos los modelos) sigue por debajo de `limit`.
+ * Devuelve `false` si ya se alcanzó el límite (no suma nada). El respaldo no cuenta aparte.
+ */
+export async function tryReserveUsage(
+  db: D1Database,
+  date: string,
+  model: string,
+  limit: number,
+): Promise<boolean> {
+  const row = await db
     .prepare(
-      `INSERT INTO ai_usage (date, model, calls) VALUES (?, ?, 1)
-       ON CONFLICT (date, model) DO UPDATE SET calls = calls + 1`,
+      `INSERT INTO ai_usage (date, model, calls)
+       SELECT ?1, ?2, 1
+       WHERE (SELECT COALESCE(SUM(calls), 0) FROM ai_usage WHERE date = ?1) < ?3
+       ON CONFLICT (date, model) DO UPDATE SET calls = calls + 1
+       WHERE (SELECT COALESCE(SUM(calls), 0) FROM ai_usage WHERE date = ?1) < ?3
+       RETURNING calls`,
     )
-    .bind(date, model)
-    .run()
+    .bind(date, model, limit)
+    .first<{ calls: number }>()
+  return row !== null
 }

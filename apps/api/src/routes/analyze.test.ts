@@ -223,7 +223,7 @@ describe('POST /api/analyze (foto)', () => {
     expect(spy).toHaveBeenCalledTimes(1)
   })
 
-  it('no es comida → 422 VALIDATION', async () => {
+  it('no es comida → 422 NOT_FOOD', async () => {
     const spy = mockFetch(() =>
       geminiResponse({
         not_food: true,
@@ -235,7 +235,7 @@ describe('POST /api/analyze (foto)', () => {
     const res = await postPhoto(photoForm(jpegBytes(100)))
     expect(res.status).toBe(422)
     expect(await res.json()).toEqual({
-      error: { code: 'VALIDATION', message: 'No se detectó comida en la foto' },
+      error: { code: 'NOT_FOOD', message: 'No se detectó comida en la foto' },
     })
     expect(spy).toHaveBeenCalledTimes(1)
   })

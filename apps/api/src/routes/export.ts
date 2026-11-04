@@ -1,4 +1,12 @@
-import { type Entry, ExportQuerySchema, MEAL_TYPE_LABELS, type Profile } from '@kalapp/shared'
+import {
+  daysBetween,
+  type Entry,
+  type ExportJson,
+  ExportQuerySchema,
+  LIMITS,
+  MEAL_TYPE_LABELS,
+  type Profile,
+} from '@kalapp/shared'
 import { Hono } from 'hono'
 import { listEntriesInRange } from '../db/entries'
 import { listFavorites } from '../db/favorites'
@@ -6,7 +14,7 @@ import { getProfile } from '../db/profile'
 import { listWeights } from '../db/weights'
 import type { AppEnv } from '../env'
 import { HttpError } from '../lib/errors'
-import { safeTimeZone, todayIn } from '../lib/time'
+import { nowIso, safeTimeZone, todayIn } from '../lib/time'
 import { readQuery } from '../lib/validate'
 
 export const CSV_HEADER = [
@@ -82,6 +90,9 @@ exportRoutes.get('/', async (c) => {
   if (from && to && from > to) {
     throw new HttpError('VALIDATION', 'La fecha inicial debe ser anterior a la final')
   }
+  if (from && to && daysBetween(from, to) + 1 > LIMITS.summaryMaxRangeDays) {
+    throw new HttpError('VALIDATION', `El rango máximo es de ${LIMITS.summaryMaxRangeDays} días`)
+  }
   const profile: Profile | null = await getProfile(c.env.DB)
   const tz = safeTimeZone(profile?.timezone)
   const entries = await listEntriesInRange(c.env.DB, from, to)
@@ -98,7 +109,16 @@ exportRoutes.get('/', async (c) => {
     listWeights(c.env.DB, from, to),
     listFavorites(c.env.DB),
   ])
-  return c.body(JSON.stringify({ profile, entries, weights, favorites }, null, 2), 200, {
+  const body: ExportJson = {
+    exportedAt: nowIso(),
+    from: from ?? null,
+    to: to ?? null,
+    profile,
+    entries,
+    weights,
+    favorites,
+  }
+  return c.body(JSON.stringify(body, null, 2), 200, {
     'Content-Type': 'application/json; charset=utf-8',
     'Content-Disposition': disposition,
   })
