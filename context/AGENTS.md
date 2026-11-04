@@ -70,3 +70,6 @@ También puedes pedirlo en lenguaje natural ("ejecuta el milestone M1 con el equ
 ## Cambiar el equipo
 - **Agregar un agente:** crea `.claude/agents/<nombre>.md`, asígnale una carpeta exclusiva en la tabla de `CLAUDE.md` y documéntalo aquí y en el KG.
 - **Cambiar el modelo de un agente:** edita su campo `model`. Hoy todos usan `inherit`, es decir, el mismo modelo de la sesión.
+
+## Nota operativa
+Los agentes de `.claude/agents/` se cargan **al iniciar una sesión**. En la sesión donde se crean (o si no aparecen como tipo), el orquestador lanza un agente general con la instrucción "actúa como `<agente>`: lee y sigue `.claude/agents/<agente>.md`". El resultado es el mismo.

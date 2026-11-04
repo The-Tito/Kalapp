@@ -31,7 +31,7 @@ Lee `CLAUDE.md`, las secciones 4–6 y 11 de `context/PLAN.md` y, en `context/kn
 ## Reglas
 - Importa esquemas y tipos de `@kalapp/shared`; no los dupliques. Si falta algo en el contrato, pídelo en tu reporte.
 - Los secretos (`GEMINI_API_KEY`, `APP_TOKEN`) solo vienen de `env`. En local van en `.dev.vars`; mantén actualizado `.dev.vars.example` sin valores reales.
-- Las pruebas usan `@cloudflare/vitest-pool-workers` con D1 local y `fetch` de Gemini simulado. Cubre: 401, 413, 429 `DAILY_LIMIT`, respaldo de modelo, JSON inválido de la IA y el camino feliz.
+- Las pruebas usan `@cloudflare/vitest-plugin` (`cloudflareTest()`, `exports` de `cloudflare:workers`) con D1 local y `fetch` de Gemini simulado. Cubre: 401, 413, 429 `DAILY_LIMIT`, respaldo de modelo, JSON inválido de la IA y el camino feliz.
 - Corre `pnpm --filter @kalapp/api lint typecheck test` antes de reportar.
 
 Termina con el reporte de 5 puntos definido en `CLAUDE.md`.
