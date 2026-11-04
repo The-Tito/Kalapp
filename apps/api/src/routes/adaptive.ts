@@ -1,4 +1,4 @@
-import { adaptiveTdee, addDays } from '@kalapp/shared'
+import { ADAPTIVE_WINDOW_DAYS, adaptiveTdee, addDays } from '@kalapp/shared'
 import { Hono } from 'hono'
 import { listEntryTotals } from '../db/entries'
 import { getProfile } from '../db/profile'
@@ -7,8 +7,8 @@ import type { AppEnv } from '../env'
 import { HttpError } from '../lib/errors'
 import { todayIn } from '../lib/time'
 
-/** Ventana del gasto adaptativo: 28 días que terminan hoy (zona del perfil). */
-export const ADAPTIVE_WINDOW_DAYS = 28
+/** Ventana del gasto adaptativo: ADAPTIVE_WINDOW_DAYS días que terminan hoy (zona del perfil). */
+export { ADAPTIVE_WINDOW_DAYS }
 
 export const adaptiveRoutes = new Hono<AppEnv>()
 
