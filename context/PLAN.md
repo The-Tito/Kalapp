@@ -1,6 +1,6 @@
 # Kalapp — Plan del proyecto
 
-> Versión 1.0 · 2026-11-04 · Estado: aprobado, implementación v0.1 por iniciar.  
+> Versión 1.1 · 2026-11-04 · Estado: M0 terminado; siguiente M1.  
 > Fuente de verdad estructurada: [`knowledge-graph.json`](./knowledge-graph.json). Si este plan cambia, actualizar ambos.
 
 ## 1. Visión y alcance
@@ -20,11 +20,11 @@
 | IA | Gemini vía REST (`fetch`, sin SDK): modelo principal Flash, respaldo Flash‑Lite, configurables por variable |
 | Validación | Zod (paquete compartido) |
 | Calidad | Biome (lint + formato) · `tsc --noEmit` |
-| Pruebas | Vitest (shared y web) · `@cloudflare/vitest-pool-workers` (API con D1 local y Gemini simulado) |
+| Pruebas | Vitest 4.1 (shared y web) · `@cloudflare/vitest-plugin` (API dentro del runtime de Workers, con D1 local y Gemini simulado) |
 | CI | GitHub Actions: install → lint → typecheck → test → build en cada push/PR |
 | CD | Cloudflare Workers Builds conectado a GitHub (push a `main` = producción; ramas = URL de vista previa) |
 
-Versiones: última estable al iniciar M0, fijadas en `package.json` y `pnpm-lock.yaml`.
+Versiones fijadas en M0 (exactas, `save-exact=true`): Node 22 · pnpm 10.28 · TypeScript 6.0.3 · Biome 2.6.4 · Vitest 4.1.12 · Wrangler 4.157 · Hono 4.13 · Zod 4.6 · React 19.3 · Vite 8.3 · Tailwind 4.3 · vite-plugin-pwa 2.0.
 
 ## 3. Decisiones nuevas de esta planeación
 1. **Biome** en lugar de ESLint+Prettier: una sola herramienta y config.
@@ -131,7 +131,8 @@ Código de barras (zxing + Open Food Facts) · Atajo de iOS (registro con Siri y
 Pasos únicos que hace el usuario (detallados en `DEPLOY.md`): `wrangler login`, `wrangler d1 create kalapp-db` (pegar el id en `wrangler.jsonc`), `wrangler secret put GEMINI_API_KEY`, `wrangler secret put APP_TOKEN`, conectar el repo en Workers Builds, instalar en el iPhone.
 
 ## 12. Flujo de trabajo
-- Rama de trabajo actual `claude/eager-cori-r3qu9s`; un PR por milestone hacia `main` (el usuario hace merge = despliegue).
+- **Gitflow** (detalle en `CLAUDE.md`): `feature/<milestone>-<slug>` desde `develop` → merge `--no-ff` a `develop` tras QA; cada fase cierra con `release/X.Y.Z` → `main` (solo con aprobación del usuario = despliegue) y tag `vX.Y.Z`; `hotfix/*` desde `main`.
+- Un commit por implementación.
 - Conventional Commits; nada de secretos en commits.
 - **Definición de terminado (cada milestone):** lint + typecheck + tests verdes, criterio de aceptación cumplido, `context/knowledge-graph.json` actualizado (estado del milestone, decisiones nuevas, changelog), push hecho.
 

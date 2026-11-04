@@ -8,6 +8,7 @@ description: Ejecuta un milestone de Kalapp (M0–M6 o fases posteriores) con el
 Eres el **orquestador**. Ejecuta el milestone `$ARGUMENTS` siguiendo `context/AGENTS.md`.
 
 ## 0. Preparar
+- Gitflow: actualiza `develop` y crea `feature/<milestone>-<slug>` desde `develop` (ver la sección Gitflow de `CLAUDE.md`).
 - Lee el milestone en la sección 9 de `context/PLAN.md` y su nodo `ms:*` en `context/knowledge-graph.json`: entregables, criterio de aceptación y dependencias.
 - Verifica que los milestones anteriores estén terminados. Si no, detente y avisa.
 - Crea una lista de tareas (TaskCreate) con una tarea por agente dueño.
@@ -37,14 +38,15 @@ Lanza **`context-keeper`** con los cinco reportes. Marca el milestone como termi
 
 ## 6. Cierre
 1. Corre tú mismo `pnpm lint && pnpm typecheck && pnpm test && pnpm build` como confirmación final.
-2. Haz el commit con Conventional Commits, con un mensaje que resuma el milestone.
-3. Haz push a la rama de trabajo.
-4. Resume al usuario:
+2. **Un commit por implementación:** a medida que cada agente termina una pieza verificada, haz su commit atómico (Conventional Commits). No juntes todo el milestone en un solo commit.
+3. Haz push de la rama `feature/*`.
+4. Integra en `develop` con `git merge --no-ff` (o abre un PR si el usuario lo pidió) y haz push de `develop`.
+5. Si con esto se cierra una fase completa (v0.1, v0.2…), propón una `release/X.Y.Z`. **No toques `main` sin aprobación explícita del usuario.**
+6. Resume al usuario:
    - Qué se entregó.
    - Resultado de las verificaciones (reales).
    - Qué debe probar a mano en el iPhone.
    - Qué sigue.
-5. Pregunta si quiere un PR.
 
 ## Reglas
 - No hagas tú el trabajo de un especialista, salvo archivos raíz o un ajuste trivial que bloquee el flujo (y repórtalo).

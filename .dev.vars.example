@@ -1,0 +1,3 @@
+# Copia este archivo como .dev.vars (ignorado por git) y pon valores reales SOLO en tu máquina.
+GEMINI_API_KEY=pon-aqui-tu-clave-de-google-ai-studio
+APP_TOKEN=un-token-largo-y-aleatorio

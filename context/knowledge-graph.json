@@ -6,7 +6,7 @@
     "language": "es-MX",
     "created_at": "2026-11-04",
     "updated_at": "2026-11-04",
-    "status": "Plan aprobado y equipo multi-agente definido; siguiente paso M0",
+    "status": "M0 terminado e integrado en develop; siguiente: M1",
     "git_branch": "claude/eager-cori-r3qu9s",
     "conventions": {
       "node_id_format": "<prefijo>:<slug>  (ej. feat:photo-logging)",
@@ -1359,10 +1359,10 @@
             "DB": "D1 kalapp-db"
           },
           "vars": {
-            "GEMINI_MODEL": "Flash",
-            "GEMINI_FALLBACK_MODEL": "Flash-Lite",
-            "DAILY_ANALYZE_LIMIT": 60,
-            "MAX_IMAGE_BYTES": 1048576
+            "GEMINI_MODEL": "gemini-flash-latest",
+            "GEMINI_FALLBACK_MODEL": "gemini-flash-lite-latest",
+            "DAILY_ANALYZE_LIMIT": "60",
+            "MAX_IMAGE_BYTES": "1048576"
           },
           "secrets": [
             "GEMINI_API_KEY",
@@ -1376,7 +1376,8 @@
             ]
           },
           "error_shape": "{ error: { code, message } }",
-          "token_compare": "tiempo constante"
+          "token_compare": "tiempo constante",
+          "compatibility_date": "2026-11-01"
         }
       }
     },
@@ -2227,7 +2228,20 @@
           ".gitignore y .dev.vars.example"
         ],
         "acceptance": "pnpm lint && pnpm typecheck && pnpm test && pnpm build pasan en local y en CI",
-        "status": "pendiente"
+        "status": "terminado",
+        "completed_at": "2026-11-04",
+        "branch": "feature/m0-monorepo-setup",
+        "qa": "APROBADO por qa-reviewer (clon limpio: install --frozen-lockfile, lint, typecheck, test, build, wrangler deploy --dry-run, db:migrate:local)",
+        "commits": [
+          "chore: set up pnpm workspace root",
+          "chore: add TypeScript base config, Biome and root dev tooling",
+          "chore(shared): scaffold @kalapp/shared package",
+          "feat(api): scaffold Cloudflare Worker with Hono and /api/health",
+          "feat(web): scaffold React PWA with Vite, Tailwind and vite-plugin-pwa",
+          "ci: add GitHub Actions workflow (lint, typecheck, test, build)",
+          "docs: adopt Gitflow and one-commit-per-implementation rules",
+          "chore: pin dependency versions exactly"
+        ]
       }
     },
     {
@@ -2438,7 +2452,8 @@
       "properties": {
         "date": "2026-11-04",
         "detail": "D1 local y Gemini simulado; nunca se llama a Gemini real en CI.",
-        "source": "doc:plan"
+        "source": "doc:plan",
+        "status": "superseded"
       }
     },
     {
@@ -2641,6 +2656,144 @@
       "label": "Comando /milestone",
       "properties": {
         "path": ".claude/skills/milestone/SKILL.md"
+      }
+    },
+    {
+      "id": "fact:pinned-versions",
+      "type": "Fact",
+      "label": "Versiones fijadas en M0",
+      "properties": {
+        "versions": {
+          "node": "22",
+          "pnpm": "10.28.0",
+          "typescript": "6.0.3",
+          "biome": "2.6.4",
+          "vitest": "4.1.12",
+          "wrangler": "4.157.0",
+          "@cloudflare/vitest-plugin": "1.5.1",
+          "hono": "4.13.16",
+          "zod": "4.6.7",
+          "react": "19.3.1",
+          "vite": "8.3.5",
+          "@vitejs/plugin-react": "6.2.1",
+          "tailwindcss": "4.3.4",
+          "vite-plugin-pwa": "2.0.0"
+        },
+        "policy": "save-exact=true en .npmrc; sin rangos ^"
+      }
+    },
+    {
+      "id": "dec:gitflow",
+      "type": "Decision",
+      "label": "Gitflow con un commit por implementación",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "Ramas main (producción, tags vX.Y.Z), develop (integración), feature/<milestone>-<slug>, release/X.Y.Z, hotfix/X.Y.Z. Features → develop con merge --no-ff tras aprobación de QA; main solo recibe release/hotfix con aprobación explícita del usuario. claude/eager-cori-r3qu9s queda como rama de arranque.",
+        "source": "Mensaje 7 del usuario"
+      }
+    },
+    {
+      "id": "dec:typescript-6",
+      "type": "Decision",
+      "label": "TypeScript 6.0 en lugar de 7.0",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "TS 7 (reescritura nativa) es la última, pero se elige 6.0.3 por compatibilidad del ecosistema de herramientas.",
+        "source": "M0"
+      }
+    },
+    {
+      "id": "dec:vitest-4",
+      "type": "Decision",
+      "label": "Vitest 4.1 (no 5)",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "@cloudflare/vitest-plugin y su predecesor exigían vitest ^4.1 al momento de M0.",
+        "source": "M0"
+      }
+    },
+    {
+      "id": "dec:vitest-plugin",
+      "type": "Decision",
+      "label": "@cloudflare/vitest-plugin para pruebas de la API",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "@cloudflare/vitest-pool-workers fue renombrado y está deprecado; se usa cloudflareTest() leyendo ../../wrangler.jsonc. Las pruebas usan exports de cloudflare:workers.",
+        "source": "M0"
+      }
+    },
+    {
+      "id": "dec:pin-exact",
+      "type": "Decision",
+      "label": "Versiones exactas",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "save-exact=true; hallazgo de QA en M0.",
+        "source": "M0"
+      }
+    },
+    {
+      "id": "dec:pwa-prompt",
+      "type": "Decision",
+      "label": "Service worker en modo prompt",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "vite-plugin-pwa registerType prompt (generateSW); la UI de \"Actualizar\" (useRegisterSW) se implementa en M3.",
+        "source": "M0"
+      }
+    },
+    {
+      "id": "req:gitflow",
+      "type": "Requirement",
+      "label": "Metodología Gitflow y commits por implementación",
+      "properties": {
+        "source": "Mensaje 7 del usuario"
+      }
+    },
+    {
+      "id": "fact:agents-load-at-start",
+      "type": "Fact",
+      "label": "Los agentes de .claude/agents se cargan al iniciar sesión",
+      "properties": {
+        "detail": "En la sesión donde se crearon no estaban disponibles como tipo; se lanzó un agente general con las instrucciones del archivo."
+      }
+    },
+    {
+      "id": "fact:api-tests-no-dist",
+      "type": "Fact",
+      "label": "Las pruebas de la API no requieren apps/web/dist",
+      "properties": {
+        "implication": "Orden test → build del CI válido"
+      }
+    },
+    {
+      "id": "task:sw-update-ui",
+      "type": "Task",
+      "label": "UI de actualización del service worker (useRegisterSW)",
+      "properties": {
+        "owner": "web-pwa",
+        "status": "pendiente",
+        "origin": "Hallazgo de QA en M0"
+      }
+    },
+    {
+      "id": "task:remove-placeholder-migration",
+      "type": "Task",
+      "label": "Borrar migrations/0000_placeholder.sql al crear 0001_init.sql (antes del primer --remote)",
+      "properties": {
+        "owner": "api-worker",
+        "status": "pendiente",
+        "origin": "Hallazgo de QA en M0"
+      }
+    },
+    {
+      "id": "task:onerror-test",
+      "type": "Task",
+      "label": "Prueba del handler onError (no filtrar err.message)",
+      "properties": {
+        "owner": "api-worker",
+        "status": "pendiente",
+        "origin": "Hallazgo de QA en M0"
       }
     }
   ],
@@ -4361,6 +4514,86 @@
       "source": "ms:m6",
       "type": "ASSIGNED_TO",
       "target": "agent:context-keeper"
+    },
+    {
+      "source": "ms:m0",
+      "type": "PRODUCES",
+      "target": "fact:pinned-versions"
+    },
+    {
+      "source": "ms:m0",
+      "type": "RECORDS",
+      "target": "dec:gitflow"
+    },
+    {
+      "source": "ms:m0",
+      "type": "RECORDS",
+      "target": "dec:typescript-6"
+    },
+    {
+      "source": "ms:m0",
+      "type": "RECORDS",
+      "target": "dec:vitest-4"
+    },
+    {
+      "source": "ms:m0",
+      "type": "RECORDS",
+      "target": "dec:vitest-plugin"
+    },
+    {
+      "source": "ms:m0",
+      "type": "RECORDS",
+      "target": "dec:pin-exact"
+    },
+    {
+      "source": "ms:m0",
+      "type": "RECORDS",
+      "target": "dec:pwa-prompt"
+    },
+    {
+      "source": "dec:vitest-workers-pool",
+      "type": "SUPERSEDED_BY",
+      "target": "dec:vitest-plugin"
+    },
+    {
+      "source": "dec:gitflow",
+      "type": "APPLIES_TO",
+      "target": "repo:root"
+    },
+    {
+      "source": "proj:kalapp",
+      "type": "HAS_REQUIREMENT",
+      "target": "req:gitflow"
+    },
+    {
+      "source": "dec:gitflow",
+      "type": "ANSWERS",
+      "target": "req:gitflow"
+    },
+    {
+      "source": "fact:agents-load-at-start",
+      "type": "RELATES_TO",
+      "target": "dec:multi-agent"
+    },
+    {
+      "source": "ms:m0",
+      "type": "PRODUCES",
+      "target": "fact:api-tests-no-dist"
+    },
+    {
+      "source": "task:sw-update-ui",
+      "type": "TARGETS",
+      "target": "ms:m3"
+    },
+    {
+      "source": "task:remove-placeholder-migration",
+      "type": "TARGETS",
+      "target": "ms:m2"
+    },
+    {
+      "source": "task:onerror-test",
+      "type": "TARGETS",
+      "target": "ms:m2"
     }
   ],
   "conversation_log": [
@@ -4399,6 +4632,12 @@
       "date": "2026-11-04",
       "user_request": "Crear una estructura multi-agente para desarrollar la app con flujo óptimo y mayor velocidad; ¿se hace con un plan, una regla o cómo?",
       "outcome": "Se explicó que son tres piezas (agentes, reglas, flujo) y se crearon CLAUDE.md, 5 agentes en .claude/agents, el comando /milestone y context/AGENTS.md."
+    },
+    {
+      "step": 7,
+      "date": "2026-11-04",
+      "user_request": "Arrancar; trabajar con Gitflow y commits por implementación.",
+      "outcome": "Ramas main/develop/feature creadas; M0 implementado en 8 commits, aprobado por QA e integrado en develop."
     }
   ],
   "changelog": [
@@ -4413,6 +4652,10 @@
     {
       "date": "2026-11-04",
       "change": "Equipo multi-agente: req:multi-agent, dec:multi-agent, nodos agent:*, documentos CLAUDE.md, AGENTS.md y /milestone; asignación de agentes a milestones."
+    },
+    {
+      "date": "2026-11-04",
+      "change": "M0 terminado: versiones fijadas, decisiones (Gitflow, TS 6, Vitest 4.1, vitest-plugin, versiones exactas, SW prompt), hallazgos de QA como tareas para M2/M3."
     }
   ]
 }
