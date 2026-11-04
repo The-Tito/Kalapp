@@ -43,9 +43,36 @@ export function parseWith<S extends z.ZodType>(schema: S, value: unknown): z.out
   return r.data
 }
 
+/** Profundidad máxima de objetos/arreglos en un cuerpo JSON. */
+export const MAX_JSON_DEPTH = 32
+
 /**
- * Lee el cuerpo como JSON y lo valida. Exige `Content-Type: application/json` (si no → 415);
- * JSON malformado → 400 VALIDATION.
+ * Profundidad máxima de `{`/`[` en un texto JSON, ignorando lo que está dentro de strings.
+ * Escaneo lineal sin recursión: corta en cuanto pasa de `limit`.
+ */
+export function jsonDepthExceeds(text: string, limit = MAX_JSON_DEPTH): boolean {
+  let depth = 0
+  let inString = false
+  for (let i = 0; i < text.length; i++) {
+    const ch = text.charCodeAt(i)
+    if (inString) {
+      if (ch === 0x5c)
+        i++ // \ escapa el siguiente carácter
+      else if (ch === 0x22) inString = false
+      continue
+    }
+    if (ch === 0x22) inString = true
+    else if (ch === 0x7b || ch === 0x5b) {
+      if (++depth > limit) return true
+    } else if (ch === 0x7d || ch === 0x5d) depth--
+  }
+  return false
+}
+
+/**
+ * Lee el cuerpo como JSON y lo valida. Exige `Content-Type: application/json` (si no → 415).
+ * JSON malformado, demasiado anidado (> 32 niveles) o cualquier fallo al parsear/normalizar/
+ * validar → 400 VALIDATION (nunca 500).
  */
 export async function readJson<S extends z.ZodType>(c: Context, schema: S): Promise<z.output<S>> {
   const type = (c.req.header('content-type') ?? '').toLowerCase().split(';')[0]?.trim()
@@ -53,13 +80,20 @@ export async function readJson<S extends z.ZodType>(c: Context, schema: S): Prom
     throw new HttpError('UNSUPPORTED_MEDIA', 'Envía el cuerpo como application/json')
   }
   const text = await c.req.text()
+  if (jsonDepthExceeds(text)) throw new HttpError('VALIDATION', 'JSON demasiado anidado')
   let value: unknown
   try {
     value = JSON.parse(text)
   } catch {
     throw new HttpError('VALIDATION', 'El cuerpo no es JSON válido')
   }
-  return parseWith(schema, normalizeInput(value))
+  try {
+    return parseWith(schema, normalizeInput(value))
+  } catch (err) {
+    if (err instanceof HttpError) throw err
+    // p. ej. RangeError por pila agotada en estructuras patológicas.
+    throw new HttpError('VALIDATION')
+  }
 }
 
 /** Valida los parámetros de la query string. */
