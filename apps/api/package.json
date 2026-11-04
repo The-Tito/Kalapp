@@ -5,8 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev --config ../../wrangler.jsonc --port 8787",
+    "lint": "biome check .",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:gemini-live": "node scripts/gemini-live.mjs"
   },
   "dependencies": {
     "@kalapp/shared": "workspace:*",
