@@ -1,6 +1,6 @@
 # Kalapp — Plan del proyecto
 
-> Versión 1.3 · 2026-11-04 · Estado: **v1.0.0 lista en código; pendiente despliegue del usuario.** M0–M1 en `develop`; M2–M5 terminados en `feature/v0.1-api-pwa` (QA adversarial de API y web aprobado tras correcciones, 736 pruebas en verde, e2e con Playwright contra `wrangler dev`); v0.2, v0.3 y v1.0 terminadas en código (web y API); M6 en progreso: D1 de producción creada, falta el despliegue (secretos + Workers Builds), el checklist del iPhone ([`TESTING.md`](./TESTING.md)) y la medición real de precisión.  
+> Versión 1.4 · 2026-11-04 · Estado: **v1.0.0 lista en código; pendiente despliegue del usuario.** M0–M1 en `develop`; M2–M5 terminados en `feature/v0.1-api-pwa` (QA adversarial de API y web aprobado tras correcciones, 736 pruebas en verde, e2e con Playwright contra `wrangler dev`); v0.2, v0.3 y v1.0 terminadas en código (web y API); M6 en progreso: D1 de producción creada, falta el despliegue (secretos + Workers Builds), el checklist del iPhone ([`TESTING.md`](./TESTING.md)) y la medición real de precisión. **v1.4:** primera prueba real con Gemini (texto) hecha en `release/1.0.0`; corregido el `responseSchema` (commit `4eb87d7`) y modelo principal `gemini-2.5-flash`.  
 > Fuente de verdad estructurada: [`knowledge-graph.json`](./knowledge-graph.json). Si este plan cambia, actualizar ambos.
 
 ## 1. Visión y alcance
@@ -17,7 +17,7 @@
 | Frontend | React + Vite + vite-plugin-pwa + Tailwind CSS + React Router + TanStack Query + Dexie |
 | Backend | Cloudflare Worker con Hono (sirve `/api/*` y los assets de `apps/web/dist`) |
 | BD | Cloudflare D1 (SQLite) con migraciones SQL versionadas |
-| IA | Gemini vía REST (`fetch`, sin SDK): modelo principal Flash, respaldo Flash‑Lite, configurables por variable |
+| IA | Gemini vía REST (`fetch`, sin SDK): modelo principal `gemini-2.5-flash`, respaldo `gemini-flash-lite-latest`, configurables por variable |
 | Validación | Zod (paquete compartido) |
 | Calidad | Biome (lint + formato) · `tsc --noEmit` |
 | Pruebas | Vitest 4.1 (shared y web) · `@cloudflare/vitest-plugin` (API dentro del runtime de Workers, con D1 local y Gemini simulado) |
@@ -95,7 +95,7 @@ Todas bajo `/api`, requieren `Authorization: Bearer <APP_TOKEN>` (comparación e
 | Endurecimiento (v1.3) | JSON con profundidad > 32 → 400; `DAILY_ANALYZE_LIMIT`/`MAX_IMAGE_BYTES` inválidas → valores por defecto; nombres invisibles rechazados en `NameSchema` de shared; `ADAPTIVE_WINDOW_DAYS` (28) compartido; signo menos tipográfico (−) en explicaciones |
 | Datos | UUID normalizados a minúsculas; `name`/`title` solo con espacios o invisibles → 400; export ≤ 366 días, CSV con BOM + CRLF y neutralización de fórmulas |
 
-**Pipeline de `/analyze` (v1.2):** validar tipo, firma y tamaño (los rechazos no consumen cupo) → **reservar el intento de forma atómica** (límite `DAILY_ANALYZE_LIMIT`, día de Ciudad de México; principal + respaldo = 1) → prompt v1 (contexto mexicano, gramos por ingrediente, supuestos, preguntas, confianza, `not_food`) + `responseSchema` + `temperature: 0` → Gemini principal; si **429/5xx/404/timeout (25 s)/error de red/respuesta inválida** → respaldo una vez; **400/401/403 → 503 directo** → validar con Zod → recalcular kcal con 4/4/9 y marcar `energy_mismatch` si difiere > 15 % → sumar totales → responder (`not_food` → 422). Detalle y versiones en `context/PROMPTS.md`.
+**Pipeline de `/analyze` (v1.2):** validar tipo, firma y tamaño (los rechazos no consumen cupo) → **reservar el intento de forma atómica** (límite `DAILY_ANALYZE_LIMIT`, día de Ciudad de México; principal + respaldo = 1) → prompt v1 (contexto mexicano, gramos por ingrediente, supuestos, preguntas, confianza, `not_food`) + `responseSchema` **sin límites numéricos ni de longitud** (Gemini 2.5 los rechaza con 400) + `temperature: 0` → Gemini principal; si **429/5xx/404/timeout (25 s)/error de red/respuesta inválida** → respaldo una vez; **400/401/403 → 503 directo** → recortar a 30 ingredientes (supuesto "Se combinaron ingredientes menores") y validar con Zod → recalcular kcal con 4/4/9 y marcar `energy_mismatch` si difiere > 15 % → sumar totales → responder (`not_food` → 422). Detalle y versiones en `context/PROMPTS.md`.
 
 ## 7. Paquete compartido (`packages/shared`)
 - `schemas/`: `ProfileInput`, `Profile`, `Recommendation`, `AnalysisProposal`, `EntryInput`, `Entry`, `EntryItem`, `Favorite`, `Weight`.
@@ -139,7 +139,7 @@ Todas bajo `/api`, requieren `Authorization: Bearer <APP_TOKEN>` (comparación e
 | M5 | Registro y Hoy | `/entries`, Guardar desde Revisar, panel Hoy, editar/borrar | Flujo foto→guardar en ≤ 3 toques; totales del día correctos |
 | M6 | Despliegue + QA | `context/DEPLOY.md`, primer deploy, checklist iPhone, línea base de precisión en `context/ACCURACY.md` | App en producción usada un día completo; error medio medido con ~20 fotos |
 
-**Estado (2026-11-04, v1.3):** M0 y M1 terminados (en `develop`) · M2, M3, M4, M5: **terminados** en `feature/v0.1-api-pwa` (QA final aprobado; verificación en iPhone real pendiente, ver `TESTING.md`) · M6: en progreso — D1 `kalapp-db` creada (WNAM, id en `wrangler.jsonc`); faltan secretos, Workers Builds, la prueba real de Gemini y la línea base de precisión.
+**Estado (2026-11-04, v1.3):** M0 y M1 terminados (en `develop`) · M2, M3, M4, M5: **terminados** en `feature/v0.1-api-pwa` (QA final aprobado; verificación en iPhone real pendiente, ver `TESTING.md`) · M6: en progreso — D1 `kalapp-db` creada (WNAM, id en `wrangler.jsonc`); primera prueba real de Gemini con texto hecha (4 platillos + imagen sin comida, ver `ACCURACY.md` §4b); faltan secretos, Workers Builds, una foto real de comida y la línea base de precisión.
 
 ### v0.2 — Rapidez y tendencias (terminada en código)
 Registro por texto · favoritos/repetir (migración `0002`) · historial con promedio semanal (`/summary`). **Aceptación:** repetir una comida en 1 toque; semana visible con promedio.
@@ -182,17 +182,17 @@ Pasos únicos que hace el usuario (detallados en [`DEPLOY.md`](./DEPLOY.md); des
 | Gastar tiempo en despliegue | `DEPLOY.md` paso a paso y `/api/health` para verificar |
 
 ## 14. Pendientes del usuario
-1. Generar la clave de Gemini en AI Studio (no pegarla en el chat). *Estado:* el usuario la agregó como variable de entorno de la sesión en la nube, pero no estuvo disponible en la sesión del 2026-11-04; falta subirla con `wrangler secret put` y correr `pnpm test:gemini-live`.
+1. Generar la clave de Gemini en AI Studio (no pegarla en el chat). *Estado:* clave usada en la sesión en la nube para la primera prueba real (2026-11-04, `pnpm test:gemini-live` con texto, OK); falta subirla a producción con `wrangler secret put GEMINI_API_KEY`.
 2. Tener `wrangler` disponible (`npx wrangler login`) para los pasos únicos de M6.
 3. Confirmar el nombre final (por defecto "Kalapp").
 4. ~~Crear la D1 y poner el `database_id` real en `wrangler.jsonc`~~ — hecho el 2026-11-04 (`kalapp-db`, WNAM).
 5. Armar el set de ~20 fotos y registrar la línea base en [`ACCURACY.md`](./ACCURACY.md).
 6. Subir secretos y conectar Workers Builds ([`DEPLOY.md`](./DEPLOY.md) §4–5); luego la "Primera prueba real" (§9b) y el checklist de [`TESTING.md`](./TESTING.md).
 
-## 15. Riesgos residuales (v1.3)
+## 15. Riesgos residuales (v1.4)
 | Riesgo | Estado |
 |---|---|
-| Precisión real de Gemini sin medir (sin clave en la sesión) | Abierto: `pnpm test:gemini-live` + set de `ACCURACY.md` |
+| Precisión real de Gemini sin medir | Abierto, con avance: 4 pruebas reales con texto plausibles y `not_food` correcto (2026-11-04); faltan una foto real y el set de ~20 fotos de `ACCURACY.md` |
 | Instrucciones del Atajo sin verificar en iPhone real | Abierto: checklist de `TESTING.md` |
 | Escaneo en vivo con zxing sin verificar en iOS | Abierto: checklist; queda la captura manual |
 | Cambio de horario de Chile sin verificar en dispositivo | Abierto (baja) |

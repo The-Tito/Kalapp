@@ -9,7 +9,7 @@ import { PROMPT_VERSION } from '../src/gemini/prompt'
 import { bytesToBase64 } from '../src/gemini/request'
 
 const apiKey = process.env.GEMINI_API_KEY ?? ''
-const primary = process.env.GEMINI_MODEL || 'gemini-flash-latest'
+const primary = process.env.GEMINI_MODEL || 'gemini-2.5-flash'
 const fallback = process.env.GEMINI_FALLBACK_MODEL || 'gemini-flash-lite-latest'
 const imagePath = process.env.GEMINI_LIVE_IMAGE
 

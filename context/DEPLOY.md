@@ -1,6 +1,6 @@
 # Kalapp — Guía de despliegue (Cloudflare, plan gratuito)
 
-> Versión 1.1 · 2026-11-04. Para una persona que no es experta: sigue los pasos en orden.  
+> Versión 1.2 · 2026-11-04. Para una persona que no es experta: sigue los pasos en orden.  
 > Resultado: la app en `https://kalapp.<tu-subdominio>.workers.dev`, instalada en tu iPhone.  
 > **Regla de oro:** tus claves y tu token **nunca** van en el repositorio, en un commit, en un chat ni en una captura de pantalla.
 
@@ -154,7 +154,8 @@ GEMINI_API_KEY=tu-clave pnpm test:gemini-live            # descripciones de text
 GEMINI_API_KEY=tu-clave pnpm test:gemini-live foto.jpg   # además, una foto tuya
 ```
 - También lee la clave de `.dev.vars` si existe. Sin clave imprime "omitido" y termina sin error.
-- En una sesión en la nube, define `GEMINI_API_KEY` como variable de entorno de la sesión en lugar de escribirla en el comando.
+- En una sesión en la nube, define `GEMINI_API_KEY` como variable de entorno de la sesión en lugar de escribirla en el comando. Si Node no sale por el proxy de la sesión, agrega `NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=/root/.ccr/ca-bundle.crt` antes de `pnpm test:gemini-live`.
+- Resultado esperado (2026-11-04, texto): cada descripción tarda ≈ 10–12 s con `gemini-2.5-flash`; resultados de referencia en [`ACCURACY.md`](./ACCURACY.md#4b-primeras-pruebas-reales-texto).
 - Cada ejecución consume cuota gratuita de Gemini (no del límite diario de la app).
 
 ---
@@ -166,7 +167,7 @@ Cuando el primer despliegue termine, haz esto en orden (la lista completa del iP
 1. **Salud del servidor:** abre `https://kalapp.<tu-subdominio>.workers.dev/api/health` → `{"status":"ok","app":"Kalapp"}`.
 2. **Instalar:** Safari → Compartir → Agregar a inicio; abre desde el ícono (pantalla completa).
 3. **Token y onboarding:** pega el token y completa los 4 pasos; revisa que la recomendación tenga sentido.
-4. **Una foto real:** toma una foto de comida → Analizar → en Revisar deben aparecer ingredientes con gramos, supuestos y confianza (eso solo sale de Gemini; un 503 indica problema con la clave). Para confirmar qué modelo respondió: deja `npx wrangler tail` abierto mientras analizas, o después exporta JSON (Ajustes) y mira `aiModel` de la comida (p. ej. `gemini-flash-latest`). Guarda → aparece en Hoy.
+4. **Una foto real:** toma una foto de comida → Analizar → en Revisar deben aparecer ingredientes con gramos, supuestos y confianza (eso solo sale de Gemini; un 503 indica problema con la clave). Para confirmar qué modelo respondió: deja `npx wrangler tail` abierto mientras analizas, o después exporta JSON (Ajustes) y mira `aiModel` de la comida (normalmente `gemini-2.5-flash`; `gemini-flash-lite-latest` si respondió el respaldo). Un análisis tarda ≈ 10–12 s. Guarda → aparece en Hoy.
 5. **Cupo:** `curl -H "Authorization: Bearer TU_TOKEN" https://kalapp.<tu-subdominio>.workers.dev/api/usage` debe mostrar `calls` ≥ 1.
 6. **Prueba en vivo desde la computadora:** `pnpm test:gemini-live` (sección 9) para confirmar clave y modelos, y opcionalmente con una foto.
 7. Después, arma el set de ~20 fotos de [`ACCURACY.md`](./ACCURACY.md) para la línea base de precisión.
@@ -190,11 +191,13 @@ Cuando el primer despliegue termine, haz esto en orden (la lista completa del iP
 ### Cambiar el límite diario o los modelos
 Están en `wrangler.jsonc` → `vars` (no son secretos):
 ```jsonc
-"GEMINI_MODEL": "gemini-flash-latest",            // principal
+"GEMINI_MODEL": "gemini-2.5-flash",               // principal (desde 2026-11-04)
 "GEMINI_FALLBACK_MODEL": "gemini-flash-lite-latest", // respaldo
 "DAILY_ANALYZE_LIMIT": "60",
 "MAX_IMAGE_BYTES": "1048576"
 ```
+Si cambias de modelo, el `responseSchema` no debe llevar `minimum`/`maximum`/`minItems`/`maxItems`: Gemini 2.5 los rechaza con HTTP 400 ("too many states for serving"); lo vigila `schema.test.ts`.
+
 Cambia el valor, haz commit y despliega (Workers Builds desde `main`, o `pnpm deploy:manual`). También se pueden cambiar en el dashboard (Worker → Settings → Variables), pero el siguiente despliegue los sobrescribe con lo de `wrangler.jsonc`.
 
 ### Revocar o cambiar una clave
@@ -205,7 +208,7 @@ Cambia el valor, haz commit y despliega (Workers Builds desde `main`, o `pnpm de
 ```bash
 npx wrangler tail
 ```
-Muestra errores y avisos (por ejemplo `Gemini gemini-flash-latest: unavailable (HTTP 429)`). Nunca muestra tu clave ni tu token. También: dashboard → Worker → *Logs* (observabilidad activada).
+Muestra errores y avisos. Si Gemini falla verás una línea `Gemini <modelo>: HTTP <status> — <mensaje>` (por ejemplo, con un 503 por saturación el mensaje habla de "high demand"); el mensaje es solo el `error.message` de Gemini, recortado y con la clave redactada como `[clave]`. Un 400 con "too many states" indica que volvieron límites al `responseSchema`. Nunca muestra tu clave ni tu token. También: dashboard → Worker → *Logs* (observabilidad activada).
 
 ---
 

@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { buildAnalyzePrompt, PROMPT_VERSION } from './prompt'
-import { buildGeminiRequest, bytesToBase64, parseGeminiResponse } from './request'
+import {
+  buildGeminiRequest,
+  bytesToBase64,
+  MERGED_ITEMS_ASSUMPTION,
+  parseGeminiResponse,
+} from './request'
 
 const candidate = (text: string) => ({ candidates: [{ content: { parts: [{ text }] } }] })
 
@@ -124,5 +129,60 @@ describe('parseGeminiResponse', () => {
       ),
     )
     expect(r.kind).toBe('not_food')
+  })
+})
+
+describe('trimAiOutput (sin límites en el responseSchema)', () => {
+  const item = (i: number) => ({
+    name: `Ingrediente ${i}`,
+    grams: 10,
+    kcal: i,
+    proteinG: 0,
+    carbsG: i / 4,
+    fatG: 0,
+    confidence: 'medium',
+  })
+
+  it('> 30 ítems: conserva los 30 de más kcal (en su orden) y agrega el supuesto', () => {
+    const items = Array.from({ length: 35 }, (_, i) => item(i + 1))
+    const r = parseGeminiResponse(
+      candidate(JSON.stringify({ title: 'Buffet', items, assumptions: ['a'], confidence: 'low' })),
+    )
+    expect(r.kind).toBe('ok')
+    if (r.kind !== 'ok') return
+    expect(r.output.items).toHaveLength(30)
+    expect(r.output.items[0]?.kcal).toBe(6)
+    expect(r.output.items[29]?.kcal).toBe(35)
+    expect(r.output.assumptions).toEqual([MERGED_ITEMS_ASSUMPTION, 'a'])
+  })
+
+  it('assumptions/questions > 20 se recortan', () => {
+    const many = Array.from({ length: 25 }, (_, i) => `p${i}`)
+    const r = parseGeminiResponse(
+      candidate(
+        JSON.stringify({
+          title: 'X',
+          items: [item(50)],
+          assumptions: many,
+          questions: many,
+          confidence: 'low',
+        }),
+      ),
+    )
+    expect(r.kind).toBe('ok')
+    if (r.kind !== 'ok') return
+    expect(r.output.assumptions).toHaveLength(20)
+    expect(r.output.questions).toHaveLength(20)
+  })
+
+  it('valores fuera de rango siguen siendo inválidos (→ 502)', () => {
+    for (const patch of [{ kcal: 20000 }, { grams: -1 }, { fatG: 5000 }]) {
+      const r = parseGeminiResponse(
+        candidate(
+          JSON.stringify({ title: 'X', items: [{ ...item(5), ...patch }], confidence: 'low' }),
+        ),
+      )
+      expect(r.kind, JSON.stringify(patch)).toBe('invalid')
+    }
   })
 })

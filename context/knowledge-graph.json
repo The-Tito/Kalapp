@@ -6,8 +6,8 @@
     "language": "es-MX",
     "created_at": "2026-11-04",
     "updated_at": "2026-11-04",
-    "status": "v1.0.0 lista en código; pendiente despliegue del usuario",
-    "git_branch": "feature/v0.1-api-pwa",
+    "status": "v1.0.0 lista en código (release/1.0.0); Gemini real verificado con texto; pendiente despliegue del usuario",
+    "git_branch": "release/1.0.0",
     "conventions": {
       "node_id_format": "<prefijo>:<slug>  (ej. feat:photo-logging)",
       "prefixes": {
@@ -46,7 +46,11 @@
       "edge_format": "{ source, type, target, note? }",
       "how_to_update": "Agregar nodos nuevos sin borrar los anteriores; si algo se reemplaza, marcar el nodo viejo con status='superseded' y crear una arista SUPERSEDED_BY hacia el nuevo. Actualizar metadata.updated_at y añadir una entrada en changelog."
     },
-    "previous_status": "M0–M1 en develop; M2–M5 terminados en código en feature/v0.1-api-pwa (QA API aprobado, QA web pendiente); M6 en progreso"
+    "previous_status": "v1.0.0 lista en código; pendiente despliegue del usuario",
+    "previous_git_branch": "feature/v0.1-api-pwa",
+    "status_history": [
+      "M0–M1 en develop; M2–M5 terminados en código en feature/v0.1-api-pwa (QA API aprobado, QA web pendiente); M6 en progreso"
+    ]
   },
   "nodes": [
     {
@@ -1124,15 +1128,24 @@
     {
       "id": "tech:gemini",
       "type": "Technology",
-      "label": "Gemini Flash (respaldo Flash-Lite)",
+      "label": "Gemini 2.5 Flash (respaldo Flash-Lite latest)",
       "properties": {
         "layer": "IA",
         "why": "Visión, nivel gratuito, salida JSON estructurada",
         "settings": {
           "temperature": 0,
           "structured_output": true,
-          "model_configurable": true
-        }
+          "model_configurable": true,
+          "models": {
+            "primary": "gemini-2.5-flash",
+            "fallback": "gemini-flash-lite-latest",
+            "previous_primary": "gemini-flash-latest"
+          },
+          "response_schema_bounds": false
+        },
+        "previous_label": "Gemini Flash (respaldo Flash-Lite)",
+        "constraint": "Gemini 2.5 rechaza responseSchema con minimum/maximum/minItems/maxItems (HTTP 400 \"too many states\")",
+        "updated_at": "2026-11-04"
       }
     },
     {
@@ -1396,7 +1409,7 @@
             "DB": "D1 kalapp-db"
           },
           "vars": {
-            "GEMINI_MODEL": "gemini-flash-latest",
+            "GEMINI_MODEL": "gemini-2.5-flash",
             "GEMINI_FALLBACK_MODEL": "gemini-flash-lite-latest",
             "DAILY_ANALYZE_LIMIT": "60",
             "MAX_IMAGE_BYTES": "1048576"
@@ -1414,7 +1427,11 @@
           },
           "error_shape": "{ error: { code, message } }",
           "token_compare": "tiempo constante",
-          "compatibility_date": "2026-11-01"
+          "compatibility_date": "2026-11-01",
+          "previous_vars": {
+            "GEMINI_MODEL": "gemini-flash-latest"
+          },
+          "gemini_error_log": "Gemini <modelo>: HTTP <status> — <mensaje> (clave redactada)"
         }
       }
     },
@@ -2181,8 +2198,9 @@
         "target": "Error promedio < ±25 %",
         "action": "Ajustar el prompt",
         "formula": "MAPE = (1/n) Σ |estimado − real| / real × 100; también sesgo con signo",
-        "status": "sin mediciones reales todavía",
-        "documented_in": "context/ACCURACY.md"
+        "status": "sin mediciones de error; primeras pruebas reales con texto registradas (ACCURACY.md §4b)",
+        "documented_in": "context/ACCURACY.md",
+        "previous_status": "sin mediciones reales todavía"
       }
     },
     {
@@ -2226,8 +2244,10 @@
       "label": "Generar clave de Gemini y guardarla como secreto",
       "properties": {
         "owner": "Usuario",
-        "status": "en progreso",
-        "note": "El usuario agregó GEMINI_API_KEY como variable de entorno de la sesión en la nube; no estuvo disponible en la sesión de desarrollo del 2026-11-04. Falta subirla con wrangler secret put."
+        "status": "parcialmente cerrada",
+        "note": "Clave usada como variable de entorno de la sesión en la nube para la primera prueba real (2026-11-04, OK). Falta subirla a producción con wrangler secret put GEMINI_API_KEY.",
+        "previous_note": "El usuario agregó GEMINI_API_KEY como variable de entorno de la sesión en la nube; no estuvo disponible en la sesión de desarrollo del 2026-11-04. Falta subirla con wrangler secret put.",
+        "previous_status": "en progreso"
       }
     },
     {
@@ -2335,7 +2355,7 @@
       "label": "Plan del proyecto",
       "properties": {
         "path": "context/PLAN.md",
-        "version": "1.3",
+        "version": "1.4",
         "date": "2026-11-04",
         "sections": [
           "Visión y alcance",
@@ -2353,7 +2373,8 @@
           "Riesgos del plan",
           "Pendientes del usuario"
         ],
-        "updated_at": "2026-11-04"
+        "updated_at": "2026-11-04",
+        "previous_version": "1.3"
       }
     },
     {
@@ -2372,9 +2393,10 @@
       "properties": {
         "path": "context/DEPLOY.md",
         "status": "creado",
-        "version": "1.1",
+        "version": "1.2",
         "date": "2026-11-04",
-        "updated_at": "2026-11-04"
+        "updated_at": "2026-11-04",
+        "previous_version": "1.1"
       }
     },
     {
@@ -2384,9 +2406,12 @@
       "properties": {
         "path": "context/PROMPTS.md",
         "status": "creado",
-        "version": "1.0",
+        "version": "1.1",
         "date": "2026-11-04",
-        "prompt_version": "1"
+        "prompt_version": "1",
+        "previous_version": "1.0",
+        "updated_at": "2026-11-04",
+        "config_version": "1.1"
       }
     },
     {
@@ -2395,10 +2420,11 @@
       "label": "Resultados de precisión de la IA",
       "properties": {
         "path": "context/ACCURACY.md",
-        "status": "creado (protocolo; sin mediciones)",
-        "version": "1.1",
+        "status": "protocolo + primeras pruebas reales con texto (sin mediciones de error)",
+        "version": "1.2",
         "date": "2026-11-04",
-        "updated_at": "2026-11-04"
+        "updated_at": "2026-11-04",
+        "previous_version": "1.1"
       }
     },
     {
@@ -2551,7 +2577,8 @@
         "completed_at": "2026-11-04",
         "qa_history": "QA de API APROBADO tras correcciones (commit 9de7212 fix(api): harden API after adversarial QA; suite adversarial e2532d1); QA de web pendiente (apps/web aún en trabajo en paralelo)",
         "previous_pending": "Prueba real con 3 fotos (falta GEMINI_API_KEY en la sesión); QA de web",
-        "residual": "Prueba real con 3 fotos no hecha (sin GEMINI_API_KEY en la sesión): ver risk:gemini-accuracy-unmeasured"
+        "residual": "Prueba real con 3 fotos no hecha (sin GEMINI_API_KEY en la sesión): ver risk:gemini-accuracy-unmeasured",
+        "residual_update": "2026-11-04: prueba real con texto hecha (4 platillos + not_food); la de 3 fotos sigue pendiente del usuario. Bug de responseSchema corregido en 4eb87d7."
       }
     },
     {
@@ -2598,10 +2625,12 @@
         ],
         "acceptance": "App en producción usada un día completo; error medio medido con ~20 fotos",
         "status": "en progreso: despliegue pendiente del usuario",
-        "progress": "DEPLOY.md, ACCURACY.md (protocolo) y TESTING.md (checklist iPhone) listos; D1 de producción kalapp-db creada el 2026-11-04 en WNAM (id en wrangler.jsonc); código v1.0 terminado y verificado",
-        "pending": "Despliegue por el usuario (secretos GEMINI_API_KEY y APP_TOKEN + Workers Builds); las migraciones se aplican al desplegar; checklist iPhone (TESTING.md); línea base de precisión con ~20 fotos (sin medir)",
+        "progress": "DEPLOY.md, ACCURACY.md (protocolo) y TESTING.md (checklist iPhone) listos; D1 de producción kalapp-db creada el 2026-11-04 en WNAM (id en wrangler.jsonc); código v1.0 terminado y verificado; primera prueba real con Gemini (texto) hecha en release/1.0.0 y bug crítico del responseSchema corregido (4eb87d7)",
+        "pending": "Secreto GEMINI_API_KEY y APP_TOKEN en producción + Workers Builds; las migraciones se aplican al desplegar; una foto real de comida; checklist iPhone (TESTING.md); línea base de precisión con ~20 fotos",
         "previous_progress": "context/DEPLOY.md y context/ACCURACY.md (protocolo) creados el 2026-11-04",
-        "previous_pending": "Primer deploy (database_id real, secretos, Workers Builds), checklist iPhone, línea base con ~20 fotos"
+        "previous_pending": "Primer deploy (database_id real, secretos, Workers Builds), checklist iPhone, línea base con ~20 fotos",
+        "previous_progress_2": "DEPLOY.md, ACCURACY.md (protocolo) y TESTING.md (checklist iPhone) listos; D1 de producción kalapp-db creada el 2026-11-04 en WNAM (id en wrangler.jsonc); código v1.0 terminado y verificado",
+        "previous_pending_2": "Despliegue por el usuario (secretos GEMINI_API_KEY y APP_TOKEN + Workers Builds); las migraciones se aplican al desplegar; checklist iPhone (TESTING.md); línea base de precisión con ~20 fotos (sin medir)"
       }
     },
     {
@@ -3163,7 +3192,9 @@
       "properties": {
         "date": "2026-11-04",
         "detail": "Respaldo (una vez) si el principal da 429, 5xx, 404 (modelo retirado), timeout 25 s, error de red o respuesta inválida (no JSON / no cumple el esquema). 400/401/403 → 503 AI_UNAVAILABLE directo, sin respaldo. Final: inválido → 502 AI_INVALID_RESPONSE; no disponible → 503. La clave va en x-goog-api-key y el cuerpo de error de Gemini se descarta.",
-        "source": "QA adversarial de API / feature/v0.1-api-pwa"
+        "source": "QA adversarial de API / feature/v0.1-api-pwa",
+        "amended_at": "2026-11-04",
+        "amendment": "Desde 4eb87d7 el cuerpo de error ya no se descarta: se registra error.message con la clave redactada (dec:gemini-error-logging). La clasificación 429/5xx/404 → respaldo, 400/401/403 → 503 no cambió."
       }
     },
     {
@@ -3309,7 +3340,9 @@
       "label": "Sin clave de Gemini en la sesión de desarrollo",
       "properties": {
         "date": "2026-11-04",
-        "detail": "GEMINI_API_KEY no estaba disponible en el entorno el 2026-11-04: test:gemini-live se omite y no hay mediciones reales de precisión."
+        "detail": "GEMINI_API_KEY no estaba disponible en el entorno el 2026-11-04: test:gemini-live se omite y no hay mediciones reales de precisión.",
+        "status": "superseded",
+        "superseded_at": "2026-11-04"
       }
     },
     {
@@ -3653,10 +3686,12 @@
       "properties": {
         "category": "residual (v1.0)",
         "severity": "alta",
-        "cause": "No hubo GEMINI_API_KEY en la sesión: todo se probó con Gemini simulado.",
+        "cause": "Sin mediciones con referencia: solo pruebas reales con texto; ninguna foto real de comida todavía.",
         "mitigation": "Tras desplegar: pnpm test:gemini-live y set de ~20 fotos (ACCURACY.md).",
-        "status": "abierto",
-        "date": "2026-11-04"
+        "status": "abierto (con avance)",
+        "date": "2026-11-04",
+        "progress": "2026-11-04: 4 pruebas reales con texto (774, 965, 438, 1,069 kcal; valores plausibles) y not_food correcto con imagen sin comida; el bug de responseSchema (HTTP 400) se corrigió en 4eb87d7. Falta una foto real de comida y el set de ~20 fotos con referencia.",
+        "previous_cause": "No hubo GEMINI_API_KEY en la sesión: todo se probó con Gemini simulado."
       }
     },
     {
@@ -3730,7 +3765,8 @@
         "owner": "Usuario",
         "status": "pendiente",
         "detail": "/api/health, instalar, onboarding, una foto real con Gemini, pnpm test:gemini-live y checklist de TESTING.md.",
-        "documented_in": "context/DEPLOY.md, context/TESTING.md"
+        "documented_in": "context/DEPLOY.md, context/TESTING.md",
+        "progress": "2026-11-04: pnpm test:gemini-live con texto y la ruta HTTP real del Worker probados (fact:gemini-first-live-results); falta lo del iPhone y una foto real."
       }
     },
     {
@@ -3742,6 +3778,107 @@
         "version": "1.0",
         "date": "2026-11-04",
         "status": "creado"
+      }
+    },
+    {
+      "id": "fact:gemini-schema-too-many-states",
+      "type": "Fact",
+      "label": "Gemini 2.5 rechaza responseSchema con límites (HTTP 400)",
+      "properties": {
+        "date": "2026-11-04",
+        "severity": "crítica",
+        "detail": "Con Gemini real TODAS las llamadas a generateContent daban HTTP 400 \"The specified schema produces a constraint that has too many states for serving\" por minimum/maximum/maxItems en el responseSchema. Como 400 no activa el respaldo, cada análisis terminaba en 503 AI_UNAVAILABLE. Invisible con Gemini simulado; detectado solo en la primera prueba real.",
+        "fixed_in": "4eb87d7 fix(api): make Gemini responseSchema servable and switch primary model",
+        "status": "corregido"
+      }
+    },
+    {
+      "id": "dec:gemini-schema-no-bounds",
+      "type": "Decision",
+      "label": "responseSchema sin límites; límites en el Worker",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "GEMINI_RESPONSE_SCHEMA (apps/api/src/gemini/schema.ts) sin minimum/maximum/minItems/maxItems (solo enum para confianza). trimAiOutput en request.ts: más de 30 ingredientes → se conservan los 30 de más kcal (orden original) y se antepone el supuesto \"Se combinaron ingredientes menores\"; assumptions/questions se recortan a 20; valores fuera de rango no se corrigen y los rechaza Zod (AiAnalysisOutputSchema con LIMITS de @kalapp/shared) → 502. schema.test.ts impide que vuelvan las claves de límite.",
+        "commit": "4eb87d7",
+        "config_version": "1.1 (PROMPTS.md); PROMPT_VERSION sigue en 1",
+        "source": "Primera prueba real con Gemini (release/1.0.0)"
+      }
+    },
+    {
+      "id": "fact:gemini-flash-latest-503",
+      "type": "Fact",
+      "label": "gemini-flash-latest respondió 503 por alta demanda",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "gemini-flash-latest respondió HTTP 503 \"high demand\" tras 42 s. Tiempos observados con texto: gemini-2.5-flash ≈ 10–12 s; gemini-flash-lite-latest ≈ 3.5 s."
+      }
+    },
+    {
+      "id": "dec:gemini-primary-2-5-flash",
+      "type": "Decision",
+      "label": "Modelo principal gemini-2.5-flash",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "GEMINI_MODEL = gemini-2.5-flash (antes gemini-flash-latest) en wrangler.jsonc y como valor por defecto de scripts/gemini-live.ts; respaldo sin cambio: gemini-flash-lite-latest.",
+        "commit": "4eb87d7"
+      }
+    },
+    {
+      "id": "dec:gemini-error-logging",
+      "type": "Decision",
+      "label": "Registrar el mensaje de error de Gemini (clave redactada)",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "Si Gemini responde !ok, el Worker hace console.error(\"Gemini <modelo>: HTTP <status> — <mensaje>\") con solo error.message de Gemini, espacios normalizados, recortado a 500 caracteres y con la clave reemplazada por [clave]; visible en wrangler tail. Reemplaza el \"se descarta el cuerpo de error\" de dec:gemini-fallback-policy; la clasificación de respaldo no cambia.",
+        "commit": "4eb87d7"
+      }
+    },
+    {
+      "id": "fact:gemini-first-live-results",
+      "type": "Fact",
+      "label": "Primeras pruebas reales con Gemini (texto)",
+      "properties": {
+        "date": "2026-11-04",
+        "prompt_version": "1 (config. 1.1)",
+        "model": "gemini-2.5-flash",
+        "results": [
+          {
+            "input": "3 tacos al pastor + Coca-Cola 355 ml",
+            "kcal": 774,
+            "via": "test:gemini-live"
+          },
+          {
+            "input": "Chilaquiles verdes con pollo, crema, queso y frijoles",
+            "kcal": 965,
+            "via": "test:gemini-live"
+          },
+          {
+            "input": "Concha + café de olla",
+            "kcal": 438,
+            "via": "test:gemini-live"
+          },
+          {
+            "input": "Torta de milanesa con aguacate, jitomate y mayonesa + horchata grande",
+            "kcal": 1069,
+            "via": "ruta HTTP real del Worker (/api/analyze)",
+            "notes": "11.8 s, 6 ingredientes, preguntas sobre azúcar y fritura"
+          },
+          {
+            "input": "Imagen sintética sin comida",
+            "result": "not_food correcto"
+          }
+        ],
+        "detail": "Sin valores de referencia: no se calcula error. Aún no se probó una foto real de comida (el proxy de la sesión en la nube bloquea fuentes de fotos); pendiente del usuario.",
+        "documented_in": "context/ACCURACY.md §4b, context/PROMPTS.md"
+      }
+    },
+    {
+      "id": "fact:cloud-session-node-proxy",
+      "type": "Fact",
+      "label": "Node en la sesión en la nube necesita el proxy explícito",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "Para pnpm test:gemini-live en la sesión en la nube: NODE_USE_ENV_PROXY=1 y NODE_EXTRA_CA_CERTS=/root/.ccr/ca-bundle.crt. No aplica a producción (Workers)."
       }
     }
   ],
@@ -6548,6 +6685,150 @@
       "source": "doc:deploy",
       "type": "DOCUMENTS",
       "target": "task:first-real-test"
+    },
+    {
+      "source": "fact:gemini-key-not-in-session",
+      "type": "SUPERSEDED_BY",
+      "target": "fact:gemini-first-live-results",
+      "note": "La clave sí estuvo disponible en la sesión de release/1.0.0 y se hizo la primera prueba real"
+    },
+    {
+      "source": "fact:gemini-schema-too-many-states",
+      "type": "AFFECTS",
+      "target": "api:analyze"
+    },
+    {
+      "source": "fact:gemini-schema-too-many-states",
+      "type": "AFFECTS",
+      "target": "tech:gemini"
+    },
+    {
+      "source": "dec:gemini-schema-no-bounds",
+      "type": "MOTIVATED_BY",
+      "target": "fact:gemini-schema-too-many-states"
+    },
+    {
+      "source": "dec:gemini-schema-no-bounds",
+      "type": "APPLIES_TO",
+      "target": "comp:analyzer"
+    },
+    {
+      "source": "dec:gemini-schema-no-bounds",
+      "type": "APPLIES_TO",
+      "target": "api:analyze"
+    },
+    {
+      "source": "dec:gemini-schema-no-bounds",
+      "type": "IMPLEMENTED_IN",
+      "target": "repo:apps-api"
+    },
+    {
+      "source": "doc:prompts",
+      "type": "DOCUMENTS",
+      "target": "dec:gemini-schema-no-bounds"
+    },
+    {
+      "source": "dec:gemini-primary-2-5-flash",
+      "type": "MOTIVATED_BY",
+      "target": "fact:gemini-flash-latest-503"
+    },
+    {
+      "source": "dec:gemini-primary-2-5-flash",
+      "type": "APPLIES_TO",
+      "target": "comp:worker"
+    },
+    {
+      "source": "dec:gemini-primary-2-5-flash",
+      "type": "APPLIES_TO",
+      "target": "tech:gemini"
+    },
+    {
+      "source": "dec:gemini-primary-2-5-flash",
+      "type": "MITIGATES",
+      "target": "risk:model-deprecation"
+    },
+    {
+      "source": "doc:prompts",
+      "type": "DOCUMENTS",
+      "target": "dec:gemini-primary-2-5-flash"
+    },
+    {
+      "source": "dec:gemini-error-logging",
+      "type": "REFINES",
+      "target": "dec:gemini-fallback-policy",
+      "note": "El cuerpo de error ahora se registra (redactado) en lugar de descartarse"
+    },
+    {
+      "source": "dec:gemini-error-logging",
+      "type": "APPLIES_TO",
+      "target": "comp:analyzer"
+    },
+    {
+      "source": "dec:gemini-error-logging",
+      "type": "APPLIES_TO",
+      "target": "sec:secrets",
+      "note": "La clave se reemplaza por [clave] en los logs"
+    },
+    {
+      "source": "doc:deploy",
+      "type": "DOCUMENTS",
+      "target": "dec:gemini-error-logging"
+    },
+    {
+      "source": "ms:m6",
+      "type": "RECORDS",
+      "target": "dec:gemini-schema-no-bounds"
+    },
+    {
+      "source": "ms:m6",
+      "type": "RECORDS",
+      "target": "dec:gemini-primary-2-5-flash"
+    },
+    {
+      "source": "ms:m6",
+      "type": "RECORDS",
+      "target": "dec:gemini-error-logging"
+    },
+    {
+      "source": "ms:m6",
+      "type": "PRODUCES",
+      "target": "fact:gemini-first-live-results"
+    },
+    {
+      "source": "fact:gemini-first-live-results",
+      "type": "AFFECTS",
+      "target": "metric:accuracy"
+    },
+    {
+      "source": "fact:gemini-first-live-results",
+      "type": "RELATES_TO",
+      "target": "task:gemini-key"
+    },
+    {
+      "source": "fact:gemini-first-live-results",
+      "type": "RELATES_TO",
+      "target": "task:first-real-test"
+    },
+    {
+      "source": "fact:gemini-first-live-results",
+      "type": "DOCUMENTED_IN",
+      "target": "doc:accuracy"
+    },
+    {
+      "source": "fact:gemini-first-live-results",
+      "type": "RELATES_TO",
+      "target": "fact:gemini-schema-too-many-states",
+      "note": "La prueba real reveló el bug"
+    },
+    {
+      "source": "fact:cloud-session-node-proxy",
+      "type": "RELATES_TO",
+      "target": "fact:gemini-live-script"
+    },
+    {
+      "source": "fact:cloud-session-node-proxy",
+      "type": "DOCUMENTED_IN",
+      "target": "doc:deploy"
     }
   ],
   "conversation_log": [
@@ -6604,6 +6885,12 @@
       "date": "2026-11-04",
       "user_request": "Cerrar la v1.0 completa (web y API) con QA adversarial y e2e antes del release; la D1 de producción ya existe.",
       "outcome": "v0.1–v1.0 terminadas en código; QA adversarial de API (13) y web (15) corregidos; 736 pruebas en verde; e2e Playwright y ataques con curl al Worker real; D1 kalapp-db (WNAM) en wrangler.jsonc. Pendiente: despliegue del usuario y prueba real de Gemini."
+    },
+    {
+      "step": 10,
+      "date": "2026-11-04",
+      "user_request": "El usuario regresó y preguntó qué falta.",
+      "outcome": "Con la clave en la sesión se hizo la primera prueba real con Gemini: se detectó y corrigió el bug del responseSchema (HTTP 400, commit 4eb87d7), modelo principal gemini-2.5-flash, 4 platillos de texto y not_food correctos. Falta: secretos en producción y Workers Builds, una foto real de comida, checklist del iPhone y el set de ~20 fotos."
     }
   ],
   "changelog": [
@@ -6630,6 +6917,10 @@
     {
       "date": "2026-11-04",
       "change": "Cierre de v1.0 en código: ms:m2–m5 terminados; phase:v0.2/v0.3/v1.0 terminadas en código; ms:m6 en progreso (despliegue del usuario). 11 decisiones de web y 5 de API/shared; dec:reject-invisible-names → superseded por dec:invisible-names-shared; fact:d1-id-placeholder → superseded por fact:d1-production-created; 6 hechos de verificación; 5 riesgos residuales; tareas task:user-deploy y task:first-real-test; task:start-v0.1 cerrada; doc:testing (TESTING.md) nuevo; PLAN 1.3, DEPLOY 1.1, ACCURACY 1.1."
+    },
+    {
+      "date": "2026-11-04",
+      "change": "Primera prueba real con Gemini: fact:gemini-schema-too-many-states (HTTP 400 en todas las llamadas) corregido por dec:gemini-schema-no-bounds (4eb87d7); dec:gemini-primary-2-5-flash (por fact:gemini-flash-latest-503); dec:gemini-error-logging (refina dec:gemini-fallback-policy); fact:gemini-first-live-results y fact:cloud-session-node-proxy; fact:gemini-key-not-in-session → superseded; tech:gemini y comp:worker con modelo principal gemini-2.5-flash; task:gemini-key parcialmente cerrada; risk:gemini-accuracy-unmeasured con avance; PROMPTS 1.1, ACCURACY 1.2, DEPLOY 1.2, PLAN 1.4."
     }
   ]
 }

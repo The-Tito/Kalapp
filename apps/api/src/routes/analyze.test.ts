@@ -52,7 +52,7 @@ describe('POST /api/analyze (foto)', () => {
     )
     expect(res.status).toBe(200)
     const proposal = AnalysisProposalSchema.parse(await res.json())
-    expect(proposal.model).toBe('gemini-flash-latest')
+    expect(proposal.model).toBe('gemini-2.5-flash')
     expect(proposal.totals).toEqual({ kcal: 330, proteinG: 21.4, carbsG: 30, fatG: 14.4 })
     expect(proposal.energyMismatch).toBe(false)
     expect(proposal).not.toHaveProperty('not_food')
@@ -60,7 +60,7 @@ describe('POST /api/analyze (foto)', () => {
     expect(spy).toHaveBeenCalledTimes(1)
     const [url, init] = spy.mock.calls[0] as [string, RequestInit]
     expect(url).toBe(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
     )
     expect(new Headers(init.headers).get('x-goog-api-key')).toBe('test-key')
     const body = JSON.parse(init.body as string)
@@ -144,7 +144,7 @@ describe('POST /api/analyze (foto)', () => {
 
   it('límite diario alcanzado → 429 DAILY_LIMIT sin llamar a Gemini', async () => {
     await env.DB.prepare('INSERT INTO ai_usage (date, model, calls) VALUES (?, ?, ?), (?, ?, ?)')
-      .bind(today(), 'gemini-flash-latest', 50, today(), 'otro', 10)
+      .bind(today(), 'gemini-2.5-flash', 50, today(), 'otro', 10)
       .run()
     const spy = mockFetch(() => geminiResponse(AI_OUTPUT))
     const res = await postPhoto(photoForm(jpegBytes(100)))
@@ -155,7 +155,7 @@ describe('POST /api/analyze (foto)', () => {
 
   it('429 del modelo principal → usa el de respaldo y cuenta un solo intento', async () => {
     const spy = mockFetch((url) =>
-      url.includes('gemini-flash-latest')
+      url.includes('gemini-2.5-flash')
         ? jsonResponse({ error: { code: 429 } }, 429)
         : geminiResponse(AI_OUTPUT),
     )
@@ -169,7 +169,7 @@ describe('POST /api/analyze (foto)', () => {
 
   it('timeout del principal → respaldo; ambos caídos → 503 AI_UNAVAILABLE', async () => {
     mockFetch((url) => {
-      if (url.includes('gemini-flash-latest')) {
+      if (url.includes('gemini-2.5-flash')) {
         throw new DOMException('The operation timed out.', 'TimeoutError')
       }
       return geminiResponse(AI_OUTPUT)
@@ -204,7 +204,7 @@ describe('POST /api/analyze (foto)', () => {
 
   it('respuesta inválida del principal → el respaldo la corrige', async () => {
     mockFetch((url) =>
-      url.includes('gemini-flash-latest')
+      url.includes('gemini-2.5-flash')
         ? geminiResponse({ ...AI_OUTPUT, items: [{ ...AI_OUTPUT.items[0], kcal: -5 }] })
         : geminiResponse(AI_OUTPUT),
     )
@@ -221,6 +221,29 @@ describe('POST /api/analyze (foto)', () => {
     const spy = mockFetch(() => jsonResponse({ error: { code: 400 } }, 400))
     expect((await postPhoto(photoForm(jpegBytes(100)))).status).toBe(503)
     expect(spy).toHaveBeenCalledTimes(1)
+  })
+
+  it('400 de Gemini registra error.message (sin la clave) para wrangler tail', async () => {
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    mockFetch(() =>
+      jsonResponse(
+        {
+          error: {
+            code: 400,
+            message:
+              'The specified schema produces a constraint that has too many states (test-key)',
+          },
+        },
+        400,
+      ),
+    )
+    const res = await postPhoto(photoForm(jpegBytes(100)))
+    expect(res.status).toBe(503)
+    const logged = errSpy.mock.calls.map((c) => String(c[0])).join('\n')
+    expect(logged).toContain('HTTP 400')
+    expect(logged).toContain('too many states')
+    expect(logged).not.toContain('test-key')
+    expect(await res.text()).not.toContain('too many states')
   })
 
   it('no es comida → 422 NOT_FOOD', async () => {

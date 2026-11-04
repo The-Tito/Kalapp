@@ -29,6 +29,19 @@ function isRetriableStatus(status: number): boolean {
   return status === 429 || status === 404 || status >= 500
 }
 
+/** `error.message` de una respuesta de error de Gemini, recortado y sin la clave. */
+async function geminiErrorMessage(res: Response, apiKey: string): Promise<string> {
+  try {
+    const body = (await res.json()) as { error?: { message?: unknown } }
+    const msg = body?.error?.message
+    if (typeof msg !== 'string') return ''
+    const clean = apiKey ? msg.split(apiKey).join('[clave]') : msg
+    return clean.replace(/\s+/g, ' ').slice(0, 500)
+  } catch {
+    return ''
+  }
+}
+
 /** Un intento contra un modelo. Nunca lanza; clasifica el resultado. */
 export async function callGeminiOnce(
   model: string,
@@ -51,9 +64,10 @@ export async function callGeminiOnce(
     }
   }
   if (!res.ok) {
-    // Se descarta el cuerpo: puede contener eco de la petición.
-    await res.body?.cancel().catch(() => undefined)
+    const detail = await geminiErrorMessage(res, opts.apiKey)
     const reason = `HTTP ${res.status}`
+    // Visible en `wrangler tail`; solo `error.message` de Gemini, sin la clave ni la petición.
+    console.error(`Gemini ${model}: ${reason}${detail ? ` — ${detail}` : ''}`)
     return isRetriableStatus(res.status)
       ? { kind: 'unavailable', model, reason }
       : { kind: 'rejected', model, reason }
