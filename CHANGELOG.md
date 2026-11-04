@@ -2,6 +2,11 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones con [SemVer](https://semver.org/lang/es/).
 
+## [1.0.1] — 2026-11-04
+
+### Corregido
+- Despliegue: documentado que la **rama de producción de Workers Builds** debe ser `main` (se había quedado en la rama de arranque y el build fallaba con `No package.json found`), que "Retry build" no cambia de rama y que los secretos van en *Variables and Secrets*, no en las variables de build.
+
 ## [1.0.0] — 2026-11-04
 
 Primera versión completa de Kalapp: PWA personal para iPhone que estima calorías y macros desde una foto (o texto) con Gemini y recomienda una meta según tu objetivo.
