@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import {
+  entryTiming,
   formatDayLabel,
+  formatShortDate,
   formatTime,
+  moveEatenAt,
   timeZoneOffsetMinutes,
   todayIn,
   toIsoWithOffset,
+  zonedIso,
 } from './dates'
 
 describe('fechas locales', () => {
@@ -44,5 +48,35 @@ describe('fechas locales', () => {
 
   it('formatTime en 24 h', () => {
     expect(formatTime('2026-11-04T19:05:00Z', 'America/Mexico_City')).toBe('13:05')
+  })
+
+  it('zonedIso usa el offset de ESE día (horario de verano)', () => {
+    const t = { h: 13, m: 5, s: 0 }
+    expect(zonedIso('2026-11-01', t, 'America/Mexico_City')).toBe('2026-11-01T13:05:00-06:00')
+    expect(zonedIso('2026-07-01', t, 'America/New_York')).toBe('2026-07-01T13:05:00-04:00')
+    expect(zonedIso('2026-12-01', t, 'America/New_York')).toBe('2026-12-01T13:05:00-05:00')
+  })
+
+  it('entryTiming: hoy = ahora; día pasado = ese día a la hora local actual', () => {
+    const now = new Date('2026-11-04T19:05:42Z') // 13:05:42 en CDMX
+    expect(entryTiming(now, 'America/Mexico_City')).toEqual({
+      localDate: '2026-11-04',
+      eatenAt: '2026-11-04T13:05:42-06:00',
+    })
+    expect(entryTiming(now, 'America/Mexico_City', '2026-11-04').localDate).toBe('2026-11-04')
+    expect(entryTiming(now, 'America/Mexico_City', '2026-10-30')).toEqual({
+      localDate: '2026-10-30',
+      eatenAt: '2026-10-30T13:05:42-06:00',
+    })
+  })
+
+  it('moveEatenAt conserva la hora local al cambiar de día', () => {
+    expect(moveEatenAt('2026-11-04T08:30:00-06:00', '2026-11-02', 'America/Mexico_City')).toBe(
+      '2026-11-02T08:30:00-06:00',
+    )
+  })
+
+  it('fecha corta es-MX', () => {
+    expect(formatShortDate('2026-11-04')).toBe('4 nov')
   })
 })

@@ -1,4 +1,4 @@
-import { MAX_IMAGE_BYTES } from '@kalapp/shared'
+import { formatBytes, MAX_IMAGE_BYTES } from '@kalapp/shared'
 
 export interface CompressionStep {
   maxSide: number
@@ -20,7 +20,7 @@ export type CompressionErrorCode = 'NOT_IMAGE' | 'DECODE_FAILED' | 'TOO_LARGE' |
 const COMPRESSION_MESSAGES: Record<CompressionErrorCode, string> = {
   NOT_IMAGE: 'El archivo no es una imagen. Elige una foto.',
   DECODE_FAILED: 'No pudimos leer la foto (puede estar dañada o en un formato no compatible).',
-  TOO_LARGE: 'No pudimos reducir la foto a menos de 1 MB. Intenta con otra.',
+  TOO_LARGE: `No pudimos reducir la foto a menos de ${formatBytes(MAX_IMAGE_BYTES)}. Intenta con otra.`,
   ENCODE_FAILED: 'No pudimos procesar la foto. Intenta de nuevo.',
 }
 

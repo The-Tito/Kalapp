@@ -158,4 +158,22 @@ describe('buildEntryInput', () => {
     expect(r.success).toBe(true)
     expect(r.data?.items?.[0]?.grams).toBe(120)
   })
+
+  it('con un día elegido: localDate de ese día y eatenAt a la hora actual', () => {
+    const s = reduce(state, { type: 'setLocalDate', localDate: '2026-11-01' })
+    const r = buildEntryInput({ ...params, state: s })
+    expect(r.data?.localDate).toBe('2026-11-01')
+    expect(r.data?.eatenAt).toBe('2026-11-01T23:30:00-06:00')
+  })
+
+  it('el PATCH mueve fecha y eatenAt solo si cambió el día', () => {
+    const original = { localDate: '2026-11-04', eatenAt: '2026-11-04T08:15:00-06:00' }
+    const same = reduce(state, { type: 'setLocalDate', localDate: '2026-11-04' })
+    expect(buildEntryPatch(same, original, 'America/Mexico_City').data).not.toHaveProperty(
+      'localDate',
+    )
+    const moved = reduce(state, { type: 'setLocalDate', localDate: '2026-11-03' })
+    const r = buildEntryPatch(moved, original, 'America/Mexico_City')
+    expect(r.data).toMatchObject({ localDate: '2026-11-03', eatenAt: '2026-11-03T08:15:00-06:00' })
+  })
 })

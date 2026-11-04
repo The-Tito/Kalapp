@@ -21,4 +21,10 @@ export const queryKeys = {
   usage: ['usage'] as const,
   entriesAll: ['entries'] as const,
   entries: (date: string) => ['entries', date] as const,
+  summaryAll: ['summary'] as const,
+  summary: (from: string, to: string) => ['summary', from, to] as const,
+  favorites: ['favorites'] as const,
+  weightsAll: ['weights'] as const,
+  weights: (from: string, to: string) => ['weights', from, to] as const,
+  adaptive: ['adaptive'] as const,
 }

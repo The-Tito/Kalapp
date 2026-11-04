@@ -175,3 +175,68 @@ describe('tokenStore', () => {
     expect(tokens.get()).toBeNull()
   })
 })
+
+describe('cliente de API v0.2–v1.0', () => {
+  it('422 con NOT_FOOD o VALIDATION (versión vieja) → NOT_FOOD', async () => {
+    const a = setup(async () =>
+      jsonResponse({ error: { code: 'NOT_FOOD', message: 'Eso es un gato' } }, 422),
+    )
+    const e1 = await catchError(a.api.analyzeText({ text: 'gato' }))
+    expect(e1.code).toBe('NOT_FOOD')
+    expect(e1.message).toBe('Eso es un gato')
+    const b = setup(async () =>
+      jsonResponse({ error: { code: 'VALIDATION', message: 'No es comida' } }, 422),
+    )
+    const e2 = await catchError(b.api.analyzeText({ text: 'piedra' }))
+    expect(e2.code).toBe('NOT_FOOD')
+    expect(e2.message).toBe(NOT_FOOD_MESSAGE)
+  })
+
+  it('arma las URL de los nuevos endpoints', async () => {
+    const { api, fetchFn } = setup(async (input) => {
+      const url = String(input)
+      if (url.startsWith('/api/summary'))
+        return jsonResponse({
+          from: '2026-10-29',
+          to: '2026-11-04',
+          days: [],
+          loggedDays: 0,
+          averages: { kcal: 0, proteinG: 0, carbsG: 0, fatG: 0 },
+        })
+      if (url.startsWith('/api/weights?')) return jsonResponse([])
+      if (url === '/api/favorites') return jsonResponse([])
+      if (url === '/api/adaptive')
+        return jsonResponse({
+          status: 'insufficient_data',
+          reason: 'LOW_LOGGING',
+          message: 'x',
+          daysNeeded: 3,
+        })
+      return new Response(null, { status: 204 })
+    })
+    await api.getSummary('2026-10-29', '2026-11-04')
+    await api.listWeights('2026-05-09', '2026-11-04')
+    await api.listFavorites()
+    await api.getAdaptive()
+    await api.deleteWeight('2026-11-04')
+    await api.deleteFavorite('abc')
+    const calls = fetchFn.mock.calls.map((c) => [String(c[0]), c[1]?.method])
+    expect(calls).toEqual([
+      ['/api/summary?from=2026-10-29&to=2026-11-04', 'GET'],
+      ['/api/weights?from=2026-05-09&to=2026-11-04', 'GET'],
+      ['/api/favorites', 'GET'],
+      ['/api/adaptive', 'GET'],
+      ['/api/weights/2026-11-04', 'DELETE'],
+      ['/api/favorites/abc', 'DELETE'],
+    ])
+  })
+
+  it('código de barras 404 → NOT_FOUND', async () => {
+    const { api, fetchFn } = setup(async () =>
+      jsonResponse({ error: { code: 'NOT_FOUND', message: 'No existe' } }, 404),
+    )
+    const err = await catchError(api.getBarcode('7501055300075'))
+    expect(err.status).toBe(404)
+    expect(fetchFn.mock.calls[0]?.[0]).toBe('/api/barcode/7501055300075')
+  })
+})

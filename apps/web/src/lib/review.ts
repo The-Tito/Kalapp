@@ -15,9 +15,8 @@ import {
   scaleItems,
   suggestMealType,
   sumTotals,
-  toLocalDate,
 } from '@kalapp/shared'
-import { toIsoWithOffset } from './dates'
+import { entryTiming, moveEatenAt } from './dates'
 
 export const PORTION_PRESETS = [
   { value: 0.5, label: '½×' },
@@ -43,6 +42,8 @@ export interface ReviewState {
   multiplier: number
   baseItems: ReviewItem[]
   nextKey: number
+  /** Día del registro (YYYY-MM-DD); null = hoy al guardar. */
+  localDate: string | null
 }
 
 export type ReviewAction =
@@ -50,6 +51,7 @@ export type ReviewAction =
   | { type: 'setMealType'; mealType: MealType }
   | { type: 'setNote'; note: string }
   | { type: 'setMultiplier'; multiplier: number }
+  | { type: 'setLocalDate'; localDate: string | null }
   | { type: 'setItemGrams'; key: string; grams: number }
   | { type: 'setItemName'; key: string; name: string }
   | { type: 'removeItem'; key: string }
@@ -66,6 +68,7 @@ export function initReviewFromProposal(
   proposal: AnalysisProposal,
   localHour: number,
   note: string | null = null,
+  localDate: string | null = null,
 ): ReviewState {
   const { items, nextKey } = withKeys(proposal.items)
   return {
@@ -75,6 +78,7 @@ export function initReviewFromProposal(
     multiplier: 1,
     baseItems: items,
     nextKey,
+    localDate,
   }
 }
 
@@ -87,6 +91,7 @@ export function initReviewFromEntry(entry: Entry): ReviewState {
     multiplier: 1,
     baseItems: items,
     nextKey,
+    localDate: entry.localDate,
   }
 }
 
@@ -114,6 +119,8 @@ export function reviewReducer(state: ReviewState, action: ReviewAction): ReviewS
       return { ...state, note: action.note }
     case 'setMultiplier':
       return { ...state, multiplier: action.multiplier }
+    case 'setLocalDate':
+      return { ...state, localDate: action.localDate }
     case 'setItemGrams': {
       if (!Number.isFinite(action.grams) || action.grams < 0) return state
       // Los gramos que escribe el usuario son los visibles (con multiplicador).
@@ -169,10 +176,11 @@ export interface BuildEntryParams {
 
 /** Cuerpo de `POST /api/entries`, validado con el esquema compartido. */
 export function buildEntryInput(p: BuildEntryParams) {
+  const timing = entryTiming(p.now, p.timezone, p.state.localDate)
   const candidate: EntryInput = {
     id: p.id,
-    localDate: toLocalDate(p.now, p.timezone),
-    eatenAt: toIsoWithOffset(p.now, p.timezone),
+    localDate: timing.localDate,
+    eatenAt: timing.eatenAt,
     mealType: p.state.mealType,
     source: p.source,
     note: emptyToNull(p.state.note),
@@ -184,13 +192,24 @@ export function buildEntryInput(p: BuildEntryParams) {
   return EntryInputSchema.safeParse(candidate)
 }
 
-/** Cuerpo de `PATCH /api/entries/:id` al editar un registro. */
-export function buildEntryPatch(state: ReviewState) {
+/**
+ * Cuerpo de `PATCH /api/entries/:id` al editar un registro. Si cambió la fecha, también se
+ * mueve `eatenAt` a ese día conservando la hora local.
+ */
+export function buildEntryPatch(
+  state: ReviewState,
+  original?: { localDate: string; eatenAt: string },
+  timezone?: string,
+) {
   const candidate: EntryPatch = {
     mealType: state.mealType,
     note: emptyToNull(state.note),
     title: emptyToNull(state.title),
     items: stripKeys(displayItems(state)),
+  }
+  if (original && timezone && state.localDate && state.localDate !== original.localDate) {
+    candidate.localDate = state.localDate
+    candidate.eatenAt = moveEatenAt(original.eatenAt, state.localDate, timezone)
   }
   return EntryPatchSchema.safeParse(candidate)
 }

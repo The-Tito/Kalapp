@@ -1,4 +1,6 @@
 import {
+  type AdaptiveTdeeResult,
+  AdaptiveTdeeResultSchema,
   ANALYZE_IMAGE_FIELD,
   ANALYZE_LOCAL_HOUR_FIELD,
   ANALYZE_NOTE_FIELD,
@@ -8,30 +10,31 @@ import {
   API_ERROR_MESSAGES,
   type ApiErrorCode,
   ApiErrorSchema,
+  type BarcodeProduct,
+  BarcodeProductSchema,
   type Entry,
   type EntryInput,
   type EntryPatch,
   EntrySchema,
-  LocalDateSchema,
+  type ExportFormat,
+  type Favorite,
+  type FavoriteInput,
+  FavoriteSchema,
+  HealthSchema,
   type Profile,
   type ProfileInputPayload,
   ProfileSchema,
+  type RangeSummary,
+  RangeSummarySchema,
+  type ShortcutDaySummary,
+  ShortcutDaySummarySchema,
+  UsageSchema,
+  type Weight,
+  type WeightInput,
+  WeightSchema,
 } from '@kalapp/shared'
 import { z } from 'zod'
 import { tokenStore as defaultTokenStore, type TokenStore } from './token'
-
-// ---------------------------------------------------------------------------
-// Esquemas de respuestas que aún no están en @kalapp/shared (ver reporte).
-// ---------------------------------------------------------------------------
-export const UsageSchema = z.object({
-  date: LocalDateSchema,
-  calls: z.number().int().min(0),
-  limit: z.number().int().min(0),
-})
-export type Usage = z.infer<typeof UsageSchema>
-
-export const HealthSchema = z.object({ status: z.string(), app: z.string() })
-export type Health = z.infer<typeof HealthSchema>
 
 // ---------------------------------------------------------------------------
 // Errores
@@ -46,7 +49,7 @@ export const CLIENT_ERROR_MESSAGES = {
 } as const
 
 /** 422 en /api/analyze: la foto o el texto no parecen comida. */
-export const NOT_FOOD_MESSAGE = 'No parece comida. Intenta con otra foto o descríbela con texto.'
+export const NOT_FOOD_MESSAGE = API_ERROR_MESSAGES.NOT_FOOD
 
 function defaultMessage(code: ClientErrorCode): string {
   if (code in CLIENT_ERROR_MESSAGES) {
@@ -72,6 +75,16 @@ export class ApiError extends Error {
   get isClientError(): boolean {
     return this.status >= 400 && this.status < 500
   }
+
+  /** Falla de red (sin respuesta): candidata a la cola sin internet. */
+  get isNetwork(): boolean {
+    return this.code === 'NETWORK'
+  }
+}
+
+/** `true` si el error es "no es comida": `NOT_FOOD` o cualquier 422 (versiones viejas: VALIDATION). */
+export function isNotFoodError(err: unknown): boolean {
+  return err instanceof ApiError && (err.code === 'NOT_FOOD' || err.status === 422)
 }
 
 /** Mensaje en español para cualquier error (para mostrar en pantalla). */
@@ -83,8 +96,9 @@ export function errorMessage(err: unknown): string {
 export function statusToCode(status: number): ClientErrorCode {
   switch (status) {
     case 400:
-    case 422:
       return 'VALIDATION'
+    case 422:
+      return 'NOT_FOOD'
     case 401:
       return 'UNAUTHORIZED'
     case 404:
@@ -125,15 +139,40 @@ async function toApiError(res: Response): Promise<ApiError> {
   const parsed = ApiErrorSchema.safeParse(body)
   if (parsed.success) {
     const { code, message, details } = parsed.data.error
-    const fallback = res.status === 422 ? NOT_FOOD_MESSAGE : API_ERROR_MESSAGES[code]
-    return new ApiError(code, message.trim() !== '' ? message : fallback, res.status, details)
+    // Un 422 siempre es "no es comida" (las versiones viejas mandaban VALIDATION).
+    if (res.status === 422 || code === 'NOT_FOOD') {
+      const text = code === 'NOT_FOOD' && message.trim() !== '' ? message : NOT_FOOD_MESSAGE
+      return new ApiError('NOT_FOOD', text, res.status, details)
+    }
+    return new ApiError(
+      code,
+      message.trim() !== '' ? message : API_ERROR_MESSAGES[code],
+      res.status,
+      details,
+    )
   }
   const code = statusToCode(res.status)
-  return new ApiError(
-    code,
-    res.status === 422 ? NOT_FOOD_MESSAGE : defaultMessage(code),
-    res.status,
-  )
+  return new ApiError(code, defaultMessage(code), res.status)
+}
+
+/** Nombre del archivo en `Content-Disposition` (o null). */
+export function filenameFromDisposition(header: string | null): string | null {
+  if (!header) return null
+  const star = /filename\*\s*=\s*(?:UTF-8'')?([^;]+)/i.exec(header)
+  if (star?.[1]) {
+    try {
+      return decodeURIComponent(star[1].trim().replace(/^"|"$/g, ''))
+    } catch {
+      // cae al nombre simple
+    }
+  }
+  const plain = /filename\s*=\s*"?([^";]+)"?/i.exec(header)
+  return plain?.[1]?.trim() || null
+}
+
+export interface DownloadedFile {
+  blob: Blob
+  filename: string
 }
 
 // ---------------------------------------------------------------------------
@@ -165,8 +204,9 @@ export function createApiClient(options: ApiClientOptions = {}) {
   const baseUrl = options.baseUrl ?? ''
   const tokens = options.tokenStore ?? defaultTokenStore
 
-  async function request<T = void>(path: string, opts: RequestOptions<T> = {}): Promise<T> {
-    const headers = new Headers({ Accept: 'application/json' })
+  /** Hace la petición y devuelve la respuesta OK (o lanza ApiError). */
+  async function send(path: string, opts: Omit<RequestOptions<unknown>, 'schema'>, accept: string) {
+    const headers = new Headers({ Accept: accept })
     const auth = opts.auth ?? true
     if (auth) {
       const token = opts.token ?? tokens.get()
@@ -203,7 +243,11 @@ export function createApiClient(options: ApiClientOptions = {}) {
       if (res.status === 401 && auth && opts.clearTokenOnUnauthorized !== false) tokens.clear()
       throw error
     }
+    return res
+  }
 
+  async function request<T = void>(path: string, opts: RequestOptions<T> = {}): Promise<T> {
+    const res = await send(path, opts, 'application/json')
     if (!opts.schema) return undefined as T
 
     let json: unknown
@@ -219,6 +263,14 @@ export function createApiClient(options: ApiClientOptions = {}) {
     }
     return parsed.data
   }
+
+  const q = (params: Record<string, string | undefined>) => {
+    const sp = new URLSearchParams()
+    for (const [k, v] of Object.entries(params)) if (v !== undefined) sp.set(k, v)
+    const str = sp.toString()
+    return str ? `?${str}` : ''
+  }
+  const seg = encodeURIComponent
 
   return {
     request,
@@ -277,6 +329,65 @@ export function createApiClient(options: ApiClientOptions = {}) {
 
     deleteEntry: (id: string): Promise<void> =>
       request(`/api/entries/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+
+    // v0.2 ---------------------------------------------------------------
+    getSummary: (from: string, to: string): Promise<RangeSummary> =>
+      request(`/api/summary${q({ from, to })}`, { schema: RangeSummarySchema }),
+
+    listFavorites: (): Promise<Favorite[]> =>
+      request('/api/favorites', { schema: z.array(FavoriteSchema) }),
+
+    createFavorite: (input: FavoriteInput): Promise<Favorite> =>
+      request('/api/favorites', { method: 'POST', body: input, schema: FavoriteSchema }),
+
+    deleteFavorite: (id: string): Promise<void> =>
+      request(`/api/favorites/${seg(id)}`, { method: 'DELETE' }),
+
+    markFavoriteUsed: (id: string): Promise<Favorite> =>
+      request(`/api/favorites/${seg(id)}/use`, { method: 'POST', schema: FavoriteSchema }),
+
+    // v0.3 ---------------------------------------------------------------
+    listWeights: (from: string, to: string): Promise<Weight[]> =>
+      request(`/api/weights${q({ from, to })}`, { schema: z.array(WeightSchema) }),
+
+    saveWeight: (input: WeightInput): Promise<Weight> =>
+      request('/api/weights', { method: 'POST', body: input, schema: WeightSchema }),
+
+    deleteWeight: (localDate: string): Promise<void> =>
+      request(`/api/weights/${seg(localDate)}`, { method: 'DELETE' }),
+
+    getAdaptive: (): Promise<AdaptiveTdeeResult> =>
+      request('/api/adaptive', { schema: AdaptiveTdeeResultSchema }),
+
+    /** Descarga la exportación (CSV o JSON) como Blob con su nombre de archivo. */
+    exportFile: async (
+      format: ExportFormat,
+      range: { from?: string; to?: string } = {},
+    ): Promise<DownloadedFile> => {
+      const accept = format === 'csv' ? 'text/csv' : 'application/json'
+      const res = await send(
+        `/api/export${q({ format, from: range.from, to: range.to })}`,
+        {},
+        accept,
+      )
+      let blob: Blob
+      try {
+        blob = await res.blob()
+      } catch {
+        throw new ApiError('NETWORK')
+      }
+      const filename =
+        filenameFromDisposition(res.headers.get('Content-Disposition')) ?? `kalapp.${format}`
+      const type = blob.type || (format === 'csv' ? 'text/csv' : 'application/json')
+      return { blob: blob.type ? blob : new Blob([blob], { type }), filename }
+    },
+
+    // v1.0 ---------------------------------------------------------------
+    getShortcutToday: (): Promise<ShortcutDaySummary> =>
+      request('/api/shortcut/today', { schema: ShortcutDaySummarySchema }),
+
+    getBarcode: (code: string, signal?: AbortSignal): Promise<BarcodeProduct> =>
+      request(`/api/barcode/${seg(code)}`, { schema: BarcodeProductSchema, signal }),
   }
 }
 

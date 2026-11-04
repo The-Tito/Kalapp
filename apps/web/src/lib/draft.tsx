@@ -1,4 +1,4 @@
-import { AnalysisProposalSchema, EntrySchema, UuidSchema } from '@kalapp/shared'
+import { AnalysisProposalSchema, EntrySchema, LocalDateSchema, UuidSchema } from '@kalapp/shared'
 import { createContext, type ReactNode, useCallback, useContext, useMemo, useState } from 'react'
 import { z } from 'zod'
 
@@ -12,11 +12,16 @@ export const DraftSchema = z.discriminatedUnion('kind', [
     /** id del registro: se genera una vez por propuesta para que reintentar no duplique. */
     id: UuidSchema,
     proposal: AnalysisProposalSchema,
-    source: z.enum(['photo', 'text']),
+    /** 'barcode': la "propuesta" sale de Open Food Facts (sin modelo ni confianza de IA). */
+    source: z.enum(['photo', 'text', 'barcode']),
     note: z.string().nullable(),
     /** Miniatura (data URL JPEG) o null. */
     photo: z.string().nullable(),
     localHour: z.number().int().min(0).max(23),
+    /** Día al que se registrará (al ver un día pasado en Hoy); null/ausente = hoy. */
+    localDate: LocalDateSchema.nullable().optional(),
+    /** Foto de la cola sin internet ya analizada; se quita de la cola al guardar o descartar. */
+    pendingPhotoId: z.string().nullable().optional(),
   }),
   z.object({ kind: z.literal('edit'), entry: EntrySchema }),
 ])
