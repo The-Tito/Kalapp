@@ -15,6 +15,7 @@ import {
   scaleItems,
   suggestMealType,
   sumTotals,
+  toLocalDate,
 } from '@kalapp/shared'
 import { entryTiming, moveEatenAt } from './dates'
 
@@ -25,9 +26,36 @@ export const PORTION_PRESETS = [
   { value: 2, label: '2×' },
 ] as const
 
+/** kcal y macros por gramo. */
+export interface Density {
+  kcal: number
+  proteinG: number
+  carbsG: number
+  fatG: number
+}
+
 export interface ReviewItem extends EntryItemInput {
   /** Clave local para listas de React; no se envía. */
   key: string
+  /**
+   * Densidad original (de la IA, del registro o de lo capturado a mano). Los gramos siempre se
+   * recalculan desde aquí, así poner 0 g y luego 60 g restaura las kcal. null si el ítem
+   * llegó con 0 g (no hay base). No se envía.
+   */
+  per: Density | null
+}
+
+/** Densidad de un ítem (null si tiene 0 g o datos no finitos). */
+export function densityOf(
+  it: Pick<EntryItemInput, 'grams' | 'kcal' | 'proteinG' | 'carbsG' | 'fatG'>,
+): Density | null {
+  if (!(it.grams > 0) || !Number.isFinite(it.grams)) return null
+  return {
+    kcal: it.kcal / it.grams,
+    proteinG: it.proteinG / it.grams,
+    carbsG: it.carbsG / it.grams,
+    fatG: it.fatG / it.grams,
+  }
 }
 
 /**
@@ -59,7 +87,7 @@ export type ReviewAction =
 
 function withKeys(items: readonly EntryItemInput[]): { items: ReviewItem[]; nextKey: number } {
   return {
-    items: items.map((it, i) => ({ ...it, key: `i${i}` })),
+    items: items.map((it, i) => ({ ...it, key: `i${i}`, per: densityOf(it) })),
     nextKey: items.length,
   }
 }
@@ -127,7 +155,7 @@ export function reviewReducer(state: ReviewState, action: ReviewAction): ReviewS
       return {
         ...state,
         baseItems: state.baseItems.map((it) =>
-          it.key === action.key ? recalcItemFromGrams(it, action.grams / m) : it,
+          it.key === action.key ? withGrams(it, action.grams / m) : it,
         ),
       }
     }
@@ -151,15 +179,31 @@ export function reviewReducer(state: ReviewState, action: ReviewAction): ReviewS
         carbsG: it.carbsG / m,
         fatG: it.fatG / m,
         key: `n${state.nextKey}`,
+        per: densityOf(it),
       }
       return { ...state, baseItems: [...state.baseItems, base], nextKey: state.nextKey + 1 }
     }
   }
 }
 
-function stripKeys(items: readonly ReviewItem[]): EntryItemInput[] {
-  return items.map(({ key: _key, ...rest }) => rest)
+/** Ítem base con nuevos gramos, recalculado desde su densidad original (sin redondear). */
+function withGrams(it: ReviewItem, grams: number): ReviewItem {
+  if (!it.per) return recalcItemFromGrams(it, grams)
+  return {
+    ...it,
+    grams,
+    kcal: it.per.kcal * grams,
+    proteinG: it.per.proteinG * grams,
+    carbsG: it.per.carbsG * grams,
+    fatG: it.per.fatG * grams,
+  }
 }
+
+function stripKeys(items: readonly ReviewItem[]): EntryItemInput[] {
+  return items.map(({ key: _key, per: _per, ...rest }) => rest)
+}
+
+export const FUTURE_DATE_MESSAGE = 'La fecha no puede ser futura'
 
 const emptyToNull = (s: string): string | null => (s.trim() === '' ? null : s.trim())
 
@@ -189,7 +233,11 @@ export function buildEntryInput(p: BuildEntryParams) {
     aiModel: p.aiModel,
     aiConfidence: p.aiConfidence,
   }
-  return EntryInputSchema.safeParse(candidate)
+  const today = toLocalDate(p.now, p.timezone)
+  return EntryInputSchema.refine((v) => v.localDate <= today, {
+    error: FUTURE_DATE_MESSAGE,
+    path: ['localDate'],
+  }).safeParse(candidate)
 }
 
 /**
@@ -200,7 +248,10 @@ export function buildEntryPatch(
   state: ReviewState,
   original?: { localDate: string; eatenAt: string },
   timezone?: string,
+  now: Date = new Date(),
 ) {
+  // Sin zona: el "hoy" más adelantado del planeta (UTC+14) para no rechazar fechas válidas.
+  const today = timezone ? toLocalDate(now, timezone) : toLocalDate(now, 'Pacific/Kiritimati')
   const candidate: EntryPatch = {
     mealType: state.mealType,
     note: emptyToNull(state.note),
@@ -211,7 +262,10 @@ export function buildEntryPatch(
     candidate.localDate = state.localDate
     candidate.eatenAt = moveEatenAt(original.eatenAt, state.localDate, timezone)
   }
-  return EntryPatchSchema.safeParse(candidate)
+  return EntryPatchSchema.refine((v) => (v.localDate ?? state.localDate ?? today) <= today, {
+    error: FUTURE_DATE_MESSAGE,
+    path: ['localDate'],
+  }).safeParse(candidate)
 }
 
 /** Primer mensaje de error de validación, en español. */

@@ -86,10 +86,15 @@ export function profileToForm(profile: Profile): ProfileFormValues {
 }
 
 /** "" → undefined; acepta coma decimal; texto no numérico → NaN (el esquema lo rechaza). */
+/**
+ * Número decimal escrito por el usuario ("80", "80.5", "80,5", "-5"). `undefined` si está vacío;
+ * `NaN` si no es un decimal simple (rechaza "0x10", "1e3", "Infinity", "1,000.5").
+ */
 export function parseNumber(text: string): number | undefined {
-  const t = text.trim().replace(',', '.')
+  const t = text.trim()
   if (t === '') return undefined
-  return Number(t)
+  if (!/^-?\d+([.,]\d+)?$/.test(t)) return Number.NaN
+  return Number(t.replace(',', '.'))
 }
 
 function isEmpty(values: ProfileFormValues, field: ProfileField): boolean {

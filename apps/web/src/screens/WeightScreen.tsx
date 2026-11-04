@@ -368,7 +368,7 @@ function AdaptiveCard({
                       style={{ width: `${(progress.value / progress.max) * 100}%` }}
                     />
                   </div>
-                  <p className="text-xs text-gray-500">{progress.label}</p>
+                  {progress.label && <p className="text-xs text-gray-500">{progress.label}</p>}
                 </>
               )}
               <p className="text-xs text-gray-500">

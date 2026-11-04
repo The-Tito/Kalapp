@@ -34,16 +34,17 @@ export function createTokenStore(getStorage: () => Storage | null = defaultStora
       try {
         const storage = getStorage()
         if (storage) {
-          const value = storage.getItem(TOKEN_KEY)
-          return value && value.trim() !== '' ? value : memory
+          const value = storage.getItem(TOKEN_KEY)?.trim()
+          return value ? value : memory
         }
       } catch {
         // se usa la copia en memoria
       }
       return memory
     },
-    set(token) {
-      memory = token
+    set(raw) {
+      const token = raw.trim()
+      memory = token === '' ? null : token
       try {
         getStorage()?.setItem(TOKEN_KEY, token)
       } catch {

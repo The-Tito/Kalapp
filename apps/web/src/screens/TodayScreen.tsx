@@ -196,6 +196,8 @@ const FLAG_MESSAGES: Record<string, Record<string, string>> = {
     comida:
       'Sin conexión: tu comida quedó guardada en este iPhone y se enviará sola al volver el internet.',
     foto: 'Foto guardada. Se analizará sola cuando vuelva el internet; luego solo tendrás que revisarla.',
+    texto:
+      'Descripción guardada. Se analizará sola cuando vuelva el internet; luego solo tendrás que revisarla.',
   },
   aviso: {
     favorito:
@@ -246,22 +248,24 @@ function QueueBanners() {
   const navigate = useNavigate()
   const { setDraft } = useDraft()
   const [opening, setOpening] = useState(false)
-  const { pendingEntries, queuedPhotos, analyzedPhotos } = queue.counts
+  const { pendingEntries, queuedPhotos, analyzedPhotos, queuedTexts, analyzedTexts } = queue.counts
+  const analyzed = analyzedPhotos + analyzedTexts
 
   const openAnalyzed = async () => {
     if (opening) return
     setOpening(true)
     try {
-      const [item] = await queue.analyzedPhotos()
+      const [item] = await queue.analyzedItems()
       if (!item?.proposal) return
-      const photo = await blobToDataUrl(new Blob([item.data], { type: item.type })).catch(
-        () => null,
-      )
+      const photo =
+        item.kind === 'photo'
+          ? await blobToDataUrl(new Blob([item.data], { type: item.type })).catch(() => null)
+          : null
       setDraft({
         kind: 'new',
         id: item.id,
         proposal: item.proposal,
-        source: 'photo',
+        source: item.kind,
         note: item.note,
         photo,
         localHour: item.localHour,
@@ -274,10 +278,10 @@ function QueueBanners() {
     }
   }
 
-  if (pendingEntries + queuedPhotos + analyzedPhotos === 0) return null
+  if (pendingEntries + queuedPhotos + queuedTexts + analyzed === 0) return null
   return (
     <div className="flex flex-col gap-2">
-      {analyzedPhotos > 0 && (
+      {analyzed > 0 && (
         <button
           type="button"
           onClick={() => void openAnalyzed()}
@@ -288,20 +292,26 @@ function QueueBanners() {
             📸
           </span>
           <span className="flex-1">
-            {analyzedPhotos === 1
-              ? 'Tienes 1 foto analizada por revisar'
-              : `Tienes ${formatNumber(analyzedPhotos)} fotos analizadas por revisar`}
+            {analyzedTexts === 0
+              ? analyzedPhotos === 1
+                ? 'Tienes 1 foto analizada por revisar'
+                : `Tienes ${formatNumber(analyzedPhotos)} fotos analizadas por revisar`
+              : analyzed === 1
+                ? 'Tienes 1 comida analizada por revisar'
+                : `Tienes ${formatNumber(analyzed)} comidas analizadas por revisar`}
           </span>
           <span aria-hidden="true">›</span>
         </button>
       )}
-      {(pendingEntries > 0 || queuedPhotos > 0) && (
+      {(pendingEntries > 0 || queuedPhotos > 0 || queuedTexts > 0) && (
         <div className="flex items-center gap-2 rounded-xl bg-amber-50 p-3 text-sm text-amber-900 dark:bg-amber-950 dark:text-amber-100">
           <p className="flex-1">
             {[
               pendingEntries > 0 &&
                 plural(pendingEntries, 'comida por enviar', 'comidas por enviar'),
               queuedPhotos > 0 && plural(queuedPhotos, 'foto por analizar', 'fotos por analizar'),
+              queuedTexts > 0 &&
+                plural(queuedTexts, 'descripción por analizar', 'descripciones por analizar'),
             ]
               .filter(Boolean)
               .join(' · ')}

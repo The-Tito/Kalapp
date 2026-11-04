@@ -2,7 +2,7 @@
 import { cleanup, fireEvent, screen } from '@testing-library/react'
 import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
 import { Route } from 'react-router'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createApiClient } from '../lib/api'
 import type { Draft } from '../lib/draft'
 import { OfflineQueue } from '../lib/offlineQueue'
@@ -12,7 +12,15 @@ import { jsonResponse, memoryStorage, referenceProfile, tacosProposal } from '..
 import { renderWithProviders } from '../test/render'
 import { ReviewScreen } from './ReviewScreen'
 
-afterEach(cleanup)
+// Fecha fija (solo Date: los timers reales siguen para waitFor/findBy).
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(new Date('2026-11-04T19:05:00Z')) // 13:05 en CDMX
+})
+afterEach(() => {
+  cleanup()
+  vi.useRealTimers()
+})
 
 const ID = '7c9e6679-7425-40de-944b-e07fc1f90ae7'
 const draft: Draft = {
@@ -95,7 +103,8 @@ describe('Revisar', () => {
       aiModel: 'gemini-test',
       aiConfidence: 'medium',
     })
-    expect(body.eatenAt).toMatch(/[+-]\d{2}:\d{2}$/)
+    expect(body.localDate).toBe('2026-11-04')
+    expect(body.eatenAt).toBe('2026-11-04T13:05:00-06:00')
     resolve?.(
       jsonResponse({
         ...body,
@@ -202,7 +211,7 @@ describe('Revisar', () => {
       { draft: { kind: 'edit', entry } },
     )
     const date = screen.getByLabelText('Día') as HTMLInputElement
-    expect(date.max).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+    expect(date.max).toBe('2026-11-04')
     fireEvent.change(date, { target: { value: '2999-01-01' } })
     expect(date.value).toBe('2026-11-04') // se ignora la fecha futura
     fireEvent.change(date, { target: { value: '2026-11-02' } })

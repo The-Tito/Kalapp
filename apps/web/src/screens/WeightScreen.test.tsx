@@ -64,15 +64,22 @@ describe('Peso', () => {
     setup({
       status: 'insufficient_data',
       reason: 'LOW_LOGGING',
-      message: 'Registraste 10 de 28 días',
+      message: 'Registraste 10 de 28 días; se necesita al menos el 80 % (faltan 13).',
       daysNeeded: 13,
     })
     expect(await screen.findByText('83 kg')).toBeTruthy()
     expect(screen.getByText('80 kg')).toBeTruthy()
     expect(screen.getByTestId('weight-chart')).toBeTruthy()
     expect(screen.getByText('Tu peso cambió; ¿actualizar tu perfil?')).toBeTruthy()
-    expect(await screen.findByText('Registraste 10 de 28 días')).toBeTruthy()
-    expect(screen.getByText('10 de 23 días registrados (últimas 4 semanas)')).toBeTruthy()
+    expect(
+      await screen.findByText(
+        'Registraste 10 de 28 días; se necesita al menos el 80 % (faltan 13).',
+      ),
+    ).toBeTruthy()
+    // No se contradice con la API (antes decía "10 de 23 días").
+    expect(screen.queryByText(/de 23 días/)).toBeNull()
+    const bar = screen.getByRole('progressbar', { name: 'Progreso del gasto adaptativo' })
+    expect(bar.getAttribute('aria-valuenow')).toBe('10')
   })
 
   it('el banner actualiza el peso del perfil solo tras confirmar', async () => {

@@ -1,5 +1,6 @@
 import {
   ADAPTIVE_TDEE,
+  ADAPTIVE_WINDOW_DAYS,
   type AdaptiveTdeeResult,
   addDays,
   daysBetween,
@@ -62,11 +63,9 @@ export function recalcSuggestion(
   return { weightKg: latest.weightKg, localDate: latest.localDate, key }
 }
 
-/** Ventana del gasto adaptativo en la API (`ADAPTIVE_WINDOW_DAYS` de apps/api/src/routes/adaptive.ts). */
-export const ADAPTIVE_WINDOW_DAYS = 28
-
 export interface AdaptiveProgress {
-  label: string
+  /** Texto bajo la barra; null cuando el `message` de la API ya lo dice (fuente de verdad). */
+  label: string | null
   value: number
   max: number
 }
@@ -82,13 +81,11 @@ export function adaptiveProgress(
     (result.reason === 'LOW_LOGGING' || result.reason === 'RANGE_TOO_SHORT') &&
     result.daysNeeded !== undefined
   ) {
+    // Barra: días registrados hacia los necesarios (80 % de la ventana). El conteo en texto lo
+    // da el `message` de la API ("Registraste X de 28 días…"); aquí no se repite.
     const max = Math.ceil(ADAPTIVE_TDEE.minLoggedRatio * ADAPTIVE_WINDOW_DAYS - 1e-9)
     const value = Math.max(0, Math.min(max, max - result.daysNeeded))
-    return {
-      label: `${formatNumber(value)} de ${formatNumber(max)} días registrados (últimas 4 semanas)`,
-      value,
-      max,
-    }
+    return { label: null, value, max }
   }
   if (result.reason === 'NOT_ENOUGH_WEIGHTS') {
     const from = addDays(today, -(ADAPTIVE_WINDOW_DAYS - 1))

@@ -67,7 +67,7 @@ describe('progreso del gasto adaptativo', () => {
     expect(p).toEqual({
       value: 20,
       max: 23,
-      label: '20 de 23 días registrados (últimas 4 semanas)',
+      label: null, // el `message` de la API ("… de 28 días") es la fuente de verdad
     })
   })
 

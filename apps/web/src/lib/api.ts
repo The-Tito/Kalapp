@@ -155,6 +155,22 @@ async function toApiError(res: Response): Promise<ApiError> {
   return new ApiError(code, defaultMessage(code), res.status)
 }
 
+/** Caracteres visibles ASCII (lo único seguro en un header `Authorization`). */
+export function isValidTokenText(token: string): boolean {
+  return /^[\x21-\x7E]+$/.test(token)
+}
+
+/** Lista de favoritos: valida cada uno y omite los dañados (p. ej. favoritos viejos sin items). */
+export function parseFavoriteList(json: unknown): Favorite[] {
+  if (!Array.isArray(json)) throw new ApiError('INVALID_RESPONSE')
+  const out: Favorite[] = []
+  for (const raw of json) {
+    const parsed = FavoriteSchema.safeParse(raw)
+    if (parsed.success) out.push(parsed.data)
+  }
+  return out
+}
+
 /** Nombre del archivo en `Content-Disposition` (o null). */
 export function filenameFromDisposition(header: string | null): string | null {
   if (!header) return null
@@ -209,12 +225,19 @@ export function createApiClient(options: ApiClientOptions = {}) {
     const headers = new Headers({ Accept: accept })
     const auth = opts.auth ?? true
     if (auth) {
-      const token = opts.token ?? tokens.get()
-      if (!token) {
+      const token = (opts.token ?? tokens.get())?.trim()
+      const reject = () => {
         if (opts.clearTokenOnUnauthorized !== false) tokens.clear()
-        throw new ApiError('UNAUTHORIZED', undefined, 401)
+        return new ApiError('UNAUTHORIZED', undefined, 401)
       }
-      headers.set('Authorization', `Bearer ${token}`)
+      if (!token) throw reject()
+      // Un token con saltos de línea o caracteres no ASCII no cabe en un header HTTP.
+      if (!isValidTokenText(token)) throw reject()
+      try {
+        headers.set('Authorization', `Bearer ${token}`)
+      } catch {
+        throw reject()
+      }
     }
 
     let body: BodyInit | undefined
@@ -334,8 +357,8 @@ export function createApiClient(options: ApiClientOptions = {}) {
     getSummary: (from: string, to: string): Promise<RangeSummary> =>
       request(`/api/summary${q({ from, to })}`, { schema: RangeSummarySchema }),
 
-    listFavorites: (): Promise<Favorite[]> =>
-      request('/api/favorites', { schema: z.array(FavoriteSchema) }),
+    listFavorites: async (): Promise<Favorite[]> =>
+      parseFavoriteList(await request('/api/favorites', { schema: z.array(z.unknown()) })),
 
     createFavorite: (input: FavoriteInput): Promise<Favorite> =>
       request('/api/favorites', { method: 'POST', body: input, schema: FavoriteSchema }),

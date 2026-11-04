@@ -10,10 +10,17 @@ import {
   useState,
 } from 'react'
 import { useApi } from './apiContext'
-import type { OfflineQueue, QueueCounts, QueuedPhoto } from './offlineQueue'
+import type { OfflineQueue, QueueCounts, QueuedAnalysis, QueuedPhoto } from './offlineQueue'
 import { queryKeys } from './queryClient'
 
-const EMPTY: QueueCounts = { pendingEntries: 0, queuedPhotos: 0, analyzedPhotos: 0, total: 0 }
+const EMPTY: QueueCounts = {
+  pendingEntries: 0,
+  queuedPhotos: 0,
+  analyzedPhotos: 0,
+  queuedTexts: 0,
+  analyzedTexts: 0,
+  total: 0,
+}
 
 export interface QueueContextValue {
   counts: QueueCounts
@@ -26,6 +33,8 @@ export interface QueueContextValue {
   /** Procesa la cola (al volver la red, a primer plano o al abrir). */
   processNow(force?: boolean): Promise<void>
   analyzedPhotos(): Promise<QueuedPhoto[]>
+  /** Fotos y textos analizados por revisar. */
+  analyzedItems(): Promise<QueuedAnalysis[]>
 }
 
 const QueueContext = createContext<QueueContextValue | null>(null)
@@ -107,14 +116,28 @@ export function QueueProvider({
     return q ? q.analyzedPhotos() : []
   }, [getQueue])
 
+  const analyzedItems = useCallback(async () => {
+    const q = await getQueue()
+    return q ? q.analyzedItems() : []
+  }, [getQueue])
+
   const dismissNotice = useCallback(
     (index: number) => setNotices((cur) => cur.filter((_, i) => i !== index)),
     [],
   )
 
   const value = useMemo(
-    () => ({ counts, notices, dismissNotice, getQueue, refresh, processNow, analyzedPhotos }),
-    [counts, notices, dismissNotice, getQueue, refresh, processNow, analyzedPhotos],
+    () => ({
+      counts,
+      notices,
+      dismissNotice,
+      getQueue,
+      refresh,
+      processNow,
+      analyzedPhotos,
+      analyzedItems,
+    }),
+    [counts, notices, dismissNotice, getQueue, refresh, processNow, analyzedPhotos, analyzedItems],
   )
   return <QueueContext value={value}>{children}</QueueContext>
 }
@@ -127,6 +150,7 @@ const noopQueue: QueueContextValue = {
   refresh: async () => {},
   processNow: async () => {},
   analyzedPhotos: async () => [],
+  analyzedItems: async () => [],
 }
 
 /** Fuera del proveedor (pruebas de pantallas) se comporta como cola desactivada. */

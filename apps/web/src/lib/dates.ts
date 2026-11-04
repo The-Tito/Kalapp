@@ -98,6 +98,10 @@ export function localTimeParts(date: Date, timezone: string): { h: number; m: nu
 /**
  * Instante ISO con offset para la fecha local `localDate` a la hora `h:m:s` de `timezone`
  * (respeta el offset de ESE día, por si hay horario de verano).
+ * - Hora duplicada (se atrasa el reloj): la primera ocurrencia.
+ * - Hora inexistente (se adelanta el reloj): avanza lo que dure el salto (02:30 → 03:30;
+ *   00:15 → 01:15), nunca retrocede al día anterior.
+ * Garantiza `toLocalDate(resultado, timezone) === localDate`.
  */
 export function zonedIso(
   localDate: string,
@@ -106,10 +110,25 @@ export function zonedIso(
 ): string {
   const [y, mo, d] = localDate.split('-').map(Number) as [number, number, number]
   const wall = Date.UTC(y, mo - 1, d, time.h, time.m, time.s)
-  // Dos pasadas: el offset depende del instante resultante.
-  let instant = wall - timeZoneOffsetMinutes(new Date(wall), timezone) * 60_000
-  instant = wall - timeZoneOffsetMinutes(new Date(instant), timezone) * 60_000
-  return toIsoWithOffset(new Date(instant), timezone)
+  const wallOf = (instant: number) =>
+    instant + timeZoneOffsetMinutes(new Date(instant), timezone) * 60_000
+  // Offsets alrededor de la hora pedida (antes y después de un posible cambio).
+  const before = timeZoneOffsetMinutes(new Date(wall - 12 * 3_600_000), timezone)
+  const after = timeZoneOffsetMinutes(new Date(wall + 12 * 3_600_000), timezone)
+  const candidates = [wall - before * 60_000, wall - after * 60_000].sort((a, b) => a - b)
+  let instant = candidates.find((c) => wallOf(c) === wall)
+  // Hora inexistente: con el offset de antes del salto cae justo después del salto.
+  if (instant === undefined) instant = wall - before * 60_000
+  let iso = toIsoWithOffset(new Date(instant), timezone)
+  if (toLocalDate(new Date(instant), timezone) !== localDate) {
+    // Último recurso: mediodía de ese día (nunca hay cambios de horario a mediodía).
+    const noon = Date.UTC(y, mo - 1, d, 12, 0, 0)
+    iso = toIsoWithOffset(
+      new Date(noon - timeZoneOffsetMinutes(new Date(noon), timezone) * 60_000),
+      timezone,
+    )
+  }
+  return iso
 }
 
 /**

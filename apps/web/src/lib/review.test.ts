@@ -32,7 +32,7 @@ describe('estado de Revisar', () => {
       { type: 'setMultiplier', multiplier: 1.5 },
       { type: 'setMultiplier', multiplier: 1 },
     )
-    expect(displayItems(s).map(({ key: _k, ...it }) => it)).toEqual(tacosProposal.items)
+    expect(displayItems(s).map(({ key: _k, per: _p, ...it }) => it)).toEqual(tacosProposal.items)
     const doubled = reduce(base, { type: 'setMultiplier', multiplier: 2 })
     expect(reviewTotals(doubled).kcal).toBe(690)
     expect(displayItems(doubled)[0]?.grams).toBe(120)

@@ -1,9 +1,11 @@
 // @vitest-environment jsdom
 import { API_ERROR_MESSAGES, type Favorite } from '@kalapp/shared'
 import { cleanup, fireEvent, screen } from '@testing-library/react'
+import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
 import { Route } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ApiError, createApiClient } from '../lib/api'
+import { OfflineQueue } from '../lib/offlineQueue'
 import { queryKeys } from '../lib/queryClient'
 import { createTokenStore } from '../lib/token'
 import { jsonResponse, memoryStorage, referenceProfile } from '../test/fixtures'
@@ -128,5 +130,39 @@ describe('Capturar: favoritos', () => {
         ),
       ).toBe(true),
     )
+  })
+})
+
+describe('Capturar: texto sin conexión', () => {
+  it('ofrece "Guardar para analizar después" y encola el texto con su día', async () => {
+    const queue = new OfflineQueue({
+      name: 'capture-text',
+      indexedDB: new IDBFactory(),
+      IDBKeyRange,
+    })
+    const tokens = createTokenStore(() => memoryStorage())
+    tokens.set('secreto')
+    const fetchFn = vi.fn(async (url: string) => {
+      if (url === '/api/usage') return jsonResponse({ date: '2026-11-04', calls: 1, limit: 50 })
+      throw new TypeError('Failed to fetch')
+    })
+    const api = createApiClient({ fetchFn: fetchFn as unknown as typeof fetch, tokenStore: tokens })
+    renderWithProviders(<CaptureScreen />, {
+      api,
+      route: '/capturar?modo=text&fecha=2026-11-01',
+      queue,
+      setup: (qc) => qc.setQueryData(queryKeys.profile, referenceProfile),
+      extraRoutes: <Route path="/" element={<p>Pantalla Hoy</p>} />,
+    })
+    fireEvent.change(screen.getByLabelText('¿Qué comiste?'), {
+      target: { value: '2 tacos al pastor' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Analizar' }))
+    expect(await screen.findByText('Sin conexión. Revisa tu internet.')).toBeTruthy()
+    fireEvent.click(await screen.findByRole('button', { name: 'Guardar para analizar después' }))
+    expect(await screen.findByText('Pantalla Hoy')).toBeTruthy()
+    const [item] = await queue.list()
+    expect(item).toMatchObject({ kind: 'text', text: '2 tacos al pastor', localDate: '2026-11-01' })
+    queue.db.close()
   })
 })

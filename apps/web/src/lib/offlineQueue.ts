@@ -1,6 +1,7 @@
 import {
   type AnalysisProposal,
   AnalysisProposalSchema,
+  type AnalyzeTextRequest,
   type EntryInput,
   EntryInputSchema,
 } from '@kalapp/shared'
@@ -9,6 +10,13 @@ import { ApiError, errorMessage } from './api'
 
 /** Máximo de elementos en la cola (fotos + comidas). */
 export const QUEUE_LIMIT = 20
+
+/**
+ * Máximo de intentos fallidos con respuesta del servidor (5xx, respuesta inválida) por elemento;
+ * después se descarta con aviso (cada análisis fallido consume el límite diario). Las fallas
+ * de red y el límite diario (429) no cuentan: no llegaron a gastar nada y no se pierden datos.
+ */
+export const MAX_ATTEMPTS = 5
 
 /** Reintento: 30 s, 1 min, 2 min… hasta 30 min. */
 export function backoffMs(attempts: number): number {
@@ -19,6 +27,8 @@ interface QueuedBase {
   id: string
   createdAt: number
   attempts: number
+  /** Intentos fallidos que sí cuentan para `MAX_ATTEMPTS`. */
+  failures?: number
   /** Epoch ms; antes de esto no se reintenta. */
   nextAttemptAt: number
   lastError: string | null
@@ -42,7 +52,21 @@ export interface QueuedPhoto extends QueuedBase {
   proposal: AnalysisProposal | null
 }
 
-export type QueuedItem = QueuedEntry | QueuedPhoto
+/** Texto ("¿Qué comiste?") que no se pudo analizar por falta de red. */
+export interface QueuedText extends QueuedBase {
+  kind: 'text'
+  text: string
+  note: string | null
+  localHour: number
+  localDate: string
+  status: 'queued' | 'analyzed'
+  proposal: AnalysisProposal | null
+}
+
+/** Elementos que se analizan y luego quedan "por revisar". */
+export type QueuedAnalysis = QueuedPhoto | QueuedText
+
+export type QueuedItem = QueuedEntry | QueuedAnalysis
 
 export class QueueFullError extends Error {
   constructor() {
@@ -59,6 +83,8 @@ export interface QueueApi {
     image: Blob,
     params: { note?: string; localHour?: number },
   ): Promise<AnalysisProposal>
+  /** Opcional: sin él los textos en cola se quedan esperando. */
+  analyzeText?(input: AnalyzeTextRequest): Promise<AnalysisProposal>
 }
 
 export interface DiscardNotice {
@@ -81,6 +107,8 @@ export interface QueueCounts {
   pendingEntries: number
   queuedPhotos: number
   analyzedPhotos: number
+  queuedTexts: number
+  analyzedTexts: number
   total: number
 }
 
@@ -103,10 +131,25 @@ function isRetryable(err: unknown): boolean {
   return err.status >= 500 || err.status === 0
 }
 
-const discardMessage = (kind: QueuedItem['kind'], err: unknown) =>
-  `${kind === 'photo' ? 'Una foto pendiente' : 'Una comida pendiente'} no se pudo ${
-    kind === 'photo' ? 'analizar' : 'guardar'
-  } y se quitó de la cola: ${errorMessage(err)}`
+/** ¿Este fallo reintentable cuenta para el máximo de intentos? */
+function countsAsFailure(err: unknown): boolean {
+  if (!(err instanceof ApiError)) return true
+  if (err.code === 'NETWORK' || err.code === 'ABORTED') return false
+  return !(err.code === 'DAILY_LIMIT' || err.status === 429)
+}
+
+const SUBJECT: Record<QueuedItem['kind'], [string, string]> = {
+  entry: ['Una comida pendiente', 'guardar'],
+  photo: ['Una foto pendiente', 'analizar'],
+  text: ['Una descripción pendiente', 'analizar'],
+}
+
+const discardMessage = (kind: QueuedItem['kind'], err: unknown, gaveUp = false) => {
+  const [who, verb] = SUBJECT[kind]
+  return gaveUp
+    ? `${who} no se pudo ${verb} tras ${MAX_ATTEMPTS} intentos y se quitó de la cola: ${errorMessage(err)}`
+    : `${who} no se pudo ${verb} y se quitó de la cola: ${errorMessage(err)}`
+}
 
 export class OfflineQueue {
   readonly db: QueueDb
@@ -127,15 +170,20 @@ export class OfflineQueue {
 
   async counts(): Promise<QueueCounts> {
     const items = await this.db.items.toArray()
-    let pendingEntries = 0
-    let queuedPhotos = 0
-    let analyzedPhotos = 0
-    for (const it of items) {
-      if (it.kind === 'entry') pendingEntries++
-      else if (it.status === 'analyzed') analyzedPhotos++
-      else queuedPhotos++
+    const c: QueueCounts = {
+      pendingEntries: 0,
+      queuedPhotos: 0,
+      analyzedPhotos: 0,
+      queuedTexts: 0,
+      analyzedTexts: 0,
+      total: items.length,
     }
-    return { pendingEntries, queuedPhotos, analyzedPhotos, total: items.length }
+    for (const it of items) {
+      if (it.kind === 'entry') c.pendingEntries++
+      else if (it.kind === 'photo') it.status === 'analyzed' ? c.analyzedPhotos++ : c.queuedPhotos++
+      else it.status === 'analyzed' ? c.analyzedTexts++ : c.queuedTexts++
+    }
+    return c
   }
 
   async get(id: string): Promise<QueuedItem | undefined> {
@@ -200,9 +248,43 @@ export class OfflineQueue {
     })
   }
 
+  /** Encola un texto para analizarlo al volver la red. */
+  async enqueueText(
+    p: { id: string; text: string; note: string | null; localHour: number; localDate: string },
+    now = Date.now(),
+  ): Promise<void> {
+    const text = p.text.trim()
+    if (!text) throw new Error('Describe lo que comiste.')
+    await this.db.transaction('rw', this.db.items, async () => {
+      await this.ensureRoom(p.id)
+      await this.db.items.put({
+        kind: 'text',
+        id: p.id,
+        text,
+        note: p.note,
+        localHour: p.localHour,
+        localDate: p.localDate,
+        status: 'queued',
+        proposal: null,
+        createdAt: now,
+        attempts: 0,
+        nextAttemptAt: now,
+        lastError: null,
+      })
+    })
+  }
+
   async analyzedPhotos(): Promise<QueuedPhoto[]> {
     const items = await this.list()
     return items.filter((it): it is QueuedPhoto => it.kind === 'photo' && it.status === 'analyzed')
+  }
+
+  /** Fotos y textos ya analizados, pendientes de revisar (más antiguos primero). */
+  async analyzedItems(): Promise<QueuedAnalysis[]> {
+    const items = await this.list()
+    return items.filter(
+      (it): it is QueuedAnalysis => it.kind !== 'entry' && it.status === 'analyzed',
+    )
   }
 
   /**
@@ -237,26 +319,33 @@ export class OfflineQueue {
     }
     const items = await this.list()
     for (const item of items) {
-      if (item.kind === 'photo' && item.status === 'analyzed') continue
+      if (item.kind !== 'entry' && item.status === 'analyzed') continue
       if (!opts.force && item.nextAttemptAt > now()) continue
+      if (item.kind === 'text' && !api.analyzeText) continue
       try {
         if (item.kind === 'entry') {
           await api.createEntry(item.input)
           await this.db.items.delete(item.id)
           result.sent++
         } else {
-          const blob = new Blob([item.data], { type: item.type })
-          const proposal = AnalysisProposalSchema.parse(
-            await api.analyzePhoto(blob, {
-              note: item.note ?? undefined,
-              localHour: item.localHour,
-            }),
-          )
+          const raw =
+            item.kind === 'photo'
+              ? await api.analyzePhoto(new Blob([item.data], { type: item.type }), {
+                  note: item.note ?? undefined,
+                  localHour: item.localHour,
+                })
+              : await (api.analyzeText as NonNullable<QueueApi['analyzeText']>)({
+                  text: item.text,
+                  note: item.note ?? undefined,
+                  localHour: item.localHour,
+                })
+          const parsed = AnalysisProposalSchema.safeParse(raw)
+          if (!parsed.success) throw new ApiError('INVALID_RESPONSE')
           await this.db.items.update(item.id, {
             status: 'analyzed',
-            proposal,
+            proposal: parsed.data,
             lastError: null,
-          } as Partial<QueuedPhoto>)
+          } as Partial<QueuedAnalysis>)
           result.analyzed++
         }
       } catch (err) {
@@ -266,8 +355,19 @@ export class OfflineQueue {
         }
         if (isRetryable(err)) {
           const attempts = item.attempts + 1
+          const failures = (item.failures ?? 0) + (countsAsFailure(err) ? 1 : 0)
+          if (failures >= MAX_ATTEMPTS) {
+            await this.db.items.delete(item.id)
+            result.discarded.push({
+              id: item.id,
+              kind: item.kind,
+              message: discardMessage(item.kind, err, true),
+            })
+            continue
+          }
           await this.db.items.update(item.id, {
             attempts,
+            failures,
             nextAttemptAt: now() + backoffMs(attempts),
             lastError: errorMessage(err),
           })
@@ -284,7 +384,7 @@ export class OfflineQueue {
       }
     }
     const c = await this.counts()
-    result.retrying = c.pendingEntries + c.queuedPhotos
+    result.retrying = c.pendingEntries + c.queuedPhotos + c.queuedTexts
     return result
   }
 }

@@ -2,7 +2,14 @@ import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { tacosProposal } from '../test/fixtures'
 import { ApiError } from './api'
-import { backoffMs, OfflineQueue, QUEUE_LIMIT, type QueueApi, QueueFullError } from './offlineQueue'
+import {
+  backoffMs,
+  MAX_ATTEMPTS,
+  OfflineQueue,
+  QUEUE_LIMIT,
+  type QueueApi,
+  QueueFullError,
+} from './offlineQueue'
 
 const entryInput = (id: string) => ({
   id,
@@ -37,10 +44,12 @@ afterEach(() => {
 function fakeApi(overrides: Partial<QueueApi> = {}): QueueApi & {
   createEntry: ReturnType<typeof vi.fn>
   analyzePhoto: ReturnType<typeof vi.fn>
+  analyzeText: ReturnType<typeof vi.fn>
 } {
   return {
     createEntry: vi.fn(overrides.createEntry ?? (async () => ({}))),
     analyzePhoto: vi.fn(overrides.analyzePhoto ?? (async () => tacosProposal)),
+    analyzeText: vi.fn(overrides.analyzeText ?? (async () => tacosProposal)),
   } as never
 }
 
@@ -60,6 +69,8 @@ describe('cola sin internet', () => {
       pendingEntries: 1,
       queuedPhotos: 1,
       analyzedPhotos: 0,
+      queuedTexts: 0,
+      analyzedTexts: 0,
       total: 2,
     })
     const stored = await queue.get(uuid(2))
@@ -190,5 +201,60 @@ describe('cola sin internet', () => {
     const [a, b] = await Promise.all([queue.process(api), queue.process(api)])
     expect(a).toBe(b)
     expect(api.createEntry).toHaveBeenCalledTimes(1)
+  })
+
+  it('textos: se encolan, se analizan con analyzeText y quedan por revisar', async () => {
+    await queue.enqueueText({
+      id: uuid(5),
+      text: '  2 tacos al pastor  ',
+      note: 'con piña',
+      localHour: 14,
+      localDate: '2026-11-03',
+    })
+    expect(await queue.counts()).toMatchObject({ queuedTexts: 1, total: 1 })
+    await expect(
+      queue.enqueueText({
+        id: uuid(6),
+        text: '   ',
+        note: null,
+        localHour: 1,
+        localDate: '2026-11-03',
+      }),
+    ).rejects.toThrow()
+    const api = fakeApi()
+    const r = await queue.process(api)
+    expect(r.analyzed).toBe(1)
+    expect(api.analyzeText).toHaveBeenCalledWith({
+      text: '2 tacos al pastor',
+      note: 'con piña',
+      localHour: 14,
+    })
+    const [item] = await queue.analyzedItems()
+    expect(item?.kind).toBe('text')
+    expect(item?.localDate).toBe('2026-11-03')
+    expect(await queue.counts()).toMatchObject({ queuedTexts: 0, analyzedTexts: 1 })
+  })
+
+  it(`tras ${MAX_ATTEMPTS} fallas del servidor se descarta con aviso; la red no cuenta`, async () => {
+    await queue.enqueueEntry(entryInput(uuid(1)), 0)
+    const offline = fakeApi({
+      createEntry: async () => {
+        throw new ApiError('NETWORK')
+      },
+    })
+    for (let i = 0; i < MAX_ATTEMPTS + 3; i++) await queue.process(offline, { force: true })
+    expect((await queue.counts()).pendingEntries).toBe(1) // sin red nunca se pierde
+
+    const broken = fakeApi({
+      createEntry: async () => {
+        throw new ApiError('INTERNAL', undefined, 500)
+      },
+    })
+    const results = []
+    for (let i = 0; i < MAX_ATTEMPTS; i++)
+      results.push(await queue.process(broken, { force: true }))
+    expect(broken.createEntry).toHaveBeenCalledTimes(MAX_ATTEMPTS)
+    expect(results.at(-1)?.discarded[0]?.message).toContain(`tras ${MAX_ATTEMPTS} intentos`)
+    expect((await queue.counts()).total).toBe(0)
   })
 })

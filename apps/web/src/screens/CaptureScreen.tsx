@@ -50,11 +50,10 @@ export function isOfflineFailure(err: unknown, online: boolean): boolean {
   return !online || (err instanceof ApiError && err.code === 'NETWORK')
 }
 
-interface OfflinePhoto {
-  blob: Blob
-  note: string | null
-  localHour: number
-}
+/** Lo que se puede guardar para analizar después (foto comprimida o texto). */
+type OfflineItem =
+  | { kind: 'photo'; blob: Blob; note: string | null; localHour: number }
+  | { kind: 'text'; text: string; note: string | null; localHour: number }
 
 /** Mensaje claro para cada error del análisis. */
 export function captureErrorMessage(err: unknown): string {
@@ -101,7 +100,7 @@ export function CaptureScreen() {
   const [text, setText] = useState('')
   const [phase, setPhase] = useState<Phase>('idle')
   const [error, setError] = useState<string | null>(null)
-  const [offline, setOffline] = useState<OfflinePhoto | null>(null)
+  const [offline, setOffline] = useState<OfflineItem | null>(null)
   const [queueError, setQueueError] = useState<string | null>(null)
   const abortRef = useRef<AbortController | null>(null)
   const cameraRef = useRef<HTMLInputElement>(null)
@@ -120,6 +119,7 @@ export function CaptureScreen() {
     else next.set('modo', m)
     setParams(next, { replace: true })
     setError(null)
+    setOffline(null)
   }
 
   const toggleChip = (chip: string) =>
@@ -188,7 +188,7 @@ export function CaptureScreen() {
       },
       (err, localHour) => {
         if (compressed && isOfflineFailure(err, navigator.onLine !== false)) {
-          setOffline({ blob: compressed, note: noteForPhoto, localHour })
+          setOffline({ kind: 'photo', blob: compressed, note: noteForPhoto, localHour })
         }
       },
     )
@@ -203,16 +203,19 @@ export function CaptureScreen() {
       return
     }
     try {
-      await q.enqueuePhoto({
+      const common = {
         id: newId(),
-        blob: offline.blob,
         note: offline.note,
         localHour: offline.localHour,
         localDate: targetDate ?? todayIn(timezone),
-      })
+      }
+      if (offline.kind === 'photo') await q.enqueuePhoto({ ...common, blob: offline.blob })
+      else await q.enqueueText({ ...common, text: offline.text })
       await queue.refresh()
       setOffline(null)
-      navigate(todayUrl(targetDate, { cola: 'foto' }), { replace: true })
+      navigate(todayUrl(targetDate, { cola: offline.kind === 'photo' ? 'foto' : 'texto' }), {
+        replace: true,
+      })
     } catch (err) {
       setQueueError(err instanceof Error ? err.message : errorMessage(err))
     }
@@ -224,23 +227,34 @@ export function CaptureScreen() {
       setError('Describe lo que comiste.')
       return
     }
-    void run(async (signal, localHour) => {
-      setPhase('analyzing')
-      const proposal = await api.analyzeText(
-        { text: value, note: finalNote || undefined, localHour },
-        signal,
-      )
-      setDraft({
-        kind: 'new',
-        id: newId(),
-        proposal,
-        source: 'text',
-        note: finalNote || null,
-        photo: null,
-        localHour,
-        localDate: targetDate,
-      })
-    })
+    const noteForText = finalNote || null
+    void run(
+      async (signal, localHour) => {
+        if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+          throw new ApiError('NETWORK')
+        }
+        setPhase('analyzing')
+        const proposal = await api.analyzeText(
+          { text: value, note: noteForText ?? undefined, localHour },
+          signal,
+        )
+        setDraft({
+          kind: 'new',
+          id: newId(),
+          proposal,
+          source: 'text',
+          note: noteForText,
+          photo: null,
+          localHour,
+          localDate: targetDate,
+        })
+      },
+      (err, localHour) => {
+        if (isOfflineFailure(err, navigator.onLine !== false)) {
+          setOffline({ kind: 'text', text: value, note: noteForText, localHour })
+        }
+      },
+    )
   }
 
   const cancel = () => {
@@ -372,10 +386,12 @@ export function CaptureScreen() {
           {limitReached && (
             <ErrorBox>Llegaste al límite de análisis de hoy. Mañana se reinicia.</ErrorBox>
           )}
-          {!online && mode === 'photo' && !offline && (
+          {!online && !offline && (
             <WarningBox>
               <p className="text-sm">
-                Estás sin internet. Puedes tomar la foto y guardarla para analizarla después.
+                Estás sin internet. Puedes{' '}
+                {mode === 'photo' ? 'tomar la foto' : 'escribir lo que comiste'} y guardarlo para
+                analizarlo después.
               </p>
             </WarningBox>
           )}
