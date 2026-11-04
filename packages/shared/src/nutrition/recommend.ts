@@ -17,7 +17,7 @@ import {
 } from '../constants'
 import type { ProfileInput, Recommendation, RecommendationWarning } from '../schemas/profile'
 import { resolveLocalDate } from '../utils/dates'
-import { formatNumber as n } from '../utils/format'
+import { formatSignedNumber, formatSignedPct, formatNumber as n } from '../utils/format'
 import { roundTo, roundToStep } from '../utils/math'
 import { ageOn } from './age'
 import { bmi, bmr, safetyFloorKcal, tdee } from './energy'
@@ -58,10 +58,6 @@ function assertRecommendInput(input: RecommendInput): void {
       'Meta manual (kcal)',
     )
   }
-}
-
-function signedPct(pct: number): string {
-  return pct > 0 ? `+${pct}` : `−${Math.abs(pct)}`
 }
 
 /**
@@ -109,7 +105,7 @@ export function recommend(input: RecommendInput, asOf: Date | string): Recommend
   const rawTarget = tdeeRaw * (1 + adjustPct / 100)
   const computedTarget = roundToStep(rawTarget, TARGET_ROUNDING_KCAL)
   explanation.push(
-    `Objetivo ${goalCfg.label} (${getIntensityLabel(goal, intensity)}): ${signedPct(adjustPct)} % → ` +
+    `Objetivo ${goalCfg.label} (${getIntensityLabel(goal, intensity)}): ${formatSignedPct(adjustPct)} → ` +
       `${n(rawTarget)} kcal, redondeado a ${n(computedTarget)} kcal.`,
   )
 
@@ -196,7 +192,7 @@ export function recommend(input: RecommendInput, asOf: Date | string): Recommend
   // 8. Cambio esperado
   const expectedKgPerWeek = roundTo(((targetKcal - tdeeKcal) * 7) / KCAL_PER_KG_BODY_WEIGHT, 2) || 0
   explanation.push(
-    `Cambio esperado: (${n(targetKcal)} − ${n(tdeeKcal)}) × 7 ÷ 7,700 ≈ ${expectedKgPerWeek > 0 ? '+' : ''}${n(expectedKgPerWeek, 2)} kg/semana.`,
+    `Cambio esperado: (${n(targetKcal)} − ${n(tdeeKcal)}) × 7 ÷ 7,700 ≈ ${formatSignedNumber(expectedKgPerWeek, 2)} kg/semana.`,
   )
 
   // Avisos contextuales

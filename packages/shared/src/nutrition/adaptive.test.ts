@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { ADAPTIVE_TDEE, ADAPTIVE_WINDOW_DAYS } from '../constants'
 import { AdaptiveTdeeResultSchema } from '../schemas/adaptive'
 import { addDays } from '../utils/dates'
 import { type AdaptiveTdeeInput, adaptiveTdee, linearSlope } from './adaptive'
@@ -186,5 +187,26 @@ describe('adaptiveTdee', () => {
     expect(adaptiveTdee(base({ days: huge, weights: stable }))).toMatchObject({
       reason: 'IMPLAUSIBLE_RESULT',
     })
+  })
+})
+
+describe('ventana adaptativa y textos', () => {
+  it('ADAPTIVE_WINDOW_DAYS = 28 y coincide con ADAPTIVE_TDEE.windowDays', () => {
+    expect(ADAPTIVE_WINDOW_DAYS).toBe(28)
+    expect(ADAPTIVE_TDEE.windowDays).toBe(ADAPTIVE_WINDOW_DAYS)
+    expect(ADAPTIVE_WINDOW_DAYS).toBeGreaterThanOrEqual(ADAPTIVE_TDEE.minRangeDays)
+  })
+  it('los mensajes no usan guion ASCII como signo', () => {
+    const cases = [
+      base(),
+      base({ currentTargetKcal: 1800 }),
+      base({ goal: 'gain' }),
+      base({ from: '2026-01-10' }),
+      base({ days: base().days.slice(0, 10) }),
+      base({ weights: [{ localDate: '2026-01-01', weightKg: 80 }] }),
+    ]
+    for (const input of cases) {
+      expect(adaptiveTdee(input).message).not.toMatch(/-\d/)
+    }
   })
 })

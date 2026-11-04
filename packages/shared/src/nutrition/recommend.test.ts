@@ -285,3 +285,33 @@ describe('recommend — casos límite', () => {
     expect(codes(r)).toEqual(['BELOW_SAFETY_FLOOR', 'CARBS_CLAMPED'])
   })
 })
+
+describe('signos en textos (U+2212)', () => {
+  const allText = (r: { explanation: string[]; warnings: { message: string }[] }) =>
+    [...r.explanation, ...r.warnings.map((w) => w.message)].join('\n')
+  it('déficit: "−20 %" y "≈ −0.48 kg/semana", sin guion ASCII', () => {
+    const r = recommend(reference, AS_OF)
+    const text = allText(r)
+    expect(text).toContain('−20 % →')
+    expect(text).toContain('≈ −0.48 kg/semana')
+    expect(text).not.toMatch(/-\d/)
+  })
+  it('ganancia: "+" explícito', () => {
+    const r = recommend({ ...reference, goal: 'gain' }, AS_OF)
+    expect(r.explanation.join('\n')).toMatch(/: \+\d+ % →/)
+    expect(r.explanation.join('\n')).toMatch(/≈ \+0\.\d+ kg\/semana/)
+  })
+  it('cambio 0 sin signo y ningún texto con guion ASCII antes de dígito', () => {
+    const zero = recommend({ ...reference, manualTargetKcal: 2726 }, AS_OF)
+    expect(zero.explanation.join('\n')).toContain('≈ 0 kg/semana')
+    for (const goal of ['deficit', 'recomp', 'gain'] as const) {
+      for (const intensity of ['mild', 'moderate', 'aggressive'] as const) {
+        const r = recommend(
+          { ...reference, goal, intensity, trainingDays: 0, bodyFatPct: 30 },
+          AS_OF,
+        )
+        expect(allText(r)).not.toMatch(/-\d/)
+      }
+    }
+  })
+})
