@@ -10,9 +10,10 @@ Esta carpeta guarda **todo el conocimiento del proyecto**: requisitos, investiga
 | `README.md` | Este archivo: cómo está organizada la carpeta y cómo usar el grafo |
 | `PLAN.md` | Plan completo del proyecto: stack, estructura, datos, API, pantallas, roadmap con milestones, pruebas, despliegue y flujo de trabajo |
 | `AGENTS.md` | Equipo multi-agente, dueños de carpetas y flujo por milestone |
-| `DEPLOY.md` | Guía de despliegue paso a paso en Cloudflare (plan gratuito): D1, migraciones, secretos, Workers Builds, iPhone, Atajo, problemas comunes |
+| `DEPLOY.md` | Guía de despliegue paso a paso en Cloudflare (plan gratuito): D1 (ya creada), migraciones (las aplica el deploy), secretos, Workers Builds, `pnpm deploy:manual`, iPhone, Atajo, primera prueba real, problemas comunes |
 | `PROMPTS.md` | Versiones del prompt de Gemini (actual: v1), configuración de la petición y política de respaldo de modelo |
 | `ACCURACY.md` | Protocolo del set de ~20 fotos, fórmula del error medio y tabla de resultados (aún sin mediciones) |
+| `TESTING.md` | Cómo correr las pruebas, qué cubren las suites adversariales, verificaciones e2e/curl hechas y checklist manual del iPhone |
 | *(futuros `.md`)* | Documentos de apoyo: guías, decisiones detalladas, notas, etc. |
 
 ## Estructura del grafo (`knowledge-graph.json`)

@@ -16,7 +16,7 @@
     "db:migrate:local": "wrangler d1 migrations apply kalapp-db --local",
     "db:migrate:remote": "wrangler d1 migrations apply kalapp-db --remote",
     "test:gemini-live": "pnpm --filter @kalapp/api test:gemini-live",
-    "deploy:manual": "pnpm build && wrangler deploy"
+    "deploy:manual": "pnpm db:migrate:remote && pnpm build && wrangler deploy"
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.4",

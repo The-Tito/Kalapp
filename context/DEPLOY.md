@@ -1,6 +1,6 @@
 # Kalapp — Guía de despliegue (Cloudflare, plan gratuito)
 
-> Versión 1.0 · 2026-11-04. Para una persona que no es experta: sigue los pasos en orden.  
+> Versión 1.1 · 2026-11-04. Para una persona que no es experta: sigue los pasos en orden.  
 > Resultado: la app en `https://kalapp.<tu-subdominio>.workers.dev`, instalada en tu iPhone.  
 > **Regla de oro:** tus claves y tu token **nunca** van en el repositorio, en un commit, en un chat ni en una captura de pantalla.
 
@@ -29,29 +29,30 @@ Se abre el navegador; acepta los permisos. Para comprobar: `npx wrangler whoami`
 
 ---
 
-## 2. Crear la base de datos D1 `kalapp-db`
+## 2. Base de datos D1 `kalapp-db` — ya está creada
 
-**Opción con terminal (recomendada):**
+**Este paso ya se hizo.** La base `kalapp-db` se creó el 2026-11-04 en la región WNAM y su id ya está en `wrangler.jsonc`:
+```jsonc
+"database_name": "kalapp-db",
+"database_id": "bb8a8875-29b3-4197-ad2b-0c74ffaf9806",
+```
+Está vacía: las tablas se crean al aplicar las migraciones (sección 3), y eso lo hace el despliegue solo. El `database_id` **no es secreto** (sin tu cuenta no sirve de nada), por eso va en el repositorio.
+
+Para comprobar que la ves en tu cuenta: Cloudflare → *Storage & Databases* → *D1 SQL Database* → `kalapp-db`, o `npx wrangler d1 list`.
+
+**Si prefieres usar otra base** (por ejemplo, en otra cuenta o región):
 ```bash
 npx wrangler d1 create kalapp-db
 ```
-La salida muestra un bloque con `"database_id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"`.
-
-**Opción con el dashboard:** Cloudflare → *Storage & Databases* → *D1 SQL Database* → *Create* → nombre `kalapp-db` → copia el *Database ID*.
-
-**Pon el id en `wrangler.jsonc`:** abre el archivo y reemplaza el valor de `database_id`:
-```jsonc
-"database_id": "00000000-0000-0000-0000-000000000000",   // ← así viene: es un marcador, NO un id real
-```
-- Si ves puros ceros, todavía no está configurado: pega tu id real.
-- Si ya ves un id distinto de ceros, ya está configurado: no lo cambies.
-
-El `database_id` **no es secreto** (sin tu cuenta no sirve de nada), así que sí puede ir en el repositorio. Haz commit de ese cambio en una rama y súbelo a `main` siguiendo Gitflow (sección 9), porque Workers Builds construye desde el repositorio.
+Copia el `database_id` que imprime, reemplázalo en `wrangler.jsonc`, haz commit en una rama y llévalo a `main` siguiendo Gitflow (sección 11), porque Workers Builds construye desde el repositorio. Si cambias el nombre, cámbialo también en los scripts `db:migrate:*` de `package.json`.
 
 ---
 
 ## 3. Crear las tablas (migraciones remotas)
 
+**Con Workers Builds no tienes que hacer nada aquí:** el *deploy command* de la sección 5 empieza con `pnpm db:migrate:remote`, así que cada despliegue aplica las migraciones que falten antes de publicar.
+
+Si despliegas a mano (opción B), corre antes:
 ```bash
 pnpm db:migrate:remote
 ```
@@ -102,10 +103,9 @@ Cada vez que `main` cambia, Cloudflare construye y publica solo.
 
 ### Opción B — Manual desde tu computadora
 ```bash
-pnpm db:migrate:remote
 pnpm deploy:manual
 ```
-`pnpm deploy:manual` construye la PWA y ejecuta `wrangler deploy`. Escribe `pnpm deploy:manual` (con `run`): `pnpm deploy` a secas es otro comando interno de pnpm y no hace lo mismo.
+`pnpm deploy:manual` aplica las migraciones remotas, construye la PWA y ejecuta `wrangler deploy`, todo en un paso. Escribe `pnpm deploy:manual` completo: `pnpm deploy` a secas es otro comando interno de pnpm y no hace lo mismo.
 
 ---
 
@@ -159,6 +159,20 @@ GEMINI_API_KEY=tu-clave pnpm test:gemini-live foto.jpg   # además, una foto tuy
 
 ---
 
+## 9b. Primera prueba real
+
+Cuando el primer despliegue termine, haz esto en orden (la lista completa del iPhone está en [`TESTING.md`](./TESTING.md)):
+
+1. **Salud del servidor:** abre `https://kalapp.<tu-subdominio>.workers.dev/api/health` → `{"status":"ok","app":"Kalapp"}`.
+2. **Instalar:** Safari → Compartir → Agregar a inicio; abre desde el ícono (pantalla completa).
+3. **Token y onboarding:** pega el token y completa los 4 pasos; revisa que la recomendación tenga sentido.
+4. **Una foto real:** toma una foto de comida → Analizar → en Revisar deben aparecer ingredientes con gramos, supuestos y confianza (eso solo sale de Gemini; un 503 indica problema con la clave). Para confirmar qué modelo respondió: deja `npx wrangler tail` abierto mientras analizas, o después exporta JSON (Ajustes) y mira `aiModel` de la comida (p. ej. `gemini-flash-latest`). Guarda → aparece en Hoy.
+5. **Cupo:** `curl -H "Authorization: Bearer TU_TOKEN" https://kalapp.<tu-subdominio>.workers.dev/api/usage` debe mostrar `calls` ≥ 1.
+6. **Prueba en vivo desde la computadora:** `pnpm test:gemini-live` (sección 9) para confirmar clave y modelos, y opcionalmente con una foto.
+7. Después, arma el set de ~20 fotos de [`ACCURACY.md`](./ACCURACY.md) para la línea base de precisión.
+
+---
+
 ## 10. Problemas comunes
 
 | Síntoma | Causa | Qué hacer |
@@ -171,7 +185,7 @@ GEMINI_API_KEY=tu-clave pnpm test:gemini-live foto.jpg   # además, una foto tuy
 | **429** "Llegaste al límite diario" | Se usaron los `DAILY_ANALYZE_LIMIT` análisis del día (60 por defecto) | Se reinicia a la **medianoche de la Ciudad de México**, aunque estés en otra zona. Los rechazos (foto inválida, muy pesada, etc.) no consumen cupo |
 | **413** | Foto > 1 MB o JSON > 256 KB | La app comprime sola; si pasa, toma la foto de nuevo |
 | **415** | Formato no soportado | Solo JPEG, PNG o WebP (se revisa el contenido real del archivo) |
-| El build de Workers Builds falla | Node distinto de 22, `pnpm-lock.yaml` desactualizado o `database_id` en ceros | Revisa el log del build en el dashboard |
+| El build de Workers Builds falla | Node distinto de 22, `pnpm-lock.yaml` desactualizado, o la D1 de `wrangler.jsonc` no es de tu cuenta | Revisa el log del build en el dashboard |
 
 ### Cambiar el límite diario o los modelos
 Están en `wrangler.jsonc` → `vars` (no son secretos):

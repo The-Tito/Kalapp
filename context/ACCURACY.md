@@ -1,7 +1,7 @@
 # Kalapp — Precisión de la IA
 
-> Versión 1.0 · 2026-11-04. Métrica `metric:accuracy` del KG. Meta: **error medio absoluto < ±25 %** en kcal.  
-> **Estado: aún no hay mediciones reales.** En la sesión de desarrollo no había clave de Gemini, así que todo se probó con Gemini simulado. La línea base se mide en M6, después del primer despliegue.
+> Versión 1.1 · 2026-11-04. Métrica `metric:accuracy` del KG. Meta: **error medio absoluto < ±25 %** en kcal.  
+> **Estado (v1.0.0 lista en código, 2026-11-04): aún no hay mediciones reales.** La app está terminada en código pero no desplegada; la medición empieza tras la "Primera prueba real" de [`DEPLOY.md`](./DEPLOY.md). En la sesión de desarrollo no había clave de Gemini, así que todo se probó con Gemini simulado. La línea base se mide en M6, después del primer despliegue.
 
 ## 1. Cómo armar el set (~20 fotos)
 

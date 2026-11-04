@@ -6,7 +6,7 @@
     "language": "es-MX",
     "created_at": "2026-11-04",
     "updated_at": "2026-11-04",
-    "status": "M0–M1 en develop; M2–M5 terminados en código en feature/v0.1-api-pwa (QA API aprobado, QA web pendiente); M6 en progreso",
+    "status": "v1.0.0 lista en código; pendiente despliegue del usuario",
     "git_branch": "feature/v0.1-api-pwa",
     "conventions": {
       "node_id_format": "<prefijo>:<slug>  (ej. feat:photo-logging)",
@@ -45,7 +45,8 @@
       },
       "edge_format": "{ source, type, target, note? }",
       "how_to_update": "Agregar nodos nuevos sin borrar los anteriores; si algo se reemplaza, marcar el nodo viejo con status='superseded' y crear una arista SUPERSEDED_BY hacia el nuevo. Actualizar metadata.updated_at y añadir una entrada en changelog."
-    }
+    },
+    "previous_status": "M0–M1 en develop; M2–M5 terminados en código en feature/v0.1-api-pwa (QA API aprobado, QA web pendiente); M6 en progreso"
   },
   "nodes": [
     {
@@ -752,7 +753,8 @@
         ],
         "editable_later": "Desde Ajustes; recálculo instantáneo",
         "recalc_prompt": "Si un peso registrado difiere más de 2 kg del perfil, sugiere recalcular",
-        "manual_override": true
+        "manual_override": true,
+        "status": "implementado en código"
       }
     },
     {
@@ -775,7 +777,8 @@
           "cambio de peso esperado",
           "avisos"
         ],
-        "transparency": "Muestra cómo llegó a cada número; no es caja negra."
+        "transparency": "Muestra cómo llegó a cada número; no es caja negra.",
+        "status": "implementado en código"
       }
     },
     {
@@ -792,7 +795,8 @@
           "carbohidratos",
           "grasa",
           "confianza (alta/media/baja)"
-        ]
+        ],
+        "status": "implementado en código"
       }
     },
     {
@@ -805,7 +809,8 @@
           "quitar/añadir ingredientes",
           "multiplicar porción (½×, 1×, 1.5×, 2×)"
         ],
-        "auto_recalc": true
+        "auto_recalc": true,
+        "status": "implementado en código"
       }
     },
     {
@@ -819,7 +824,8 @@
           "cena",
           "snack"
         ],
-        "auto_suggest": "Según la hora"
+        "auto_suggest": "Según la hora",
+        "status": "implementado en código"
       }
     },
     {
@@ -831,7 +837,8 @@
           "anillo de calorías consumidas vs meta",
           "barras de proteína/carbohidratos/grasa",
           "lista de comidas"
-        ]
+        ],
+        "status": "implementado en código"
       }
     },
     {
@@ -839,7 +846,8 @@
       "type": "Feature",
       "label": "Token personal",
       "properties": {
-        "detail": "Se captura una vez en la app y se envía como Authorization: Bearer."
+        "detail": "Se captura una vez en la app y se envía como Authorization: Bearer.",
+        "status": "implementado en código"
       }
     },
     {
@@ -847,7 +855,8 @@
       "type": "Feature",
       "label": "Registro por texto",
       "properties": {
-        "example": "\"2 tacos al pastor y una coca de 355\" se analiza sin foto."
+        "example": "\"2 tacos al pastor y una coca de 355\" se analiza sin foto.",
+        "status": "implementado en código"
       }
     },
     {
@@ -855,7 +864,8 @@
       "type": "Feature",
       "label": "Favoritos y repetir comida",
       "properties": {
-        "benefit": "Registro en un toque y consistencia."
+        "benefit": "Registro en un toque y consistencia.",
+        "status": "implementado en código"
       }
     },
     {
@@ -863,7 +873,8 @@
       "type": "Feature",
       "label": "Historial con promedio semanal",
       "properties": {
-        "detail": "Calendario; en un déficit importa más el promedio semanal que un día malo."
+        "detail": "Calendario; en un déficit importa más el promedio semanal que un día malo.",
+        "status": "implementado en código"
       }
     },
     {
@@ -872,7 +883,8 @@
       "label": "Registro de peso y gasto adaptativo",
       "properties": {
         "detail": "Tras 2–3 semanas compara ingesta vs cambio de peso para estimar el gasto real y proponer ajuste.",
-        "uses": "calc:adaptive-tdee"
+        "uses": "calc:adaptive-tdee",
+        "status": "implementado en código"
       }
     },
     {
@@ -880,7 +892,8 @@
       "type": "Feature",
       "label": "Cola sin internet",
       "properties": {
-        "storage": "IndexedDB (Dexie)"
+        "storage": "IndexedDB (Dexie)",
+        "status": "implementado en código"
       }
     },
     {
@@ -891,7 +904,8 @@
         "formats": [
           "CSV",
           "JSON"
-        ]
+        ],
+        "status": "implementado en código"
       }
     },
     {
@@ -901,7 +915,8 @@
       "properties": {
         "data_source": "Open Food Facts (gratis)",
         "library": "zxing",
-        "benefit": "Productos empacados: más exactos que una foto."
+        "benefit": "Productos empacados: más exactos que una foto.",
+        "status": "implementado en código"
       }
     },
     {
@@ -909,7 +924,8 @@
       "type": "Feature",
       "label": "Atajo de iOS → Apple Salud y Siri",
       "properties": {
-        "detail": "Envía totales del día a Salud y permite registrar con Siri."
+        "detail": "Envía totales del día a Salud y permite registrar con Siri.",
+        "status": "implementado en código"
       }
     },
     {
@@ -917,7 +933,8 @@
       "type": "Feature",
       "label": "Recordatorios",
       "properties": {
-        "constraint": "Push web solo iOS 16.4+ instalada; alternativa Atajos."
+        "constraint": "Push web solo iOS 16.4+ instalada; alternativa Atajos.",
+        "status": "implementado como automatización de Atajos (instrucciones en Ajustes → Atajo de iOS); sin push web"
       }
     },
     {
@@ -925,7 +942,8 @@
       "type": "Feature",
       "label": "Aviso de nueva versión",
       "properties": {
-        "detail": "Mitiga service worker desactualizado."
+        "detail": "Mitiga service worker desactualizado.",
+        "status": "implementado en código"
       }
     },
     {
@@ -937,7 +955,8 @@
           "frito",
           "con aceite",
           "con crema"
-        ]
+        ],
+        "status": "implementado en código"
       }
     },
     {
@@ -978,7 +997,8 @@
           "Servidor con Gemini y token",
           "Guía de despliegue"
         ],
-        "status": "en progreso: M0–M1 integrados en develop; M2–M5 terminados en código; M6 en progreso"
+        "status": "terminado en código (web y API); falta despliegue (ms:m6)",
+        "previous_status": "en progreso: M0–M1 integrados en develop; M2–M5 terminados en código; M6 en progreso"
       }
     },
     {
@@ -988,7 +1008,10 @@
       "properties": {
         "order": 2,
         "outcome": "Registrar más rápido y ver tendencias",
-        "api_status": "API implementada en feature/v0.1-api-pwa (adelantada); la UI sigue el roadmap"
+        "status": "terminado en código (web y API)",
+        "completed_at": "2026-11-04",
+        "branch": "feature/v0.1-api-pwa",
+        "previous_api_status": "API implementada en feature/v0.1-api-pwa (adelantada); la UI sigue el roadmap"
       }
     },
     {
@@ -998,7 +1021,10 @@
       "properties": {
         "order": 3,
         "outcome": "Corrige los errores de la IA",
-        "api_status": "API implementada en feature/v0.1-api-pwa (adelantada); la UI sigue el roadmap"
+        "status": "terminado en código (web y API)",
+        "completed_at": "2026-11-04",
+        "branch": "feature/v0.1-api-pwa",
+        "previous_api_status": "API implementada en feature/v0.1-api-pwa (adelantada); la UI sigue el roadmap"
       }
     },
     {
@@ -1008,7 +1034,10 @@
       "properties": {
         "order": 4,
         "outcome": "App completa",
-        "api_status": "API implementada en feature/v0.1-api-pwa (adelantada); la UI sigue el roadmap"
+        "status": "terminado en código (web y API)",
+        "completed_at": "2026-11-04",
+        "branch": "feature/v0.1-api-pwa",
+        "previous_api_status": "API implementada en feature/v0.1-api-pwa (adelantada); la UI sigue el roadmap"
       }
     },
     {
@@ -1267,7 +1296,11 @@
       "properties": {
         "order": 2,
         "command": "wrangler d1 create kalapp-db",
-        "then": "Aplicar migraciones (migrations/)"
+        "then": "Aplicar migraciones (migrations/)",
+        "status": "completado",
+        "completed_at": "2026-11-04",
+        "result": "kalapp-db creada en WNAM; database_id bb8a8875-29b3-4197-ad2b-0c74ffaf9806 en wrangler.jsonc (commit 160feb4)",
+        "remaining": "Aplicar migraciones remotas: lo hace el deploy command de Workers Builds (pnpm db:migrate:remote)"
       }
     },
     {
@@ -2181,7 +2214,10 @@
       "type": "Task",
       "label": "Arrancar v0.1",
       "properties": {
-        "status": "en curso: M0–M1 en develop; M2–M5 en código en feature/v0.1-api-pwa"
+        "status": "cerrado",
+        "previous_status": "en curso: M0–M1 en develop; M2–M5 en código en feature/v0.1-api-pwa",
+        "closed_at": "2026-11-04",
+        "resolution": "v0.1–v1.0 terminadas en código en feature/v0.1-api-pwa; el despliegue queda en task:user-deploy"
       }
     },
     {
@@ -2299,7 +2335,7 @@
       "label": "Plan del proyecto",
       "properties": {
         "path": "context/PLAN.md",
-        "version": "1.2",
+        "version": "1.3",
         "date": "2026-11-04",
         "sections": [
           "Visión y alcance",
@@ -2316,7 +2352,8 @@
           "Flujo de trabajo",
           "Riesgos del plan",
           "Pendientes del usuario"
-        ]
+        ],
+        "updated_at": "2026-11-04"
       }
     },
     {
@@ -2335,8 +2372,9 @@
       "properties": {
         "path": "context/DEPLOY.md",
         "status": "creado",
-        "version": "1.0",
-        "date": "2026-11-04"
+        "version": "1.1",
+        "date": "2026-11-04",
+        "updated_at": "2026-11-04"
       }
     },
     {
@@ -2358,8 +2396,9 @@
       "properties": {
         "path": "context/ACCURACY.md",
         "status": "creado (protocolo; sin mediciones)",
-        "version": "1.0",
-        "date": "2026-11-04"
+        "version": "1.1",
+        "date": "2026-11-04",
+        "updated_at": "2026-11-04"
       }
     },
     {
@@ -2433,16 +2472,22 @@
           "/api/profile"
         ],
         "acceptance": "Pruebas con D1 local: 401 sin token; PUT recalcula y persiste",
-        "status": "terminado en código",
+        "status": "terminado",
         "branch": "feature/v0.1-api-pwa",
-        "qa": "QA de API APROBADO tras correcciones (commit 9de7212 fix(api): harden API after adversarial QA; suite adversarial e2532d1)",
+        "qa": "QA final APROBADO: QA adversarial de API (13 hallazgos, corregidos) y de web (15 bugs, corregidos); suite total 736 pruebas en verde; e2e Playwright contra wrangler dev real",
         "commits": [
           "cb22eff feat(db): add D1 schema migrations (profile, entries, favorites, weights)",
           "d36d36a feat(api): implement full REST API on the Worker",
           "9de7212 fix(api): harden API after adversarial QA",
-          "e2532d1 test(api): add adversarial test suite (auth, SQLi, limits, Gemini failures, contract)"
+          "e2532d1 test(api): add adversarial test suite (auth, SQLi, limits, Gemini failures, contract)",
+          "a2bacb7 fix(api): reject deeply nested JSON with 400 instead of crashing",
+          "abff913 refactor(api): use shared ADAPTIVE_WINDOW_DAYS",
+          "160feb4 chore: point wrangler.jsonc at the production D1 database"
         ],
-        "pending": "Merge a develop tras QA completo de la rama"
+        "previous_status": "terminado en código",
+        "completed_at": "2026-11-04",
+        "qa_history": "QA de API APROBADO tras correcciones (commit 9de7212 fix(api): harden API after adversarial QA; suite adversarial e2532d1)",
+        "previous_pending": "Merge a develop tras QA completo de la rama"
       }
     },
     {
@@ -2459,14 +2504,22 @@
           "Ajustes"
         ],
         "acceptance": "En iPhone: se agrega a inicio, abre a pantalla completa, crea perfil y muestra recomendación",
-        "status": "terminado en código",
+        "status": "terminado",
         "branch": "feature/v0.1-api-pwa",
-        "qa": "QA de web pendiente (apps/web aún en trabajo en paralelo)",
+        "qa": "QA final APROBADO: QA adversarial de API (13 hallazgos, corregidos) y de web (15 bugs, corregidos); suite total 736 pruebas en verde; e2e Playwright contra wrangler dev real",
         "commits": [
           "9e015ed feat(web): add API client, token store, PWA update and review/onboarding logic",
-          "2911814 feat(web): add v0.1 screens (token, onboarding, today, capture, review, settings)"
+          "2911814 feat(web): add v0.1 screens (token, onboarding, today, capture, review, settings)",
+          "83312a8 feat(web): add logic for history, weight trend, favorites, offline queue, export, barcode and shortcut",
+          "d875f75 feat(web): add v0.2-v1.0 screens and fix v0.1 navigation issues",
+          "c933e18 test(web): add adversarial test suite (API client, dates, queue, review, security) — incluye correcciones de web",
+          "44fc7a3 feat(web): add security headers and cache rules for static assets"
         ],
-        "pending": "QA de web; prueba en iPhone (instalar, pantalla completa, crear perfil)"
+        "previous_status": "terminado en código",
+        "completed_at": "2026-11-04",
+        "qa_history": "QA de web pendiente (apps/web aún en trabajo en paralelo)",
+        "previous_pending": "QA de web; prueba en iPhone (instalar, pantalla completa, crear perfil)",
+        "residual": "Instalación en iPhone real sin verificar (e2e con iPhone 13 emulado): ver doc:testing"
       }
     },
     {
@@ -2482,17 +2535,23 @@
           "context/PROMPTS.md"
         ],
         "acceptance": "Pruebas con Gemini simulado (ok, 429→respaldo, JSON inválido, límite) y prueba real con 3 fotos",
-        "status": "terminado en código",
+        "status": "terminado",
         "branch": "feature/v0.1-api-pwa",
-        "qa": "QA de API APROBADO tras correcciones (commit 9de7212 fix(api): harden API after adversarial QA; suite adversarial e2532d1); QA de web pendiente (apps/web aún en trabajo en paralelo)",
+        "qa": "QA final APROBADO: QA adversarial de API (13 hallazgos, corregidos) y de web (15 bugs, corregidos); suite total 736 pruebas en verde; e2e Playwright contra wrangler dev real",
         "commits": [
           "d36d36a feat(api): implement full REST API on the Worker",
           "04cf385 feat(api): add opt-in live Gemini check (test:gemini-live)",
           "63519f5 feat(shared): add health/usage/export schemas, NOT_FOOD and UPSTREAM_UNAVAILABLE codes, signed formatters",
           "15eaf73 fix(shared): parse multipart localHour strictly as 0-23 digits",
-          "2911814 feat(web): add v0.1 screens (token, onboarding, today, capture, review, settings)"
+          "2911814 feat(web): add v0.1 screens (token, onboarding, today, capture, review, settings)",
+          "68e6a3a fix(shared): use typographic minus in explanations; add ADAPTIVE_WINDOW_DAYS",
+          "4d8ef93 fix(shared): reject names and short texts made only of invisible characters"
         ],
-        "pending": "Prueba real con 3 fotos (falta GEMINI_API_KEY en la sesión); QA de web"
+        "previous_status": "terminado en código",
+        "completed_at": "2026-11-04",
+        "qa_history": "QA de API APROBADO tras correcciones (commit 9de7212 fix(api): harden API after adversarial QA; suite adversarial e2532d1); QA de web pendiente (apps/web aún en trabajo en paralelo)",
+        "previous_pending": "Prueba real con 3 fotos (falta GEMINI_API_KEY en la sesión); QA de web",
+        "residual": "Prueba real con 3 fotos no hecha (sin GEMINI_API_KEY en la sesión): ver risk:gemini-accuracy-unmeasured"
       }
     },
     {
@@ -2508,14 +2567,21 @@
           "Editar/borrar"
         ],
         "acceptance": "Flujo foto→guardar en ≤ 3 toques; totales del día correctos",
-        "status": "terminado en código",
+        "status": "terminado",
         "branch": "feature/v0.1-api-pwa",
-        "qa": "QA de API APROBADO tras correcciones (commit 9de7212 fix(api): harden API after adversarial QA; suite adversarial e2532d1); QA de web pendiente (apps/web aún en trabajo en paralelo)",
+        "qa": "QA final APROBADO: QA adversarial de API (13 hallazgos, corregidos) y de web (15 bugs, corregidos); suite total 736 pruebas en verde; e2e Playwright contra wrangler dev real",
         "commits": [
           "d36d36a feat(api): implement full REST API on the Worker",
-          "2911814 feat(web): add v0.1 screens (token, onboarding, today, capture, review, settings)"
+          "2911814 feat(web): add v0.1 screens (token, onboarding, today, capture, review, settings)",
+          "83312a8 feat(web): add logic for history, weight trend, favorites, offline queue, export, barcode and shortcut",
+          "d875f75 feat(web): add v0.2-v1.0 screens and fix v0.1 navigation issues",
+          "c933e18 test(web): add adversarial test suite (API client, dates, queue, review, security) — incluye correcciones de web"
         ],
-        "pending": "QA de web; verificar foto→guardar en ≤ 3 toques en el iPhone"
+        "previous_status": "terminado en código",
+        "completed_at": "2026-11-04",
+        "qa_history": "QA de API APROBADO tras correcciones (commit 9de7212 fix(api): harden API after adversarial QA; suite adversarial e2532d1); QA de web pendiente (apps/web aún en trabajo en paralelo)",
+        "previous_pending": "QA de web; verificar foto→guardar en ≤ 3 toques en el iPhone",
+        "residual": "Flujo en iPhone real sin verificar (e2e emulado aprobado): ver doc:testing"
       }
     },
     {
@@ -2531,9 +2597,11 @@
           "Línea base en context/ACCURACY.md"
         ],
         "acceptance": "App en producción usada un día completo; error medio medido con ~20 fotos",
-        "status": "en progreso",
-        "progress": "context/DEPLOY.md y context/ACCURACY.md (protocolo) creados el 2026-11-04",
-        "pending": "Primer deploy (database_id real, secretos, Workers Builds), checklist iPhone, línea base con ~20 fotos"
+        "status": "en progreso: despliegue pendiente del usuario",
+        "progress": "DEPLOY.md, ACCURACY.md (protocolo) y TESTING.md (checklist iPhone) listos; D1 de producción kalapp-db creada el 2026-11-04 en WNAM (id en wrangler.jsonc); código v1.0 terminado y verificado",
+        "pending": "Despliegue por el usuario (secretos GEMINI_API_KEY y APP_TOKEN + Workers Builds); las migraciones se aplican al desplegar; checklist iPhone (TESTING.md); línea base de precisión con ~20 fotos (sin medir)",
+        "previous_progress": "context/DEPLOY.md y context/ACCURACY.md (protocolo) creados el 2026-11-04",
+        "previous_pending": "Primer deploy (database_id real, secretos, Workers Builds), checklist iPhone, línea base con ~20 fotos"
       }
     },
     {
@@ -2724,7 +2792,7 @@
         "owner": "Usuario",
         "status": "pendiente (para M6)",
         "command": "npx wrangler login",
-        "note": "Pasos detallados en context/DEPLOY.md"
+        "note": "Pasos detallados en context/DEPLOY.md. Opcional si se despliega solo con Workers Builds y los secretos se ponen en el dashboard."
       }
     },
     {
@@ -3140,7 +3208,8 @@
       "properties": {
         "date": "2026-11-04",
         "detail": "name/title hechos solo de espacios y caracteres invisibles (U+200B–U+200D, U+FEFF) se rechazan con VALIDATION.",
-        "source": "QA adversarial de API / feature/v0.1-api-pwa"
+        "source": "QA adversarial de API / feature/v0.1-api-pwa",
+        "status": "superseded"
       }
     },
     {
@@ -3249,7 +3318,8 @@
       "label": "database_id de D1 aún es marcador",
       "properties": {
         "date": "2026-11-04",
-        "detail": "wrangler.jsonc trae database_id 00000000-0000-0000-0000-000000000000; el usuario debe reemplazarlo por el id real (DEPLOY.md §2)."
+        "detail": "wrangler.jsonc trae database_id 00000000-0000-0000-0000-000000000000; el usuario debe reemplazarlo por el id real (DEPLOY.md §2).",
+        "status": "superseded"
       }
     },
     {
@@ -3341,6 +3411,337 @@
           "409 PROFILE_REQUIRED"
         ],
         "phase": "v0.3"
+      }
+    },
+    {
+      "id": "fact:d1-production-created",
+      "type": "Fact",
+      "label": "D1 de producción kalapp-db creada",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "Base kalapp-db creada el 2026-11-04 en la región WNAM con id bb8a8875-29b3-4197-ad2b-0c74ffaf9806, ya puesto en wrangler.jsonc (160feb4). El id no es secreto. Las migraciones 0001–0003 se aplican al desplegar.",
+        "region": "WNAM",
+        "database_id": "bb8a8875-29b3-4197-ad2b-0c74ffaf9806"
+      }
+    },
+    {
+      "id": "fact:test-suite-736",
+      "type": "Fact",
+      "label": "Suite total: 736 pruebas en verde",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "pnpm test en verde: shared 177, api 261, web 298 (incluye suites adversariales). Gemini siempre simulado.",
+        "shared": 177,
+        "api": 261,
+        "web": 298,
+        "total": 736
+      }
+    },
+    {
+      "id": "fact:qa-adversarial-api",
+      "type": "Fact",
+      "label": "QA adversarial de API: 13 hallazgos corregidos",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "Auth, SQLi, límites de cuerpo, fallas de Gemini y contrato; 13 hallazgos, todos corregidos (9de7212, a2bacb7) y cubiertos por la suite adversarial (e2532d1)."
+      }
+    },
+    {
+      "id": "fact:qa-adversarial-web",
+      "type": "Fact",
+      "label": "QA adversarial de web: 15 bugs corregidos",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "Cliente de API, fechas/zona horaria, cola offline, Revisar, seguridad; 15 bugs, todos corregidos y cubiertos por *.adversarial.test.ts(x) (c933e18)."
+      }
+    },
+    {
+      "id": "fact:e2e-playwright",
+      "type": "Fact",
+      "label": "e2e con Playwright (iPhone 13 emulado) contra wrangler dev real",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "Flujos verificados: onboarding → foto → revisar → guardar; doble toque en Guardar (sin duplicados); historial; peso y gasto adaptativo; código de barras manual; cola offline de foto y de texto; CSP sin violaciones; service worker registrado. Gemini simulado; no es un iPhone real.",
+        "device": "iPhone 13 (emulado)"
+      }
+    },
+    {
+      "id": "fact:curl-attacks",
+      "type": "Fact",
+      "label": "Ataques con curl al Worker real (wrangler dev)",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "Imagen de 5 MB → 413; JSON anidado → 400; Content-Length mentiroso → 400; 100 GET en paralelo → ok; .dev.vars no se expone como asset."
+      }
+    },
+    {
+      "id": "fact:commit-c933e18-mixed",
+      "type": "Fact",
+      "label": "El commit c933e18 mezcla pruebas y correcciones de web",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "'test(web): add adversarial test suite' incluye también las correcciones de la web de esa ronda de QA. No se dividió porque habría que reescribir historia ya publicada (prohibido por Gitflow).",
+        "commit": "c933e18"
+      }
+    },
+    {
+      "id": "dec:web-nav-five",
+      "type": "Decision",
+      "label": "Navegación inferior de 5 elementos",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "Barra fija: Hoy · Historial · 📷 (Capturar, al centro) · Peso · Ajustes.",
+        "source": "QA final de web / feature/v0.1-api-pwa"
+      }
+    },
+    {
+      "id": "dec:nav-hidden-focus",
+      "type": "Decision",
+      "label": "Barra oculta en Revisar y en editar perfil",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "En Revisar y en editar perfil no se muestra la barra para evitar salir a medias y perder la propuesta o el formulario.",
+        "source": "QA final de web / feature/v0.1-api-pwa"
+      }
+    },
+    {
+      "id": "dec:per-gram-density",
+      "type": "Decision",
+      "label": "Densidad por gramo en ítems base",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "Cada ingrediente guarda su densidad (kcal y macros por gramo) del ítem base; editar gramos recalcula desde ahí. Poner 0 g no destruye los datos: al volver a subir los gramos se recupera la proporción.",
+        "source": "QA final de web / feature/v0.1-api-pwa"
+      }
+    },
+    {
+      "id": "dec:offline-queue-dexie",
+      "type": "Decision",
+      "label": "Cola offline con Dexie (kalapp-offline)",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "IndexedDB 'kalapp-offline' para fotos, textos y comidas por guardar; máximo 20 elementos; backoff 30 s → 30 min; 5 intentos que solo cuentan fallas con respuesta del servidor (4xx/5xx), no errores de red; 401 pausa la cola hasta recapturar el token; 429 (límite diario) reintenta sin contar intento. Idempotente por id de cliente.",
+        "source": "QA final de web / feature/v0.1-api-pwa"
+      }
+    },
+    {
+      "id": "dec:favorites-validated",
+      "type": "Decision",
+      "label": "Favoritos validados por elemento",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "La lista de favoritos se valida elemento por elemento: uno corrupto se omite sin tirar toda la pantalla.",
+        "source": "QA final de web / feature/v0.1-api-pwa"
+      }
+    },
+    {
+      "id": "dec:token-trim-header",
+      "type": "Decision",
+      "label": "Token con trim y validación de header",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "El token capturado se recorta (espacios/saltos al pegar) y se valida que sea apto para un header HTTP antes de guardarlo; si no, se pide de nuevo.",
+        "source": "QA final de web / feature/v0.1-api-pwa"
+      }
+    },
+    {
+      "id": "dec:zoned-iso-dst",
+      "type": "Decision",
+      "label": "zonedIso seguro ante cambios de horario",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "La conversión de fecha/hora local a ISO con zona se calcula por la zona del perfil y es correcta en saltos de horario (horas que no existen o se repiten), p. ej. Chile.",
+        "source": "QA final de web / feature/v0.1-api-pwa"
+      }
+    },
+    {
+      "id": "dec:lazy-routes",
+      "type": "Decision",
+      "label": "Carga perezosa de Historial, Peso y Código",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "HistoryScreen, WeightScreen (Recharts) y BarcodePanel (zxing) se cargan con React.lazy para que el arranque sea ligero.",
+        "source": "QA final de web / feature/v0.1-api-pwa"
+      }
+    },
+    {
+      "id": "dec:export-share-or-download",
+      "type": "Decision",
+      "label": "Export con navigator.share o descarga",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "El CSV/JSON se entrega con navigator.share({ files }) si el navegador lo permite (hoja de compartir de iOS → Archivos/Numbers); si no, descarga normal.",
+        "source": "QA final de web / feature/v0.1-api-pwa"
+      }
+    },
+    {
+      "id": "dec:shortcut-token-mask",
+      "type": "Decision",
+      "label": "Atajo de iOS con token enmascarado",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "En Ajustes → Atajo de iOS el token se muestra enmascarado: se ven como máximo 1/4 de los caracteres y nunca más de 4 (tokens ≤ 8: todo oculto); se copia con un botón.",
+        "source": "QA final de web / feature/v0.1-api-pwa"
+      }
+    },
+    {
+      "id": "dec:static-security-headers",
+      "type": "Decision",
+      "label": "Cabeceras de seguridad de los assets (_headers)",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "apps/web/public/_headers: CSP sin unsafe-eval (script-src 'self', connect-src 'self', frame-ancestors 'none'), X-Frame-Options DENY, Referrer-Policy no-referrer, Permissions-Policy camera=(self), no-cache en HTML y SW, assets con hash public max-age=31536000 immutable.",
+        "source": "QA final de web / feature/v0.1-api-pwa"
+      }
+    },
+    {
+      "id": "dec:json-depth-limit",
+      "type": "Decision",
+      "label": "JSON con profundidad > 32 → 400",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "Antes de parsear se mide la profundidad (MAX_JSON_DEPTH = 32); más anidado → 400 VALIDATION en lugar de reventar el Worker.",
+        "source": "a2bacb7",
+        "max_depth": 32
+      }
+    },
+    {
+      "id": "dec:env-vars-default",
+      "type": "Decision",
+      "label": "Vars DAILY_ANALYZE_LIMIT/MAX_IMAGE_BYTES inválidas → default",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "Si DAILY_ANALYZE_LIMIT o MAX_IMAGE_BYTES no son enteros positivos válidos, se usan los valores por defecto (60 y 1048576).",
+        "source": "QA adversarial de API"
+      }
+    },
+    {
+      "id": "dec:invisible-names-shared",
+      "type": "Decision",
+      "label": "Nombres invisibles rechazados en NameSchema (shared)",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "La regla de nombres/títulos y textos cortos hechos solo de espacios o caracteres invisibles (ZWSP, ZWNJ, ZWJ, WJ, BOM, guion suave, LRM) vive en packages/shared (NameSchema, ShortTextSchema, hasVisibleText); la API y la web la importan.",
+        "source": "4d8ef93"
+      }
+    },
+    {
+      "id": "dec:adaptive-window-shared",
+      "type": "Decision",
+      "label": "ADAPTIVE_WINDOW_DAYS compartido",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "La ventana del gasto adaptativo (28 días) es la constante ADAPTIVE_WINDOW_DAYS de packages/shared; la API la importa (abff913).",
+        "source": "68e6a3a, abff913",
+        "value": 28
+      }
+    },
+    {
+      "id": "dec:typographic-minus",
+      "type": "Decision",
+      "label": "Signo menos tipográfico en explicaciones",
+      "properties": {
+        "date": "2026-11-04",
+        "detail": "Las explicaciones y formateadores con signo usan − (U+2212) en lugar del guion.",
+        "source": "68e6a3a"
+      }
+    },
+    {
+      "id": "risk:gemini-accuracy-unmeasured",
+      "type": "Risk",
+      "label": "Precisión real de Gemini sin medir",
+      "properties": {
+        "category": "residual (v1.0)",
+        "severity": "alta",
+        "cause": "No hubo GEMINI_API_KEY en la sesión: todo se probó con Gemini simulado.",
+        "mitigation": "Tras desplegar: pnpm test:gemini-live y set de ~20 fotos (ACCURACY.md).",
+        "status": "abierto",
+        "date": "2026-11-04"
+      }
+    },
+    {
+      "id": "risk:shortcut-unverified",
+      "type": "Risk",
+      "label": "Instrucciones del Atajo sin verificar en iPhone real",
+      "properties": {
+        "category": "residual (v1.0)",
+        "severity": "media",
+        "cause": "Las instrucciones de Ajustes → Atajo de iOS no se han seguido en un iPhone.",
+        "mitigation": "Checklist manual de TESTING.md (Atajo + Salud + Siri + recordatorio).",
+        "status": "abierto",
+        "date": "2026-11-04"
+      }
+    },
+    {
+      "id": "risk:zxing-ios-unverified",
+      "type": "Risk",
+      "label": "Escaneo en vivo con zxing sin verificar en iOS",
+      "properties": {
+        "category": "residual (v1.0)",
+        "severity": "media",
+        "cause": "El e2e solo cubrió el código de barras manual; la cámara en vivo no se probó en Safari iOS.",
+        "mitigation": "Checklist de TESTING.md; queda la captura manual del código como alternativa.",
+        "status": "abierto",
+        "date": "2026-11-04"
+      }
+    },
+    {
+      "id": "risk:dst-chile-unverified",
+      "type": "Risk",
+      "label": "Cambio de horario de Chile sin verificar en dispositivo",
+      "properties": {
+        "category": "residual (v1.0)",
+        "severity": "baja",
+        "cause": "zonedIso se probó en unidad, no en un iPhone con zona America/Santiago durante el cambio.",
+        "mitigation": "Probar en el siguiente cambio de horario si el usuario usa esa zona.",
+        "status": "abierto",
+        "date": "2026-11-04"
+      }
+    },
+    {
+      "id": "risk:parse-number-trailing-dot",
+      "type": "Risk",
+      "label": "parseNumber marca inválido '60.' mientras se escribe",
+      "properties": {
+        "category": "residual (v1.0)",
+        "severity": "baja",
+        "cause": "parseNumber es estricto: un número con punto final (estado intermedio al teclear) se marca como inválido.",
+        "mitigation": "Cosmético; corregir si molesta en el uso real.",
+        "status": "abierto",
+        "date": "2026-11-04"
+      }
+    },
+    {
+      "id": "task:user-deploy",
+      "type": "Task",
+      "label": "Desplegar: secretos + Workers Builds",
+      "properties": {
+        "owner": "Usuario",
+        "status": "pendiente",
+        "detail": "wrangler secret put GEMINI_API_KEY y APP_TOKEN; conectar el repo en Workers Builds (las migraciones se aplican en el deploy); merge release → main con aprobación.",
+        "documented_in": "context/DEPLOY.md"
+      }
+    },
+    {
+      "id": "task:first-real-test",
+      "type": "Task",
+      "label": "Primera prueba real en el iPhone",
+      "properties": {
+        "owner": "Usuario",
+        "status": "pendiente",
+        "detail": "/api/health, instalar, onboarding, una foto real con Gemini, pnpm test:gemini-live y checklist de TESTING.md.",
+        "documented_in": "context/DEPLOY.md, context/TESTING.md"
+      }
+    },
+    {
+      "id": "doc:testing",
+      "type": "Document",
+      "label": "Guía de pruebas y checklist del iPhone",
+      "properties": {
+        "path": "context/TESTING.md",
+        "version": "1.0",
+        "date": "2026-11-04",
+        "status": "creado"
       }
     }
   ],
@@ -5647,6 +6048,506 @@
       "source": "ms:m5",
       "type": "DELIVERS",
       "target": "api:entries"
+    },
+    {
+      "source": "fact:d1-id-placeholder",
+      "type": "SUPERSEDED_BY",
+      "target": "fact:d1-production-created"
+    },
+    {
+      "source": "fact:d1-production-created",
+      "type": "AFFECTS",
+      "target": "deploy:d1-create"
+    },
+    {
+      "source": "fact:d1-production-created",
+      "type": "RELATES_TO",
+      "target": "tech:cf-d1"
+    },
+    {
+      "source": "agent:qa-reviewer",
+      "type": "PRODUCES",
+      "target": "fact:test-suite-736"
+    },
+    {
+      "source": "agent:qa-reviewer",
+      "type": "PRODUCES",
+      "target": "fact:qa-adversarial-api"
+    },
+    {
+      "source": "agent:qa-reviewer",
+      "type": "PRODUCES",
+      "target": "fact:qa-adversarial-web"
+    },
+    {
+      "source": "agent:qa-reviewer",
+      "type": "PRODUCES",
+      "target": "fact:e2e-playwright"
+    },
+    {
+      "source": "agent:qa-reviewer",
+      "type": "PRODUCES",
+      "target": "fact:curl-attacks"
+    },
+    {
+      "source": "fact:test-suite-736",
+      "type": "VERIFIES",
+      "target": "metric:calc-tests"
+    },
+    {
+      "source": "fact:qa-adversarial-api",
+      "type": "VERIFIES",
+      "target": "comp:worker"
+    },
+    {
+      "source": "fact:qa-adversarial-web",
+      "type": "VERIFIES",
+      "target": "comp:client"
+    },
+    {
+      "source": "fact:e2e-playwright",
+      "type": "VERIFIES",
+      "target": "comp:client"
+    },
+    {
+      "source": "fact:curl-attacks",
+      "type": "VERIFIES",
+      "target": "comp:worker"
+    },
+    {
+      "source": "fact:commit-c933e18-mixed",
+      "type": "RELATES_TO",
+      "target": "dec:gitflow"
+    },
+    {
+      "source": "fact:commit-c933e18-mixed",
+      "type": "RELATES_TO",
+      "target": "fact:qa-adversarial-web"
+    },
+    {
+      "source": "ms:m3",
+      "type": "RECORDS",
+      "target": "dec:web-nav-five"
+    },
+    {
+      "source": "dec:web-nav-five",
+      "type": "APPLIES_TO",
+      "target": "comp:client"
+    },
+    {
+      "source": "dec:web-nav-five",
+      "type": "APPLIES_TO",
+      "target": "feat:today-dashboard"
+    },
+    {
+      "source": "dec:web-nav-five",
+      "type": "APPLIES_TO",
+      "target": "feat:history"
+    },
+    {
+      "source": "dec:web-nav-five",
+      "type": "APPLIES_TO",
+      "target": "feat:weight-adaptive"
+    },
+    {
+      "source": "ms:m3",
+      "type": "RECORDS",
+      "target": "dec:nav-hidden-focus"
+    },
+    {
+      "source": "dec:nav-hidden-focus",
+      "type": "APPLIES_TO",
+      "target": "comp:client"
+    },
+    {
+      "source": "dec:nav-hidden-focus",
+      "type": "APPLIES_TO",
+      "target": "feat:review-edit"
+    },
+    {
+      "source": "dec:nav-hidden-focus",
+      "type": "APPLIES_TO",
+      "target": "feat:onboarding-profile"
+    },
+    {
+      "source": "ms:m5",
+      "type": "RECORDS",
+      "target": "dec:per-gram-density"
+    },
+    {
+      "source": "dec:per-gram-density",
+      "type": "APPLIES_TO",
+      "target": "comp:client"
+    },
+    {
+      "source": "dec:per-gram-density",
+      "type": "APPLIES_TO",
+      "target": "feat:review-edit"
+    },
+    {
+      "source": "ms:m5",
+      "type": "RECORDS",
+      "target": "dec:offline-queue-dexie"
+    },
+    {
+      "source": "dec:offline-queue-dexie",
+      "type": "APPLIES_TO",
+      "target": "comp:client"
+    },
+    {
+      "source": "dec:offline-queue-dexie",
+      "type": "APPLIES_TO",
+      "target": "feat:offline-queue"
+    },
+    {
+      "source": "ms:m5",
+      "type": "RECORDS",
+      "target": "dec:favorites-validated"
+    },
+    {
+      "source": "dec:favorites-validated",
+      "type": "APPLIES_TO",
+      "target": "comp:client"
+    },
+    {
+      "source": "dec:favorites-validated",
+      "type": "APPLIES_TO",
+      "target": "feat:favorites"
+    },
+    {
+      "source": "ms:m3",
+      "type": "RECORDS",
+      "target": "dec:token-trim-header"
+    },
+    {
+      "source": "dec:token-trim-header",
+      "type": "APPLIES_TO",
+      "target": "comp:client"
+    },
+    {
+      "source": "dec:token-trim-header",
+      "type": "APPLIES_TO",
+      "target": "feat:token-auth"
+    },
+    {
+      "source": "ms:m5",
+      "type": "RECORDS",
+      "target": "dec:zoned-iso-dst"
+    },
+    {
+      "source": "dec:zoned-iso-dst",
+      "type": "APPLIES_TO",
+      "target": "comp:client"
+    },
+    {
+      "source": "dec:zoned-iso-dst",
+      "type": "APPLIES_TO",
+      "target": "feat:today-dashboard"
+    },
+    {
+      "source": "dec:zoned-iso-dst",
+      "type": "APPLIES_TO",
+      "target": "feat:meal-type"
+    },
+    {
+      "source": "ms:m3",
+      "type": "RECORDS",
+      "target": "dec:lazy-routes"
+    },
+    {
+      "source": "dec:lazy-routes",
+      "type": "APPLIES_TO",
+      "target": "comp:client"
+    },
+    {
+      "source": "dec:lazy-routes",
+      "type": "APPLIES_TO",
+      "target": "feat:history"
+    },
+    {
+      "source": "dec:lazy-routes",
+      "type": "APPLIES_TO",
+      "target": "feat:weight-adaptive"
+    },
+    {
+      "source": "dec:lazy-routes",
+      "type": "APPLIES_TO",
+      "target": "feat:barcode"
+    },
+    {
+      "source": "ms:m5",
+      "type": "RECORDS",
+      "target": "dec:export-share-or-download"
+    },
+    {
+      "source": "dec:export-share-or-download",
+      "type": "APPLIES_TO",
+      "target": "comp:client"
+    },
+    {
+      "source": "dec:export-share-or-download",
+      "type": "APPLIES_TO",
+      "target": "feat:export"
+    },
+    {
+      "source": "ms:m3",
+      "type": "RECORDS",
+      "target": "dec:shortcut-token-mask"
+    },
+    {
+      "source": "dec:shortcut-token-mask",
+      "type": "APPLIES_TO",
+      "target": "comp:client"
+    },
+    {
+      "source": "dec:shortcut-token-mask",
+      "type": "APPLIES_TO",
+      "target": "feat:shortcut-health"
+    },
+    {
+      "source": "ms:m3",
+      "type": "RECORDS",
+      "target": "dec:static-security-headers"
+    },
+    {
+      "source": "dec:static-security-headers",
+      "type": "APPLIES_TO",
+      "target": "comp:client"
+    },
+    {
+      "source": "dec:offline-queue-dexie",
+      "type": "USES",
+      "target": "tech:dexie"
+    },
+    {
+      "source": "risk:offline",
+      "type": "MITIGATED_BY",
+      "target": "dec:offline-queue-dexie"
+    },
+    {
+      "source": "dec:lazy-routes",
+      "type": "APPLIES_TO",
+      "target": "tech:recharts"
+    },
+    {
+      "source": "dec:lazy-routes",
+      "type": "APPLIES_TO",
+      "target": "tech:zxing"
+    },
+    {
+      "source": "dec:static-security-headers",
+      "type": "IMPLEMENTED_IN",
+      "target": "repo:apps-web"
+    },
+    {
+      "source": "dec:shortcut-token-mask",
+      "type": "APPLIES_TO",
+      "target": "sec:secrets"
+    },
+    {
+      "source": "dec:token-trim-header",
+      "type": "APPLIES_TO",
+      "target": "sec:token-rate-limit"
+    },
+    {
+      "source": "dec:reject-invisible-names",
+      "type": "SUPERSEDED_BY",
+      "target": "dec:invisible-names-shared"
+    },
+    {
+      "source": "ms:m2",
+      "type": "RECORDS",
+      "target": "dec:json-depth-limit"
+    },
+    {
+      "source": "ms:m2",
+      "type": "RECORDS",
+      "target": "dec:env-vars-default"
+    },
+    {
+      "source": "ms:m1",
+      "type": "RECORDS",
+      "target": "dec:invisible-names-shared"
+    },
+    {
+      "source": "ms:m1",
+      "type": "RECORDS",
+      "target": "dec:adaptive-window-shared"
+    },
+    {
+      "source": "ms:m1",
+      "type": "RECORDS",
+      "target": "dec:typographic-minus"
+    },
+    {
+      "source": "dec:json-depth-limit",
+      "type": "REFINES",
+      "target": "dec:body-limits"
+    },
+    {
+      "source": "dec:json-depth-limit",
+      "type": "APPLIES_TO",
+      "target": "comp:worker"
+    },
+    {
+      "source": "dec:env-vars-default",
+      "type": "APPLIES_TO",
+      "target": "api:analyze"
+    },
+    {
+      "source": "dec:invisible-names-shared",
+      "type": "IMPLEMENTED_IN",
+      "target": "repo:packages-shared"
+    },
+    {
+      "source": "dec:invisible-names-shared",
+      "type": "APPLIES_TO",
+      "target": "api:entries"
+    },
+    {
+      "source": "dec:invisible-names-shared",
+      "type": "APPLIES_TO",
+      "target": "api:favorites"
+    },
+    {
+      "source": "dec:adaptive-window-shared",
+      "type": "IMPLEMENTED_IN",
+      "target": "repo:packages-shared"
+    },
+    {
+      "source": "dec:adaptive-window-shared",
+      "type": "APPLIES_TO",
+      "target": "api:adaptive"
+    },
+    {
+      "source": "dec:adaptive-window-shared",
+      "type": "REFINES",
+      "target": "dec:adaptive-rule"
+    },
+    {
+      "source": "dec:typographic-minus",
+      "type": "APPLIES_TO",
+      "target": "ux:explainable"
+    },
+    {
+      "source": "risk:gemini-accuracy-unmeasured",
+      "type": "AFFECTS",
+      "target": "metric:accuracy"
+    },
+    {
+      "source": "risk:gemini-accuracy-unmeasured",
+      "type": "AFFECTS",
+      "target": "tech:gemini"
+    },
+    {
+      "source": "risk:shortcut-unverified",
+      "type": "AFFECTS",
+      "target": "feat:shortcut-health"
+    },
+    {
+      "source": "risk:shortcut-unverified",
+      "type": "AFFECTS",
+      "target": "feat:reminders"
+    },
+    {
+      "source": "risk:zxing-ios-unverified",
+      "type": "AFFECTS",
+      "target": "feat:barcode"
+    },
+    {
+      "source": "risk:zxing-ios-unverified",
+      "type": "AFFECTS",
+      "target": "tech:zxing"
+    },
+    {
+      "source": "risk:dst-chile-unverified",
+      "type": "AFFECTS",
+      "target": "dec:zoned-iso-dst"
+    },
+    {
+      "source": "risk:parse-number-trailing-dot",
+      "type": "AFFECTS",
+      "target": "feat:onboarding-profile"
+    },
+    {
+      "source": "risk:parse-number-trailing-dot",
+      "type": "AFFECTS",
+      "target": "feat:barcode"
+    },
+    {
+      "source": "risk:barcode-safari",
+      "type": "RELATES_TO",
+      "target": "risk:zxing-ios-unverified"
+    },
+    {
+      "source": "ms:m6",
+      "type": "DEPENDS_ON",
+      "target": "task:user-deploy"
+    },
+    {
+      "source": "ms:m6",
+      "type": "DEPENDS_ON",
+      "target": "task:first-real-test"
+    },
+    {
+      "source": "task:user-deploy",
+      "type": "PRECEDES",
+      "target": "task:first-real-test"
+    },
+    {
+      "source": "task:user-deploy",
+      "type": "DEPENDS_ON",
+      "target": "task:gemini-key"
+    },
+    {
+      "source": "task:first-real-test",
+      "type": "MITIGATES",
+      "target": "risk:gemini-accuracy-unmeasured"
+    },
+    {
+      "source": "task:first-real-test",
+      "type": "MITIGATES",
+      "target": "risk:shortcut-unverified"
+    },
+    {
+      "source": "task:first-real-test",
+      "type": "MITIGATES",
+      "target": "risk:zxing-ios-unverified"
+    },
+    {
+      "source": "doc:testing",
+      "type": "DOCUMENTS",
+      "target": "fact:test-suite-736"
+    },
+    {
+      "source": "doc:testing",
+      "type": "DOCUMENTS",
+      "target": "fact:e2e-playwright"
+    },
+    {
+      "source": "doc:testing",
+      "type": "DOCUMENTS",
+      "target": "task:first-real-test"
+    },
+    {
+      "source": "ms:m6",
+      "type": "DELIVERS",
+      "target": "doc:testing"
+    },
+    {
+      "source": "repo:context",
+      "type": "CONTAINS",
+      "target": "doc:testing"
+    },
+    {
+      "source": "doc:deploy",
+      "type": "DOCUMENTS",
+      "target": "task:user-deploy"
+    },
+    {
+      "source": "doc:deploy",
+      "type": "DOCUMENTS",
+      "target": "task:first-real-test"
     }
   ],
   "conversation_log": [
@@ -5697,6 +6598,12 @@
       "date": "2026-11-04",
       "user_request": "Terminar la app de principio a fin y probarla buscando fallas. Agregó GEMINI_API_KEY como variable de entorno (sesión en la nube) y conectó el MCP de Cloudflare.",
       "outcome": "M1 integrado en develop; en feature/v0.1-api-pwa: migraciones 0001–0003, API REST completa (v0.1–v1.0), endurecimiento tras QA adversarial (aprobado), pantallas web de v0.1 (QA web pendiente); DEPLOY.md, PROMPTS.md y ACCURACY.md creados. La clave no estuvo disponible en la sesión: sin prueba real de Gemini."
+    },
+    {
+      "step": 9,
+      "date": "2026-11-04",
+      "user_request": "Cerrar la v1.0 completa (web y API) con QA adversarial y e2e antes del release; la D1 de producción ya existe.",
+      "outcome": "v0.1–v1.0 terminadas en código; QA adversarial de API (13) y web (15) corregidos; 736 pruebas en verde; e2e Playwright y ataques con curl al Worker real; D1 kalapp-db (WNAM) en wrangler.jsonc. Pendiente: despliegue del usuario y prueba real de Gemini."
     }
   ],
   "changelog": [
@@ -5719,6 +6626,10 @@
     {
       "date": "2026-11-04",
       "change": "M1 terminado; M2–M5 terminados en código (QA API aprobado, QA web pendiente); M6 en progreso. 19 decisiones nuevas (auth, headers, límites, firma de imagen, cupo atómico CDMX, respaldo de modelo, códigos NOT_FOOD/UPSTREAM_UNAVAILABLE, UUID minúsculas, nombres invisibles, export, endpoints extra, migraciones, onError, UI del SW, carbs floor, grasa sobre peso real, avisos); dec:gemini-pipeline → superseded por dec:gemini-fallback-policy; 5 endpoints nuevos; columnas reales de las tablas; 6 hechos; tareas de QA de M0 cerradas; docs DEPLOY/PROMPTS/ACCURACY creados; PLAN 1.2; nuevo tipo de arista CLOSES (decisión/documento que cierra una tarea)."
+    },
+    {
+      "date": "2026-11-04",
+      "change": "Cierre de v1.0 en código: ms:m2–m5 terminados; phase:v0.2/v0.3/v1.0 terminadas en código; ms:m6 en progreso (despliegue del usuario). 11 decisiones de web y 5 de API/shared; dec:reject-invisible-names → superseded por dec:invisible-names-shared; fact:d1-id-placeholder → superseded por fact:d1-production-created; 6 hechos de verificación; 5 riesgos residuales; tareas task:user-deploy y task:first-real-test; task:start-v0.1 cerrada; doc:testing (TESTING.md) nuevo; PLAN 1.3, DEPLOY 1.1, ACCURACY 1.1."
     }
   ]
 }
